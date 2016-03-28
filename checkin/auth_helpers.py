@@ -5,9 +5,9 @@ from google.appengine.ext import ndb
 
 from webapp2_extras import security
 
-
 class User(webapp2_extras.appengine.auth.models.User):
     is_admin = ndb.BooleanProperty()
+    username = ndb.StringProperty()
 
     def set_password(self, raw_password):
         """Sets the password for the current user
@@ -39,3 +39,20 @@ class User(webapp2_extras.appengine.auth.models.User):
             return user, timestamp
 
         return None, None
+
+    @classmethod
+    def get_by_username(cls, username, subject='auth'):
+        """Returns a user object based on a username.
+
+        :param username:
+            The username of the requesting user.
+
+        :returns:
+            returns user or none if
+        """
+        qry = User.query(User.username == username)
+        user = qry.get()
+
+        if user:
+            return user
+        return None

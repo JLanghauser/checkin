@@ -1,1 +1,14 @@
-I'm a checkin visitor page!
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Checkin Visitor</h1>
+
+<form class="form" action= "/checkin_visitor" method="POST">
+	<label for="visitor_id">Visitor_ID</label>
+	<input type="text" value="{{ visitor_id }}" name="visitor_id"/>
+	<button type="submit" class="btn">Checkin</button>
+</form>
+
+
+{% endblock %}

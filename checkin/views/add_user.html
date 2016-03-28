@@ -1,20 +1,21 @@
-<html>
 
-<body>
-  <h1> I'm an add user page! </h1>
-  <form action="/admin/users" method="post">
-    <div>
-      <h2>Name</h2>
-      <input type="textbox" name="name" >
-      <h2>Passcode</h2>
-      <input type="textbox" name="passcode" >
-      <h2>IsAdmin</h2>
-      <input type="checkbox" name="is_admin" >
-    </div>
-    <div>
-      <input type="submit" value="Add User">
-    </div>
-  </form>
-</body>
+{% extends "main.html" %}
 
-</html>
+{% block title %}Register a new user{% endblock %}
+
+{% block maincontent %}
+
+<h1>Register a new user</h1>
+<form action="/admin/user" method="POST">
+<label for="username">Username</label>
+<input type="text" name="username" />
+<label for="email">Email address</label>
+<input type="text" name="email" />
+<label for="password">Password</label>
+<input type="password" name="password" />
+<label for="admin">Admin</label>
+<input type="checkbox" name="admin" />
+<input type="submit" value="Create user" />
+</form>
+
+{% endblock %}
