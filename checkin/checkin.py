@@ -6,6 +6,8 @@ from basehandler import *
 from auth_helpers import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
+from random import randint
+
 
 guestbook_key = ndb.Key('Guestbook', 'default_guestbook')
 
@@ -33,7 +35,6 @@ class MainPage(BaseHandler):
           </html>""")
 
 
-
 class SignInHandler(BaseHandler):
 
     def get(self):
@@ -58,48 +59,47 @@ class SignInHandler(BaseHandler):
 
 
 class SignOutHandler(BaseHandler):
-
     def get(self):
-        self.auth.unset_session();
-        self.render_template('success_page.html')
-
-    def post(self):
         self.auth.unset_session();
         self.render_template('success_page.html')
 
 
 class CheckInHandler(BaseHandler):
-
-    def get(self):
-        auth = self.auth
-        if auth.get_user_by_session():
+    def handlerequest(self):
+        visitor_id = self.request.get('visitor_id',-1)
+        if (visitor_id == -1):
             self.render_template('checkin_visitor.html')
         else:
-            # remember URL in cookie
-            self.render_template('sign_in.html')
+            new_map = MapUserToVisitor()
+            new_map.user_key = self.user.key
+            qry = Visitor.query(Visitor.visitor_id == visitor_id)
+            visitor = qry.get()
+            if (visitor):
+                new_map.visitor_key = visitor.key
+                new_map.put()
+            else:
+                self.render_template('error_page.html')
+            self.render_template('success_page.html')
 
+    @user_required
+    def get(self):
+        self.handlerequest()
+
+    @user_required
     def post(self):
-        visitor_id = self.request.get('visitor_id')
-        new_map = MapUserToVisitor()
-        new_map.user_key = self.auth.get_user_by_session().key
-        qry = Visitor.query(Visitor.visitor_id == visitor_id)
-        visitor = qry.get()
-        if (visitor):
-            new_map.visitor_key = visitor.key
-            new_map.put()
-        else:
-            self.render_template('error_page.html')
-        self.render_template('success_page.html')
-
+        self.handlerequest()
 
 class UserListHandler(BaseHandler):
+    @admin_required
     def get(self):
         self.render_template('list_users.html')
 
 class UserHandler(BaseHandler):
+    @admin_required
     def get(self):
         self.render_template('add_user.html')
 
+    @admin_required
     def post(self):
         username = self.request.get('username')
         password = self.request.get('password')
@@ -121,17 +121,16 @@ class UserHandler(BaseHandler):
         self.render_template('success_page.html')
 
 class VisitorListHandler(BaseHandler):
+    @admin_required
     def get(self):
-        self.render_template('error_page.html')
-
-    def post(self):
         self.render_template('error_page.html')
 
 class VisitorHandler(BaseHandler):
-
+    @admin_required
     def get(self):
         self.render_template('add_visitor.html')
 
+    @admin_required
     def post(self):
         newvisitor = Visitor()
         newvisitor.visitor_id = self.request.get('visitor_id')
@@ -140,21 +139,32 @@ class VisitorHandler(BaseHandler):
 
 
 class RandomVisitorHandler(BaseHandler):
-
+    @admin_required
     def get(self):
-        self.response.out.write("RandomVisitorHandler get")
+        # get count
+        entity_count = MapUserToVisitor.query().count()
 
-    def post(self):
-        self.response.out.write("RandomVisitorHandler post")
+        # get random number
+        random_index = randint(0,entity_count-1)
+
+        # Get all the keys, not the Entities
+        maps = MapUserToVisitor.query().order(MapUserToVisitor.key).fetch()
+
+        counter = 0
+        for map_item in maps:
+            if (random_index == counter):
+                key = map_item.visitor_key
+                rand_visitor = Visitor.get_by_id(key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
+                self.response.out.write("And the winner is... " + rand_visitor.visitor_id)
+            counter = counter + 1
+
 
 
 class MapUserToVisitorHandler(BaseHandler):
-
+    @admin_required
     def get(self):
         self.response.out.write("MapUserToVisitorHandler get")
 
-    def post(self):
-        self.response.out.write("MapUserToVisitorHandler post")
 
 config = {
     'webapp2_extras.auth': {
@@ -167,14 +177,14 @@ config = {
 }
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
-    ('/sign_in', SignInHandler),
-    ('/sign_out', SignOutHandler),
-    ('/checkin_visitor', CheckInHandler),
-    ('/admin/users', UserListHandler),
-    ('/admin/user', UserHandler),
-    ('/admin/visitor', VisitorHandler),
-    ('/admin/visitors', VisitorListHandler),
-    ('/admin/get_random_visitor', RandomVisitorHandler),
-    ('/admin/get_all_map_user_to_visitors', MapUserToVisitorHandler),
+    webapp2.Route('/', MainPage, name='home'),
+    webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
+    webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
+    webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
+    webapp2.Route('/admin/users', UserListHandler, name='user_list'),
+    webapp2.Route('/admin/user', UserHandler, name='new_user'),
+    webapp2.Route('/admin/visitor', VisitorHandler, name='new_visitor'),
+    webapp2.Route('/admin/visitors', VisitorListHandler, name='visitor_list'),
+    webapp2.Route('/admin/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
+    webapp2.Route('/admin/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
 ], config=config, debug=True)

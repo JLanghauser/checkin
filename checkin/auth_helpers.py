@@ -5,6 +5,36 @@ from google.appengine.ext import ndb
 
 from webapp2_extras import security
 
+def user_required(handler):
+  """
+    Decorator that checks if there's a user associated with the current session.
+    Will also fail if there's no session present.
+  """
+  def check_login(self, *args, **kwargs):
+    auth = self.auth
+    if not auth.get_user_by_session():
+      self.redirect(self.uri_for('sign_in'), abort=True)
+    else:
+      return handler(self, *args, **kwargs)
+
+  return check_login
+
+def admin_required(handler):
+  """
+    Decorator that checks if there's a user associated with the current session.
+    And that that user is an admin. Will also fail if there's no session present.
+  """
+  def check_admin(self, *args, **kwargs):
+    auth = self.auth
+    if not auth.get_user_by_session():
+      self.redirect(self.uri_for('sign_in'), abort=True)
+    else:
+      if (not self.user.admin):
+        self.redirect(self.uri_for('error_page'), abort=True)
+      return handler(self, *args, **kwargs)
+
+  return check_admin
+
 class User(webapp2_extras.appengine.auth.models.User):
     is_admin = ndb.BooleanProperty()
     username = ndb.StringProperty()
