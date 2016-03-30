@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Enter your visitor ID</h1>
+
+<form class="form" action= "/students" method="POST">
+	<label for="visitor_id">Visitor_IDS</label>
+  <input type="text" value="" name="visitor_id"/>
+	<button type="submit" class="btn">Login</button>
+</form>
+
+{% endblock %}

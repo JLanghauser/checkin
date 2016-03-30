@@ -8,9 +8,6 @@ from google.appengine.ext import ndb
 from google.appengine.api import users
 from random import randint
 
-
-guestbook_key = ndb.Key('Guestbook', 'default_guestbook')
-
 class Visitor(ndb.Model):
     visitor_id = ndb.TextProperty(indexed=True)
 
@@ -21,26 +18,27 @@ class MapUserToVisitor (ndb.Model):
 class MainPage(BaseHandler):
 
     def get(self):
-        self.response.out.write('<html><body>')
         auth = self.auth
-        if auth.get_user_by_session():
-            self.response.out.write("""
-              <h1> You're logged in! :-)</h1>
-            </body>
-          </html>""")
-        else:
-            self.response.out.write("""
-              <h1> You're not logged in! :-()</h1>
-            </body>
-          </html>""")
+        self.render_template('main.html')
 
 
-class SignInHandler(BaseHandler):
+class StudentsHandler(BaseHandler):
+    def handlerequest(self):
+        visitor_id = self.request.get('visitor_id','')
+        self.render_template('students.html')
 
     def get(self):
-        self.render_template('sign_in.html')
+        visitor_id = self.request.get('visitor_id','')
+        if (visitor_id == ''):
+            self.render_template('studentlogin.html')
+        else:
+            self.render_template('students.html')
 
     def post(self):
+        self.handlerequest()
+
+class SignInHandler(BaseHandler):
+    def handlerequest(self):
         raw_password = self.request.get('password')
         login = self.request.get('username')
         tmp_user = User.get_by_username(login)
@@ -50,18 +48,29 @@ class SignInHandler(BaseHandler):
 
             if security.check_password_hash(raw_password,tmp_user.password):
                 self.auth.set_session(self.auth.store.user_to_dict(tmp_user))
-                self.render_template('success_page.html')
+                self.render_template('main.html')
             else:
                 self.render_template('error_page.html')
 
         else:
             self.render_template('error_page.html')
 
+    def get(self):
+        raw_password = self.request.get('password','')
+        login = self.request.get('username','')
+
+        if (raw_password != '' and login != ''):
+            self.handlerequest()
+        else:
+            self.render_template('sign_in.html')
+
+    def post(self):
+        self.handlerequest()
 
 class SignOutHandler(BaseHandler):
     def get(self):
         self.auth.unset_session();
-        self.render_template('success_page.html')
+        self.render_template('main.html')
 
 
 class CheckInHandler(BaseHandler):
@@ -77,9 +86,10 @@ class CheckInHandler(BaseHandler):
             if (visitor):
                 new_map.visitor_key = visitor.key
                 new_map.put()
+                params = {'visitor_id': visitor_id}
+                self.render_template('successful_checkin.html',params)
             else:
                 self.render_template('error_page.html')
-            self.render_template('success_page.html')
 
     @user_required
     def get(self):
@@ -126,16 +136,23 @@ class VisitorListHandler(BaseHandler):
         self.render_template('error_page.html')
 
 class VisitorHandler(BaseHandler):
-    @admin_required
-    def get(self):
-        self.render_template('add_visitor.html')
-
-    @admin_required
-    def post(self):
+    def handlerequest(self):
         newvisitor = Visitor()
         newvisitor.visitor_id = self.request.get('visitor_id')
         newvisitor.put()
         self.render_template('success_page.html')
+
+    @admin_required
+    def get(self):
+        visitor_id = self.request.get('visitor_id',-1)
+        if (visitor_id == -1):
+            self.render_template('add_visitor.html')
+        else:
+            self.handlerequest()
+
+    @admin_required
+    def post(self):
+        self.handlerequest();
 
 
 class RandomVisitorHandler(BaseHandler):
@@ -159,7 +176,6 @@ class RandomVisitorHandler(BaseHandler):
             counter = counter + 1
 
 
-
 class MapUserToVisitorHandler(BaseHandler):
     @admin_required
     def get(self):
@@ -181,6 +197,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
     webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
+    webapp2.Route('/students', StudentsHandler, name='students'),
     webapp2.Route('/admin/users', UserListHandler, name='user_list'),
     webapp2.Route('/admin/user', UserHandler, name='new_user'),
     webapp2.Route('/admin/visitor', VisitorHandler, name='new_visitor'),
