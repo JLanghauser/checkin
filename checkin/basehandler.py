@@ -66,9 +66,7 @@ class BaseHandler(webapp2.RequestHandler):
 
   def display_message(self, message):
     """Utility function to display a template with a simple message."""
-    params = {
-      'message': message
-    }
+    params = {'message': message}
     self.render_template('message.html', params)
 
   # this is needed for webapp2 sessions to work

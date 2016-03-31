@@ -36,19 +36,20 @@
       <p>
         {% if not user %}
           <a href="/sign_in">Login</a>
+        |
         {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="/sign_out">Logout</a>
+          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="/sign_out">Logout</a>        |
+          <a href="/checkin_visitor">Checkin Student</a> |
+          <a href="/edit">Edit Profile</a> |
+          <a href="/">Home</a>
+          |
         {% endif %}
+        {% if user and user.is_admin == True %}
+          <a href="/admin_panel/user">New user</a>
         |
-        <a href="/">Home</a>
+          <a href="/admin_panel/visitor">New visitor</a>
         |
-        <a href="/checkin_visitor">Checkin Student</a>
-        {% if user.is_admin %}
-          <a href="/admin/user">New user</a>
-        |
-          <a href="/admin/visitor">New visitor</a>
-        |
-          <a href="/admin/get_random_visitor">Run Raffle</a>
+          <a href="/admin_panel/get_random_visitor">Run Raffle</a>
         {% endif %}
 
       </p>

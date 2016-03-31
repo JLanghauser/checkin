@@ -15,11 +15,15 @@ class MapUserToVisitor (ndb.Model):
     user_key = ndb.KeyProperty(kind=User)
     visitor_key = ndb.KeyProperty(kind=Visitor)
 
-class MainPage(BaseHandler):
-
+class ErrorPage(BaseHandler):
     def get(self):
         auth = self.auth
-        self.render_template('main.html')
+        self.render_template('error_page.html')
+
+class MainPage(BaseHandler):
+    def get(self):
+        auth = self.auth
+        self.render_template('index.html')
 
 
 class StudentsHandler(BaseHandler):
@@ -48,7 +52,7 @@ class SignInHandler(BaseHandler):
 
             if security.check_password_hash(raw_password,tmp_user.password):
                 self.auth.set_session(self.auth.store.user_to_dict(tmp_user))
-                self.render_template('main.html')
+                self.redirect(self.uri_for('home'), abort=False)
             else:
                 self.render_template('error_page.html')
 
@@ -70,8 +74,25 @@ class SignInHandler(BaseHandler):
 class SignOutHandler(BaseHandler):
     def get(self):
         self.auth.unset_session();
-        self.render_template('main.html')
+        self.redirect(self.uri_for('home'), abort=False)
 
+class UserEditHandler(BaseHandler):
+    def handlerequest(self):
+        profile = self.request.get('profile',-1)
+        if (profile == -1):
+            self.render_template('edit_user.html')
+        else:
+            self.user.profile = profile
+            self.user.put()
+            self.redirect(self.uri_for('home'), abort=False)
+
+    @user_required
+    def get(self):
+        self.handlerequest()
+
+    @user_required
+    def post(self):
+        self.handlerequest()
 
 class CheckInHandler(BaseHandler):
     def handlerequest(self):
@@ -124,7 +145,7 @@ class UserHandler(BaseHandler):
             newuser = User()
             newuser.username = username
             newuser.set_password(password)
-            newuser.admin = is_admin
+            newuser.is_admin = is_admin
             newuser.email = email
             newuser.put()
 
@@ -172,7 +193,9 @@ class RandomVisitorHandler(BaseHandler):
             if (random_index == counter):
                 key = map_item.visitor_key
                 rand_visitor = Visitor.get_by_id(key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
-                self.response.out.write("And the winner is... " + rand_visitor.visitor_id)
+                params = {'visitor_id': rand_visitor.visitor_id}
+                self.render_template('raffle_results.html',params)
+                return
             counter = counter + 1
 
 
@@ -185,7 +208,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username']
+        'user_attributes': ['username','email','profile']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'
@@ -194,14 +217,16 @@ config = {
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/', MainPage, name='home'),
+    webapp2.Route('/error', ErrorPage, name='error'),
     webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
+    webapp2.Route('/edit', UserEditHandler, name='edit'),
     webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
     webapp2.Route('/students', StudentsHandler, name='students'),
-    webapp2.Route('/admin/users', UserListHandler, name='user_list'),
-    webapp2.Route('/admin/user', UserHandler, name='new_user'),
-    webapp2.Route('/admin/visitor', VisitorHandler, name='new_visitor'),
-    webapp2.Route('/admin/visitors', VisitorListHandler, name='visitor_list'),
-    webapp2.Route('/admin/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
-    webapp2.Route('/admin/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
+    webapp2.Route('/admin_panel/users', UserListHandler, name='user_list'),
+    webapp2.Route('/admin_panel/user', UserHandler, name='new_user'),
+    webapp2.Route('/admin_panel/visitor', VisitorHandler, name='new_visitor'),
+    webapp2.Route('/admin_panel/visitors', VisitorListHandler, name='visitor_list'),
+    webapp2.Route('/admin_panel/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
+    webapp2.Route('/admin_panel/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
 ], config=config, debug=True)

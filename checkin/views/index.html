@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+{% if user %}
+  <h1>Welcome home {{ user.username }}</h1>
+
+  <div>
+    {{ user.profile }}
+  </div>
+{% endif %}
+
+{% endblock %}
