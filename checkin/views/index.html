@@ -5,9 +5,12 @@
 {% if user %}
   <h1>Welcome home {{ user.username }}</h1>
 
-  <div>
+  <div id='disp'>
     {{ user.profile }}
   </div>
+  <script>
+    document.getElementById("#disp").innerHTML = {{ user.profile }};
+  </script>
 {% endif %}
 
 {% endblock %}

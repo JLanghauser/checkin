@@ -78,12 +78,15 @@ class SignOutHandler(BaseHandler):
 
 class UserEditHandler(BaseHandler):
     def handlerequest(self):
-        profile = self.request.get('profile',-1)
-        if (profile == -1):
+        profile_param = self.request.get('profile',-1)
+        if (profile_param == -1):
             self.render_template('edit_user.html')
         else:
-            self.user.profile = profile
+            self.user.profile = profile_param
             self.user.put()
+            tmpuser = self.user
+            self.auth.unset_session();
+            self.auth.set_session(self.auth.store.user_to_dict(tmpuser))
             self.redirect(self.uri_for('home'), abort=False)
 
     @user_required
@@ -146,6 +149,7 @@ class UserHandler(BaseHandler):
             newuser.username = username
             newuser.set_password(password)
             newuser.is_admin = is_admin
+            newuser.profile = 'Put some bio information here'
             newuser.email = email
             newuser.put()
 
