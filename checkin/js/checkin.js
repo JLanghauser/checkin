@@ -1,3 +1,6 @@
-function showReg() {
-    document.getElementById("regElements").style.display = "";
+var escape = document.createElement('textarea');
+
+function escapeHTML(html) {
+    escape.textContent = html;
+    return escape.innerHTML;
 }

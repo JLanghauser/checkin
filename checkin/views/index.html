@@ -5,11 +5,17 @@
 {% if user %}
   <h1>Welcome home {{ user.username }}</h1>
 
-  <div id='disp'>
-    {{ user.profile }}
+  <div class="row">
+    <div class="col-sm-6 col-md-4">
+      <div class="thumbnail">
+        {% autoescape off %}{{ user.profile }}{% endautoescape %}
+      </div>
+    </div>
   </div>
+
   <script>
-    document.getElementById("#disp").innerHTML = {{ user.profile }};
+    //var raw =
+    //document.getElementById("disp").innerHTML = raw;
   </script>
 {% endif %}
 

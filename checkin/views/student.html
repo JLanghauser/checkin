@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Student Page</h1>
+
+{% for profile in profiles %}
+<div class="row">
+  <div class="col-sm-6 col-md-4">
+    <div class="thumbnail">
+      {% autoescape off %}{{ profile }}{% endautoescape %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock %}
