@@ -5,6 +5,9 @@ from google.appengine.ext import ndb
 
 from webapp2_extras import security
 
+from urllib import pathname2url
+
+
 def user_required(handler):
   """
     Decorator that checks if there's a user associated with the current session.
@@ -13,7 +16,8 @@ def user_required(handler):
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if not auth.get_user_by_session():
-      self.redirect(self.uri_for('sign_in'), abort=True)
+     
+      self.redirect(self.uri_for('sign_in') + '?params=' + self.request.url, abort=True)
     else:
       return handler(self, *args, **kwargs)
 

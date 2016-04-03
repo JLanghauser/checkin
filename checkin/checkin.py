@@ -45,14 +45,17 @@ class SignInHandler(BaseHandler):
     def handlerequest(self):
         raw_password = self.request.get('password')
         login = self.request.get('username')
+        redirect_url = self.request.get('redirect_to','')
         tmp_user = User.get_by_username(login)
 
         if tmp_user:
             user_id = tmp_user.get_id()
-
             if security.check_password_hash(raw_password,tmp_user.password):
                 self.auth.set_session(self.auth.store.user_to_dict(tmp_user))
-                self.redirect(self.uri_for('home'), abort=False)
+                if (redirect_url):
+                    self.redirect(redirect_url, abort=False)
+                else:
+                    self.redirect(self.uri_for('home'), abort=False)
             else:
                 self.render_template('error_page.html')
 
