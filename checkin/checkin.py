@@ -167,7 +167,7 @@ class UserHandler(BaseHandler):
             newuser = User()
             newuser.username = username
             newuser.set_password(password)
-            newuser.is_admin = is_admin
+            newuser.is_admin = is_admin in ['true', 'True', '1']
             newuser.profile = '<h1>Put some bio information here</h1>'
             newuser.email = email
             newuser.put()
