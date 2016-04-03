@@ -4,10 +4,10 @@
 
 <h1>Edit your profile</h1>
 
-<form action="/edit" method="post">
+<form action="/edit" method="post" id = "usrform">
   <div>
-    <textarea rows="10" cols="50" name="profile" >
-      {{ user.profile }}
+    <textarea rows="10" cols="50" name="profile" id="profile" form="usrform">
+      {% autoescape off %} {{ user.profile }} {% endautoescape %}
     </textarea>
   </div>
   <div>

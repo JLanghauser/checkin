@@ -2,6 +2,7 @@
 import cgi
 import datetime
 import webapp2
+from array import *
 from basehandler import *
 from auth_helpers import *
 from google.appengine.ext import ndb
@@ -26,17 +27,32 @@ class MainPage(BaseHandler):
         self.render_template('index.html')
 
 
-class StudentsHandler(BaseHandler):
+class StudentHandler(BaseHandler):
     def handlerequest(self):
         visitor_id = self.request.get('visitor_id','')
-        self.render_template('students.html')
+        if (visitor_id == ''):
+            self.render_template('error_page.html')
+        else:
+            qry = Visitor.query(Visitor.visitor_id == visitor_id)
+            visitor = qry.get()
+            vkey = visitor.key
+            maps = MapUserToVisitor.query(MapUserToVisitor.visitor_key == vkey).fetch()
+            profiles = []
+
+            for map_item in maps:
+                ukey = map_item.user_key
+                u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
+                profiles.append(u.profile)
+
+            params = {'profiles': profiles}
+            self.render_template('student.html',params)
 
     def get(self):
         visitor_id = self.request.get('visitor_id','')
         if (visitor_id == ''):
             self.render_template('studentlogin.html')
         else:
-            self.render_template('students.html')
+            self.handlerequest()
 
     def post(self):
         self.handlerequest()
@@ -81,12 +97,15 @@ class SignOutHandler(BaseHandler):
 
 class UserEditHandler(BaseHandler):
     def handlerequest(self):
-        profile = self.request.get('profile',-1)
-        if (profile == -1):
+        profile_param = self.request.get('profile',-1)
+        if (profile_param == -1):
             self.render_template('edit_user.html')
         else:
-            self.user.profile = profile
+            self.user.profile = profile_param.strip()
             self.user.put()
+            tmpuser = self.user
+            self.auth.unset_session();
+            self.auth.set_session(self.auth.store.user_to_dict(tmpuser))
             self.redirect(self.uri_for('home'), abort=False)
 
     @user_required
@@ -149,6 +168,7 @@ class UserHandler(BaseHandler):
             newuser.username = username
             newuser.set_password(password)
             newuser.is_admin = is_admin
+            newuser.profile = '<h1>Put some bio information here</h1>'
             newuser.email = email
             newuser.put()
 
@@ -225,7 +245,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
     webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
-    webapp2.Route('/students', StudentsHandler, name='students'),
+    webapp2.Route('/student', StudentHandler, name='student'),
     webapp2.Route('/admin_panel/users', UserListHandler, name='user_list'),
     webapp2.Route('/admin_panel/user', UserHandler, name='new_user'),
     webapp2.Route('/admin_panel/visitor', VisitorHandler, name='new_visitor'),
