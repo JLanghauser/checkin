@@ -27,6 +27,12 @@
   </head>
 
   <body>
+  <div class="content">
+    <div class="row orangebg">
+		<div>
+			<img class="center-block logo" src="img/logo.png">
+		</div>
+	</div>
   {% if flash_message and success %}
     <div class="alert alert-success" role="alert">
       {{ flash_message }}
@@ -44,13 +50,7 @@
       {% endif %}
     {% endif %}
   {% endif %}
-
-  <div class="content">
-    <div class="row orangebg">
-		<div>
-			<img class="center-block logo" src="img/logo.png">
-		</div>
-	</div>
+  
     {% block maincontent %}
 
     {% endblock %}
