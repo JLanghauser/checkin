@@ -43,7 +43,7 @@ class StudentHandler(BaseHandler):
             for map_item in maps:
                 ukey = map_item.user_key
                 u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
-                profiles.append("<h2> Vendor: " + u.vendorname + "</h2>" + u.profile)
+                profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
 
             params = {'profiles': profiles}
             self.render_template('student.html',params)
