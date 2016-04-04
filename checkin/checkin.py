@@ -8,6 +8,7 @@ from auth_helpers import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
 from random import randint
+import unicodedata
 
 class Visitor(ndb.Model):
     visitor_id = ndb.TextProperty(indexed=True)
@@ -42,7 +43,7 @@ class StudentHandler(BaseHandler):
             for map_item in maps:
                 ukey = map_item.user_key
                 u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
-                profiles.append(u.profile)
+                profiles.append("<h2> Vendor: " + u.vendorname + "</h2>" + u.profile)
 
             params = {'profiles': profiles}
             self.render_template('student.html',params)
@@ -61,31 +62,36 @@ class SignInHandler(BaseHandler):
     def handlerequest(self):
         raw_password = self.request.get('password')
         login = self.request.get('username')
-        redirect_url = self.request.get('redirect_to','')
+        redirect_to = self.request.get('redirect_to','')
         tmp_user = User.get_by_username(login)
 
         if tmp_user:
             user_id = tmp_user.get_id()
             if security.check_password_hash(raw_password,tmp_user.password):
                 self.auth.set_session(self.auth.store.user_to_dict(tmp_user))
-                if (redirect_url):
-                    self.redirect(redirect_url, abort=False)
+
+                if (redirect_to != ''):
+                    self.redirect(unicodedata.normalize('NFKD', redirect_to).encode('ascii','ignore'), abort=False)
                 else:
                     self.redirect(self.uri_for('home'), abort=False)
             else:
-                self.render_template('error_page.html')
+                params = {'error': "true",'flash_message' : "Error signing in - please try again"}
+                self.render_template('sign_in.html',params)
 
         else:
-            self.render_template('error_page.html')
+            params = {'error': "true",'flash_message' : "Error signing in - please try again"}
+            self.render_template('sign_in.html',params)
 
     def get(self):
         raw_password = self.request.get('password','')
         login = self.request.get('username','')
+        redirect_to = self.request.get('redirect_to','')
 
         if (raw_password != '' and login != ''):
             self.handlerequest()
         else:
-            self.render_template('sign_in.html')
+            params = {'redirect_to': redirect_to}
+            self.render_template('sign_in.html',params)
 
     def post(self):
         self.handlerequest()
@@ -127,12 +133,22 @@ class CheckInHandler(BaseHandler):
             qry = Visitor.query(Visitor.visitor_id == visitor_id)
             visitor = qry.get()
             if (visitor):
-                new_map.visitor_key = visitor.key
-                new_map.put()
-                params = {'visitor_id': visitor_id}
-                self.render_template('successful_checkin.html',params)
+                maps = MapUserToVisitor.query(ndb.AND(
+                            MapUserToVisitor.visitor_key == visitor.key,
+                            MapUserToVisitor.user_key == self.user.key)
+                        ).count(1)
+
+                if (maps == 0):
+                    new_map.visitor_key = visitor.key
+                    new_map.put()
+                    params = {'visitor_id': visitor_id}
+                    self.render_template('successful_checkin.html',params)
+                else:
+                    params = {'error': "true", 'flash_message' : "You've already checked in visitor " + visitor_id}
+                    self.render_template('checkin_visitor.html',params)
             else:
-                self.render_template('error_page.html')
+                params = {'error': "true", 'flash_message' : "Cannot find visitor " + visitor_id}
+                self.render_template('checkin_visitor.html',params)
 
     @user_required
     def get(self):
@@ -155,6 +171,7 @@ class UserHandler(BaseHandler):
     @admin_required
     def post(self):
         username = self.request.get('username')
+        vendorname = self.request.get('vendorname')
         password = self.request.get('password')
         is_admin = self.request.get('admin')
         email = self.request.get('email')
@@ -168,11 +185,13 @@ class UserHandler(BaseHandler):
             newuser.username = username
             newuser.set_password(password)
             newuser.is_admin = is_admin in ['true', 'True', '1']
-            newuser.profile = '<h1>Put some bio information here</h1>'
+            newuser.profile = '<h1>Edit your profile <a href = "/edit">here</a></h1>'
+            newuser.vendorname = vendorname
             newuser.email = email
             newuser.put()
 
-        self.render_template('success_page.html')
+            params = {'success': "true" , 'flash_message': "Successfully created User:  "  + newuser.username}
+            self.render_template('index.html',params)
 
 class VisitorListHandler(BaseHandler):
     @admin_required
@@ -231,7 +250,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username','email','profile']
+        'user_attributes': ['username','email','profile','is_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'

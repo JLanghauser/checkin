@@ -16,8 +16,8 @@ def user_required(handler):
   def check_login(self, *args, **kwargs):
     auth = self.auth
     if not auth.get_user_by_session():
-     
-      self.redirect(self.uri_for('sign_in') + '?params=' + self.request.url, abort=True)
+
+      self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
     else:
       return handler(self, *args, **kwargs)
 
@@ -43,6 +43,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     is_admin = ndb.BooleanProperty()
     username = ndb.StringProperty()
     profile = ndb.TextProperty()
+    vendorname = ndb.StringProperty()
 
     def set_password(self, raw_password):
         """Sets the password for the current user

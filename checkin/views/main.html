@@ -20,9 +20,28 @@
         display: block;
       }
     </style>
+    <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+    <script>tinymce.init({ selector:'textarea' });</script>
   </head>
 
   <body>
+  {% if flash_message and success %}
+    <div class="alert alert-success" role="alert">
+      {{ flash_message }}
+    </div>
+  {% else %}
+    {% if flash_message and warning %}
+    <div class="alert alert-warning" role="alert">
+      {{ flash_message }}
+    </div>
+    {% else %}
+      {% if flash_message and error %}
+        <div class="alert alert-danger" role="alert">
+          {{ flash_message }}
+        </div>
+      {% endif %}
+    {% endif %}
+  {% endif %}
 
   <div class="content">
     {% block maincontent %}
@@ -44,7 +63,7 @@
           <a href="/">Home</a>
           |
         {% endif %}
-        {% if user and user.is_admin == True %}
+        {% if user and user.is_admin%}
           <a href="/admin_panel/user">New user</a>
         |
           <a href="/admin_panel/visitor">New visitor</a>
