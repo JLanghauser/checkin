@@ -25,8 +25,11 @@ class ErrorPage(BaseHandler):
 class MainPage(BaseHandler):
     def get(self):
         user = self.user
-        params = {'userprofile': user.profile}
-        self.render_template('index.html',params)
+        if (user):
+            params = {'userprofile': user.profile}
+            self.render_template('index.html',params)
+        else:
+            self.render_template('index.html')
 
 
 class StudentHandler(BaseHandler):
