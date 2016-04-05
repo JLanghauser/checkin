@@ -24,8 +24,9 @@ class ErrorPage(BaseHandler):
 
 class MainPage(BaseHandler):
     def get(self):
-        auth = self.auth
-        self.render_template('index.html')
+        user = self.user
+        params = {'userprofile': user.profile}
+        self.render_template('index.html',params)
 
 
 class StudentHandler(BaseHandler):
@@ -105,7 +106,9 @@ class UserEditHandler(BaseHandler):
     def handlerequest(self):
         profile_param = self.request.get('profile',-1)
         if (profile_param == -1):
-            self.render_template('edit_user.html')
+            user = self.user
+            params = {'userprofile': user.profile}
+            self.render_template('edit_user.html',params)
         else:
             self.user.profile = profile_param.strip()
             self.user.put()
@@ -250,7 +253,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username','email','profile','is_admin']
+        'user_attributes': ['username','email','is_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'
