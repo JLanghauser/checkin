@@ -10,8 +10,28 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-- kind: Greeting
+- kind: MapUserToVisitor
+  properties:
+  - name: user_key
+    direction: desc
+
+- kind: MapUserToVisitor
+  properties:
+  - name: visitor_key
+    direction: desc
+
+- kind: User
+  properties:
+  - name: vendorname
+    direction: desc
+
+- kind: User
   ancestor: yes
   properties:
-  - name: date
+  - name: username
+    direction: desc
+
+- kind: Visitor
+  properties:
+  - name: visitor_id
     direction: desc
