@@ -43,11 +43,13 @@ class StudentHandler(BaseHandler):
             vkey = visitor.key
             maps = MapUserToVisitor.query(MapUserToVisitor.visitor_key == vkey).fetch()
             profiles = []
-
             for map_item in maps:
                 ukey = map_item.user_key
                 u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
-                profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
+                if ( "<h1>Edit your profile <a href=\"edit\">here</a></h1>" == u.profile):
+                    profiles.append("<h2>" + u.vendorname + "</h2>" + "<h3>This organization hasn't included any information)</h3>")
+                else:
+                    profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
 
             params = {'profiles': profiles}
             self.render_template('student.html',params)
@@ -206,10 +208,19 @@ class VisitorListHandler(BaseHandler):
 
 class VisitorHandler(BaseHandler):
     def handlerequest(self):
-        newvisitor = Visitor()
-        newvisitor.visitor_id = self.request.get('visitor_id')
-        newvisitor.put()
-        self.render_template('success_page.html')
+        visitor_id = self.request.get('visitor_id')
+
+        qry = Visitor.query(Visitor.visitor_id == visitor_id)
+        visitor = qry.get()
+        if (visitor is None):
+            newvisitor = Visitor()
+            newvisitor.visitor_id = visitor_id
+            newvisitor.put()
+            params = {'success': "true" , 'flash_message': "Successfully created Visitor:  "  + newvisitor.visitor_id}
+            self.render_template('index.html',params)
+        else:
+            params = {'error': "true" , 'flash_message': "Error - visitor "  + visitor_id  + " already exists!"}
+            self.render_template('add_visitor.html',params)
 
     @admin_required
     def get(self):
