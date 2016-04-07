@@ -46,7 +46,7 @@ class StudentHandler(BaseHandler):
             for map_item in maps:
                 ukey = map_item.user_key
                 u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
-                if ( "<h1>Edit your profile <a href=\"edit\">here</a></h1>" == u.profile):
+                if ( "<h1>Edit your profile" in u.profile and  ">here</a></h1>" in u.profile):
                     profiles.append("<h2>" + u.vendorname + "</h2>" + "<h3>This organization hasn't included any information)</h3>")
                 else:
                     profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
