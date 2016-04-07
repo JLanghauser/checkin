@@ -34,7 +34,8 @@ class MainPage(BaseHandler):
 
 class StudentHandler(BaseHandler):
     def handlerequest(self):
-        visitor_id = self.request.get('visitor_id','')
+        visitor_id = self.request.get('visitor_id','').strip()
+        
         if (visitor_id == ''):
             self.render_template('error_page.html')
         else:
