@@ -40,19 +40,24 @@ class StudentHandler(BaseHandler):
         else:
             qry = Visitor.query(Visitor.visitor_id == visitor_id)
             visitor = qry.get()
-            vkey = visitor.key
-            maps = MapUserToVisitor.query(MapUserToVisitor.visitor_key == vkey).fetch()
-            profiles = []
-            for map_item in maps:
-                ukey = map_item.user_key
-                u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
-                if ( "<h1>Edit your profile" in u.profile and  ">here</a></h1>" in u.profile and len(u.profile) < 60):
-                    profiles.append("<h2>" + u.vendorname + "</h2>" + "<h3>This organization hasn't included any information)</h3>")
-                else:
-                    profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
 
-            params = {'profiles': profiles}
-            self.render_template('student.html',params)
+            if (visitor):
+                vkey = visitor.key
+                maps = MapUserToVisitor.query(MapUserToVisitor.visitor_key == vkey).fetch()
+                profiles = []
+                for map_item in maps:
+                    ukey = map_item.user_key
+                    u = User.get_by_id(ukey.id(), parent=ukey.parent(), app=ukey.app(), namespace=ukey.namespace())
+                    if ( "<h1>Edit your profile" in u.profile and  ">here</a></h1>" in u.profile and len(u.profile) < 60):
+                        profiles.append("<h2>" + u.vendorname + "</h2>" + "<h3>This organization hasn't included any information)</h3>")
+                    else:
+                        profiles.append("<h2>" + u.vendorname + "</h2>" + u.profile)
+
+                params = {'profiles': profiles}
+                self.render_template('student.html',params)
+            else:
+                params = {'error': "true", 'flash_message' : "No such student " + visitor_id}
+                self.render_template('studentlogin.html',params)
 
     def get(self):
         visitor_id = self.request.get('visitor_id','')
