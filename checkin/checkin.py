@@ -10,10 +10,19 @@ from google.appengine.api import users
 from random import randint
 import unicodedata
 
+class Deployment(ndb.Model):
+    name = ndb.TextProperty(indexed=True)
+    slug = ndb.TextProperty(indexed=True)
+    custom_dns = ndb.TextProperty(indexed=True)
+    custom_subdomain = ndb.TextProperty(indexed=True)
+
+
 class Visitor(ndb.Model):
+    deployment = ndb.KeyProperty(kind=Deployment)
     visitor_id = ndb.TextProperty(indexed=True)
 
 class MapUserToVisitor (ndb.Model):
+    deployment = ndb.KeyProperty(kind=Deployment)
     user_key = ndb.KeyProperty(kind=User)
     visitor_key = ndb.KeyProperty(kind=Visitor)
 
@@ -35,7 +44,7 @@ class MainPage(BaseHandler):
 class StudentHandler(BaseHandler):
     def handlerequest(self):
         visitor_id = self.request.get('visitor_id','').strip()
-        
+
         if (visitor_id == ''):
             self.render_template('error_page.html')
         else:

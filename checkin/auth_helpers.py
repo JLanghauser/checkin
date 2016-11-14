@@ -39,8 +39,42 @@ def admin_required(handler):
         self.redirect(self.uri_for('error'), abort=True)
   return check_admin
 
+def deployment_admin_required(handler):
+  """
+    Decorator that checks if there's a user associated with the current session.
+    And that that user is an admin. Will also fail if there's no session present.
+  """
+  def check_deployment_admin(self, *args, **kwargs):
+    auth = self.auth
+    if not auth.get_user_by_session():
+      self.redirect(self.uri_for('sign_in'), abort=True)
+    else:
+      if (self.user.is_deployment_admin or self.user.is_super_admin):
+        return handler(self, *args, **kwargs)
+      else:
+        self.redirect(self.uri_for('error'), abort=True)
+  return check_deployment_admin
+
+def super_admin_required(handler):
+  """
+    Decorator that checks if there's a user associated with the current session.
+    And that that user is an admin. Will also fail if there's no session present.
+  """
+  def check_super_admin(self, *args, **kwargs):
+    auth = self.auth
+    if not auth.get_user_by_session():
+      self.redirect(self.uri_for('sign_in'), abort=True)
+    else:
+      if (self.user.is_super_admin):
+        return handler(self, *args, **kwargs)
+      else:
+        self.redirect(self.uri_for('error'), abort=True)
+  return check_super_admin
+
 class User(webapp2_extras.appengine.auth.models.User):
     is_admin = ndb.BooleanProperty()
+    is_super_admin = ndb.BooleanProperty()
+    is_deployment_admin = ndb.BooleanProperty()
     username = ndb.StringProperty()
     profile = ndb.TextProperty()
     vendorname = ndb.StringProperty()
