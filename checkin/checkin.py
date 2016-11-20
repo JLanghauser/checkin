@@ -16,13 +16,16 @@ class Deployment(ndb.Model):
     custom_dns = ndb.TextProperty(indexed=True)
     custom_subdomain = ndb.TextProperty(indexed=True)
 
+class MapAdminToDeployment (ndb.Model):
+    deployment_key = ndb.KeyProperty(kind=Deployment)
+    user_key = ndb.KeyProperty(kind=User)
 
 class Visitor(ndb.Model):
-    deployment = ndb.KeyProperty(kind=Deployment)
+    deployment_key = ndb.KeyProperty(kind=Deployment)
     visitor_id = ndb.TextProperty(indexed=True)
 
 class MapUserToVisitor (ndb.Model):
-    deployment = ndb.KeyProperty(kind=Deployment)
+    deployment_key = ndb.KeyProperty(kind=Deployment)
     user_key = ndb.KeyProperty(kind=User)
     visitor_key = ndb.KeyProperty(kind=Visitor)
 
@@ -42,13 +45,17 @@ class MainPage(BaseHandler):
 
 
 class StudentHandler(BaseHandler):
-    def handlerequest(self):
+    def handlerequest(self,deployment_slug):
         visitor_id = self.request.get('visitor_id','').strip()
 
-        if (visitor_id == ''):
+        if (visitor_id == '' or not deployment_slug):
             self.render_template('error_page.html')
         else:
-            qry = Visitor.query(Visitor.visitor_id == visitor_id)
+            deployment = Deployment.query(Deployment.slug == deployment_slug).get()
+            if not deployment:
+                self.render_template('error_page.html')
+
+            qry = Visitor.query(Visitor.visitor_id == visitor_id,Visitor.deployment_key == deployment.key)
             visitor = qry.get()
 
             if (visitor):
@@ -146,14 +153,21 @@ class UserEditHandler(BaseHandler):
         self.handlerequest()
 
 class CheckInHandler(BaseHandler):
-    def handlerequest(self):
+    def handlerequest(self,deployment_slug):
         visitor_id = self.request.get('visitor_id',-1)
-        if (visitor_id == -1):
+
+        if (visitor_id == -1 or deployment_slug == ''):
             self.render_template('checkin_visitor.html')
         else:
+            deployment = Deployment.query(Deployment.slug == deployment_slug).get()
+
+            if not deployment:
+                params = {'error': "true", 'flash_message' : "Cannot find deployment " + deployment_slug}
+                self.render_template('checkin_visitor.html',params)
+
             new_map = MapUserToVisitor()
             new_map.user_key = self.user.key
-            qry = Visitor.query(Visitor.visitor_id == visitor_id)
+            qry = Visitor.query(Visitor.visitor_id == visitor_id,Visitor.deployment_key == deployment.key)
             visitor = qry.get()
             if (visitor):
                 maps = MapUserToVisitor.query(ndb.AND(
@@ -163,6 +177,7 @@ class CheckInHandler(BaseHandler):
 
                 if (maps == 0):
                     new_map.visitor_key = visitor.key
+                    new_map.deployment_key = visitor.deployment_key
                     new_map.put()
                     params = {'visitor_id': visitor_id}
                     self.render_template('successful_checkin.html',params)
@@ -295,12 +310,12 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
-    webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
-    webapp2.Route('/student', StudentHandler, name='student'),
-    webapp2.Route('/admin_panel/users', UserListHandler, name='user_list'),
-    webapp2.Route('/admin_panel/user', UserHandler, name='new_user'),
-    webapp2.Route('/admin_panel/visitor', VisitorHandler, name='new_visitor'),
-    webapp2.Route('/admin_panel/visitors', VisitorListHandler, name='visitor_list'),
-    webapp2.Route('/admin_panel/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
-    webapp2.Route('/admin_panel/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
+    webapp2.Route('/<deployment_slug>/checkin_visitor', CheckInHandler, name='checkin'),
+    webapp2.Route('/<deployment_slug>/student', StudentHandler, name='student'),
+    webapp2.Route('/<deployment_slug>/admin_panel/users', UserListHandler, name='user_list'),
+    webapp2.Route('/<deployment_slug>/admin_panel/user', UserHandler, name='new_user'),
+    webapp2.Route('/<deployment_slug>/admin_panel/visitor', VisitorHandler, name='new_visitor'),
+    webapp2.Route('/<deployment_slug>/admin_panel/visitors', VisitorListHandler, name='visitor_list'),
+    webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
+    webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
 ], config=config, debug=True)
