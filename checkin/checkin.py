@@ -16,7 +16,7 @@ class Deployment(ndb.Model):
     custom_dns = ndb.TextProperty(indexed=True)
     custom_subdomain = ndb.TextProperty(indexed=True)
 
-class MapAdminToDeployment (ndb.Model):
+class MapUserToDeployment (ndb.Model):
     deployment_key = ndb.KeyProperty(kind=Deployment)
     user_key = ndb.KeyProperty(kind=User)
 
@@ -38,7 +38,7 @@ class MainPage(BaseHandler):
     def get(self):
         user = self.user
         if (user):
-            params = {'userprofile': user.profile}
+            params = {'userprofile': user.profile, 'user' : user}
             self.render_template('index.html',params)
         else:
             self.render_template('index.html')
@@ -196,10 +196,10 @@ class CheckInHandler(BaseHandler):
     def post(self):
         self.handlerequest()
 
-class UserListHandler(BaseHandler):
+class UsersHandler(BaseHandler):
     @admin_required
     def get(self):
-        self.render_template('list_users.html')
+        self.render_template('users_index.html')
 
 class UserHandler(BaseHandler):
     @admin_required
@@ -264,7 +264,6 @@ class VisitorHandler(BaseHandler):
     def post(self):
         self.handlerequest();
 
-
 class RandomVisitorHandler(BaseHandler):
     @admin_required
     def get(self):
@@ -288,6 +287,66 @@ class RandomVisitorHandler(BaseHandler):
             counter = counter + 1
 
 
+class DeploymentsHandler(BaseHandler):
+    @super_admin_required
+    def get(self):
+        editing_slug = self.request.get('editing_slug','')
+        deployments = Deployment.query()
+        params = {'deployments': deployments, 'editing_slug' : editing_slug}
+        self.render_template('deployments_index.html',params)
+
+    @super_admin_required
+    def post(self):
+        name = self.request.get('name')
+        slug = self.request.get('slug')
+        custom_dns = self.request.get('custom_dns')
+        custom_subdomain = self.request.get('custom_subdomain')
+
+        tmp_deployment = Deployment.query(Deployment.slug == slug).fetch(1)
+
+        if tmp_deployment and len(tmp_deployment) :
+            deployments = Deployment.query()
+            params = {'error': "true" , 'flash_message': "Error - already exists!", 'deployments' : deployments}
+            self.render_template('deployments_index.html',params)
+        else:
+            newdeployment = Deployment()
+            newdeployment.name = name
+            newdeployment.slug = slug
+            newdeployment.custom_dns = custom_dns
+            newdeployment.custom_subdomain = custom_subdomain
+            newdeployment.put()
+
+            deployments = Deployment.query()
+            params = {'success': "true" , 'flash_message': "Successfully created Deployment:  "  + newdeployment.name, 'deployments' : deployments}
+            self.render_template('deployments_index.html',params)
+
+class DeploymentHandler(BaseHandler):
+    @super_admin_required
+    def get(self,deployment_slug):
+        deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
+        params = {'deployment': deployment}
+        self.render_template('deployment_index.html',params)
+
+    @super_admin_required
+    def post(self,deployment_slug):
+        name = self.request.get('name')
+        slug = self.request.get('slug')
+        custom_dns = self.request.get('custom_dns')
+        custom_subdomain = self.request.get('custom_subdomain')
+
+        existing_deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
+        if not existing_deployment or len(existing_deployment) < 1:
+            params = {'error': "true" , 'flash_message': "Error - doesn't exist!"}
+            self.render_template('deployments_index.html',params)
+            return
+
+        existing_deployment = existing_deployment[0]
+
+        deployments = Deployment.query()
+        params = {'success': "true" , 'flash_message': "Successfully update Deployment:  "  + existing_deployment.name, 'deployments' : deployments}
+        self.render_template('deployments_index.html',params)
+
+
 class MapUserToVisitorHandler(BaseHandler):
     @admin_required
     def get(self):
@@ -297,7 +356,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username','email','is_admin']
+        'user_attributes': ['username','email','is_super_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'
@@ -310,9 +369,12 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
+    webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
+    webapp2.Route('/deployments/<deployment_slug>', DeploymentHandler, name='deployment'),
+    webapp2.Route('/users', UsersHandler, name='users'),
+
     webapp2.Route('/<deployment_slug>/checkin_visitor', CheckInHandler, name='checkin'),
     webapp2.Route('/<deployment_slug>/student', StudentHandler, name='student'),
-    webapp2.Route('/<deployment_slug>/admin_panel/users', UserListHandler, name='user_list'),
     webapp2.Route('/<deployment_slug>/admin_panel/user', UserHandler, name='new_user'),
     webapp2.Route('/<deployment_slug>/admin_panel/visitor', VisitorHandler, name='new_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/visitors', VisitorListHandler, name='visitor_list'),

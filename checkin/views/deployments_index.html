@@ -1,0 +1,94 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Deployments</h1>
+
+<h2> Current Deployments: </h2>
+{% for deployment in deployments %}
+  {% if deployment.slug == editing_slug  %}
+    <div class="row">
+      <form action="/deployments/{{ deployment.slug }}" method="POST">
+        <div class="col-sm-1">
+          <input type="text" name="name" value = "{{ deployment.name }}" />
+        </div>
+        <div class="col-sm-1">
+          <input type="text" name="slug" value = "{{ deployment.slug }}" />
+        </div>
+        <div class="col-sm-1">
+          <input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" />
+        </div>
+        <div class="col-sm-1">
+          <input type="text" name="custom_subdomain" value = "{{ deployment.custom_subdomain }}" />
+        </div>
+        <div class="col-sm-1">
+          <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
+          <input type="submit" value="Update" />
+        </div>
+      </form>
+    </div>
+  {% else %}
+    <div class="row">
+      <div class="col-sm-1">
+        {{ deployment.name }}
+      </div>
+      <div class="col-sm-1">
+        {{ deployment.slug }}
+      </div>
+      <div class="col-sm-1">
+        {{ deployment.custom_dns }}
+      </div>
+      <div class="col-sm-1">
+        {{ deployment.custom_subdomain }}
+      </div>
+      <div class="col-sm-1">
+        <form action="/deployments" method="GET">
+          <input type="hidden" name="editing_slug" value="{{deployment.slug}}">
+          <input type="submit" value="Edit" />
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+{% endfor %}
+
+<h2> Add New Deployment: </h2>
+<div class="row">
+  <div class="col-sm-1">
+    Name
+  </div>
+  <div class="col-sm-1">
+    Slug
+  </div>
+  <div class="col-sm-1">
+    Hostname
+  </div>
+  <div class="col-sm-1">
+    Subdomain
+  </div>
+  <div class="col-sm-1">
+    Submit
+  </div>
+</div>
+<div class="row">
+  <form action="/deployments" method="POST">
+    <div class="col-sm-1">
+      <input type="text" name="name" />
+    </div>
+    <div class="col-sm-1">
+      <input type="text" name="slug" />
+    </div>
+    <div class="col-sm-1">
+      <input type="text" name="custom_dns" />
+    </div>
+    <div class="col-sm-1">
+      <input type="text" name="custom_subdomain" />
+    </div>
+    <div class="col-sm-1">
+      <input type="submit" value="Create" />
+    </div>
+  </form>
+</div>
+
+
+{% endblock %}

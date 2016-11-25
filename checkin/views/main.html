@@ -93,7 +93,9 @@
           <a href="/">Home</a>
           |
         {% endif %}
-        {% if user and user.is_admin%}
+        {% if user and user.is_super_admin %}
+        <a href="/deployments">Manage Deployments</a>
+        |
           <a href="/admin_panel/user">New user</a>
         |
           <a href="/admin_panel/visitor">New visitor</a>
