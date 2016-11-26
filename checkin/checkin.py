@@ -9,6 +9,7 @@ from google.appengine.ext import ndb
 from google.appengine.api import users
 from random import randint
 import unicodedata
+from time import sleep
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -316,6 +317,7 @@ class DeploymentsHandler(BaseHandler):
             newdeployment.custom_subdomain = custom_subdomain
             newdeployment.put()
 
+            sleep(0.5)
             deployments = Deployment.query()
             params = {'success': "true" , 'flash_message': "Successfully created Deployment:  "  + newdeployment.name, 'deployments' : deployments}
             self.render_template('deployments_index.html',params)
@@ -341,7 +343,7 @@ class DeploymentHandler(BaseHandler):
             return
 
         existing_deployment = existing_deployment[0]
-
+        sleep(0.5)
         deployments = Deployment.query()
         params = {'success': "true" , 'flash_message': "Successfully update Deployment:  "  + existing_deployment.name, 'deployments' : deployments}
         self.render_template('deployments_index.html',params)
@@ -356,7 +358,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username','email','is_super_admin']
+        'user_attributes': ['username','email','is_super_admin', 'is_deployment_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'

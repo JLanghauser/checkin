@@ -94,15 +94,29 @@
           |
         {% endif %}
         {% if user and user.is_super_admin %}
-        <a href="/deployments">Manage Deployments</a>
-        |
-          <a href="/admin_panel/user">New user</a>
-        |
-          <a href="/admin_panel/visitor">New visitor</a>
-        |
-          <a href="/admin_panel/get_random_visitor">Run Raffle</a>
-        |
-          <a href="/student">Student View</a>
+        <div class="row" style="margin-left:0px;" >
+            <a href="/deployments">Manage Deployments</a>
+          |
+            <a href="/admin_panel/user">Manage Users</a>
+          |
+            <a href="/sudo/admins">Admin View</a>
+        </div>
+        {% endif %}
+
+        {% if user and user.is_deployment_admin %}
+        <div class="row" style="margin-left:0px;" >
+            <a href="/deployments">Manage Deployments</a>
+          |
+            <a href="/admin_panel/user">Manage Users</a>
+          |
+            <a href="/admin_panel/visitor">Manage Visitors</a>
+          |
+            <a href="/admin_panel/get_random_visitor">Run Raffle</a>
+          |
+            <a href="/sudo/users">User View</a>
+          |
+            <a href="/sudo/students">Visitor View</a>
+        </div>
         {% endif %}
 
       </p>
