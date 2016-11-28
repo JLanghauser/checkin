@@ -10,6 +10,7 @@ from google.appengine.api import users
 from random import randint
 import unicodedata
 from time import sleep
+import csv
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -198,28 +199,49 @@ class CheckInHandler(BaseHandler):
         self.handlerequest()
 
 class UsersHandler(BaseHandler):
-    @admin_required
+    @deployment_admin_required
     def get(self):
-        self.render_template('users_index.html')
+        editing_username = self.request.get('editing_username','')
+        users = User.query()
+        params = {'users': users, 'editing_username' : editing_username}
+        self.render_template('users_index.html',params)
 
-class UserHandler(BaseHandler):
-    @admin_required
-    def get(self):
-        self.render_template('add_user.html')
-
-    @admin_required
+    @deployment_admin_required
     def post(self):
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
         is_admin = self.request.get('admin')
         email = self.request.get('email')
+        bulkfile = self.request.get('bulkfile')
+
+        if bulkfile:
+            params = {}
+            out_str = ''
+            try:
+                #dialect = csv.Sniffer().sniff(bulkfile)
+                #reader = csv.reader(bulkfile, dialect)
+                reader = csv.reader(bulkfile)
+                for row in reader:
+                    print(', '.join(row))
+            except csv.Error as e:
+                params = {'error': "true", 'flash_message' : "File Error - line %d: %s" % (reader.line_num, e)}
+            except:
+                params = {'error': "true", 'flash_message' : "Unknown file error - please use a CSV"}
+
+            self.render_template('users_index.html',params)
+            return
 
         tmp_user = User.get_by_username(username)
 
         if tmp_user:
             self.render_template('error_page.html')
         else:
+            if not username:
+                params = {'error': "true", 'flash_message' : "username cannot be blank"}
+                self.render_template('users_index.html',params)
+                return
+
             newuser = User()
             newuser.username = username
             newuser.set_password(password)
@@ -230,7 +252,12 @@ class UserHandler(BaseHandler):
             newuser.put()
 
             params = {'success': "true" , 'flash_message': "Successfully created User:  "  + newuser.username}
-            self.render_template('index.html',params)
+            self.render_template('users_.html',params)
+
+class UserHandler(BaseHandler):
+    @deployment_admin_required
+    def post(self):
+        self.render_template('error_page.html')
 
 class VisitorListHandler(BaseHandler):
     @admin_required
@@ -289,7 +316,7 @@ class RandomVisitorHandler(BaseHandler):
 
 
 class DeploymentsHandler(BaseHandler):
-    @super_admin_required
+    @deployment_admin_required
     def get(self):
         editing_slug = self.request.get('editing_slug','')
         deployments = Deployment.query()
@@ -323,13 +350,7 @@ class DeploymentsHandler(BaseHandler):
             self.render_template('deployments_index.html',params)
 
 class DeploymentHandler(BaseHandler):
-    @super_admin_required
-    def get(self,deployment_slug):
-        deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
-        params = {'deployment': deployment}
-        self.render_template('deployment_index.html',params)
-
-    @super_admin_required
+    @deployment_admin_required
     def post(self,deployment_slug):
         name = self.request.get('name')
         slug = self.request.get('slug')

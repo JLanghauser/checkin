@@ -1,22 +1,123 @@
-{% extends "main.html" %}
+{% extends "main.html" %} {% block maincontent %}
 
-{% block title %}Register a new user{% endblock %}
+<h1>Deployments</h1>
 
-{% block maincontent %}
-
-<h1>Register a new user</h1>
-<form action="/user" method="POST">
-<label for="username">Username</label>
-<input type="text" name="username" />
-<label for="email">Email address</label>
-<input type="text" name="email" />
-<label for="vendorname">Vendor Name</label>
-<input type="text" name="vendorname" />
-<label for="password">Password</label>
-<input type="password" name="password" />
-<label for="admin">Admin</label>
-<input type="checkbox" name="admin" />
-<input type="submit" value="Create user" />
+<h2> Current Users: </h2>
+<div class="row">
+    <div class="col-sm-1">
+        Username
+    </div>
+    <div class="col-sm-1">
+        Email address
+    </div>
+    <div class="col-sm-1">
+        Vendor Name
+    </div>
+    <div class="col-sm-1">
+        Password
+    </div>
+    <div class="col-sm-1">
+        Admin
+    </div>
+</div>
+{% for user in users %}
+  {% if user.username == editing_username %}
+<div class="row">
+    <form action="/users/{{ username }}" method="POST">
+        <div class="col-sm-1">
+            <input type="text" name="username" value="{{ user.username }}" />
+        </div>
+        <div class="col-sm-1">
+            <input type="text" name="email" value="{{ user.email }}" />
+        </div>
+        <div class="col-sm-1">
+            <input type="text" name="vendorname" value="{{ user.vendorname }}" />
+        </div>
+        <div class="col-sm-1">
+            <input type="text" name="password" value="....." />
+        </div>
+        <div class="col-sm-1">
+            <input type="checkbox" name="admin" checked="{{ user.admin }}" />
+        </div>
+        <div class="col-sm-1">
+            <input type="hidden" name="user_id" value="{{ user.key.id }}" />
+            <input type="submit" value="Edit" />
+        </div>
+    </form>
+</div>
+{% else %}
+<div class="row">
+    <div class="col-sm-1">
+        {{ user.username }}
+    </div>
+    <div class="col-sm-1">
+        {{ user.email }}
+    </div>
+    <div class="col-sm-1">
+        {{ user.vendorname }}
+    </div>
+    <div class="col-sm-1">
+        ...
+    </div>
+    <div class="col-sm-1">
+        {{ user.is_deployment_admin }}
+    </div>
+    <div class="col-sm-1">
+        <form action="/users" method="GET">
+            <input type="hidden" name="editing_username" value="{{user.username}}">
+            <input type="submit" value="Edit" />
+        </form>
+    </div>
+</div>
+{% endif %} {% endfor %} {% if user and user.is_super_admin %}
+<h2> Add New User: </h2>
+<div class="row">
+    <div class="col-sm-1">
+        Username
+    </div>
+    <div class="col-sm-1">
+        Email address
+    </div>
+    <div class="col-sm-1">
+        Vendor Name
+    </div>
+    <div class="col-sm-1">
+        Password
+    </div>
+    <div class="col-sm-1">
+        Admin
+    </div>
+    <div class="col-sm-1">
+        Submit
+    </div>
+</div>
+<div class="row">
+    <form action="/users" method="POST">
+        <div class="col-sm-1">
+            <input type="text" name="username" />
+        </div>
+        <div class="col-sm-1">
+            <input type="text" name="email" />
+        </div>
+        <div class="col-sm-1">
+            <input type="text" name="vendorname" />
+        </div>
+        <div class="col-sm-1">
+            <input type="password" name="password" />
+        </div>
+        <div class="col-sm-1">
+            <input type="checkbox" name="is_deployment_admin" />
+        </div>
+        <div class="col-sm-1">
+            <input type="submit" value="Create" />
+        </div>
+    </form>
+</div>
+{% endif %}
+<h2> Add Bulk Users </h2>
+<form enctype="multipart/form-data" action="/users" method="post">
+    <label for="filename">Filename</label>
+    <input id="bulkfile" type="file" name="bulkfile" />
+    <input type="submit" value="Upload" />
 </form>
-
 {% endblock %}

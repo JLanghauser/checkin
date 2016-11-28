@@ -55,14 +55,17 @@ def deployment_admin_required(handler):
     else:
       if (self.user.is_super_admin):
         return handler(self, *args, **kwargs)
-      elif (self.user.is_deployment_admin and 'deployment_key' in kwargs):
-        keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
-        mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
+      elif (self.user.is_deployment_admin):
+        if 'deployment_key' in kwargs:
+            keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
+            mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
                                           MapUserToDeployment.user_key == self.user.key).fetch()
-        if count(mapped_users) > 0:
-            return handler(self, *args, **kwargs)
+            if count(mapped_users) > 0:
+             return handler(self, *args, **kwargs)
+            else:
+             self.redirect(self.uri_for('error'), abort=True)
         else:
-            self.redirect(self.uri_for('error'), abort=True)
+            return handler(self, *args, **kwargs)
       else:
         self.redirect(self.uri_for('error'), abort=True)
   return check_deployment_admin

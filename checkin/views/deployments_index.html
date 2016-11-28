@@ -52,43 +52,44 @@
 
 {% endfor %}
 
-<h2> Add New Deployment: </h2>
-<div class="row">
-  <div class="col-sm-1">
-    Name
-  </div>
-  <div class="col-sm-1">
-    Slug
-  </div>
-  <div class="col-sm-1">
-    Hostname
-  </div>
-  <div class="col-sm-1">
-    Subdomain
-  </div>
-  <div class="col-sm-1">
-    Submit
-  </div>
-</div>
-<div class="row">
-  <form action="/deployments" method="POST">
+{% if user and user.is_super_admin %}
+  <h2> Add New Deployment: </h2>
+  <div class="row">
     <div class="col-sm-1">
-      <input type="text" name="name" />
+      Name
     </div>
     <div class="col-sm-1">
-      <input type="text" name="slug" />
+      Slug
     </div>
     <div class="col-sm-1">
-      <input type="text" name="custom_dns" />
+      Hostname
     </div>
     <div class="col-sm-1">
-      <input type="text" name="custom_subdomain" />
+      Subdomain
     </div>
     <div class="col-sm-1">
-      <input type="submit" value="Create" />
+      Submit
     </div>
-  </form>
-</div>
-
+  </div>
+  <div class="row">
+    <form action="/deployments" method="POST">
+      <div class="col-sm-1">
+        <input type="text" name="name" />
+      </div>
+      <div class="col-sm-1">
+        <input type="text" name="slug" />
+      </div>
+      <div class="col-sm-1">
+        <input type="text" name="custom_dns" />
+      </div>
+      <div class="col-sm-1">
+        <input type="text" name="custom_subdomain" />
+      </div>
+      <div class="col-sm-1">
+        <input type="submit" value="Create" />
+      </div>
+    </form>
+  </div>
+{% endif %}
 
 {% endblock %}
