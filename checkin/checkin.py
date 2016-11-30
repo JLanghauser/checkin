@@ -11,6 +11,7 @@ from random import randint
 import unicodedata
 from time import sleep
 import csv
+import StringIO
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -199,6 +200,25 @@ class CheckInHandler(BaseHandler):
         self.handlerequest()
 
 class UsersHandler(BaseHandler):
+    def add_user(self,username, vendorname, password, is_admin, email):
+        tmp_user = User.get_by_username(username)
+
+        if tmp_user:
+            return "Error - user " + username + " already exists."
+        else:
+            if not username:
+                return "Error - username cannot be blank."
+
+            newuser = User()
+            newuser.username = username
+            newuser.vendorname = vendorname
+            newuser.set_password(password)
+            newuser.is_admin = is_admin in ['true', 'True', '1']
+            newuser.profile = '<h1>Edit your profile <a href = "/edit">here</a></h1>'
+            newuser.email = email
+            newuser.put()
+            return ""
+
     @deployment_admin_required
     def get(self):
         editing_username = self.request.get('editing_username','')
@@ -218,41 +238,51 @@ class UsersHandler(BaseHandler):
         if bulkfile:
             params = {}
             out_str = ''
+            reader = None
             try:
-                #dialect = csv.Sniffer().sniff(bulkfile)
-                #reader = csv.reader(bulkfile, dialect)
-                reader = csv.reader(bulkfile)
+                file_stream = StringIO.StringIO(bulkfile)
+                dialect = csv.Sniffer().sniff(file_stream.read(1024))
+                file_stream.seek(0)
+                has_headers = csv.Sniffer().has_header(file_stream.read(1024))
+                file_stream.seek(0)
+                reader = csv.reader(file_stream, dialect)
+                skipped_header_row = False
+
+                count = 0
                 for row in reader:
-                    print(', '.join(row))
-            except csv.Error as e:
-                params = {'error': "true", 'flash_message' : "File Error - line %d: %s" % (reader.line_num, e)}
-            except:
-                params = {'error': "true", 'flash_message' : "Unknown file error - please use a CSV"}
-
-            self.render_template('users_index.html',params)
-            return
-
-        tmp_user = User.get_by_username(username)
-
-        if tmp_user:
-            self.render_template('error_page.html')
-        else:
-            if not username:
-                params = {'error': "true", 'flash_message' : "username cannot be blank"}
+                    if not skipped_header_row:
+                        skipped_header_row = True
+                    else:
+                        retval = self.add_user(username=row[0],vendorname=row[2],password=row[3],is_admin=row[4],email=row[1])
+                        count = count +1
+                        if retval is not "":
+                            params = {'error': "true", 'flash_message' : retval}
+                            self.render_template('users_index.html',params)
+                            return
+                params = {'success': "true", 'flash_message' : "Successfully added " + str(count) + " users."}
                 self.render_template('users_index.html',params)
                 return
+            except csv.Error as e:
+                if reader:
+                    params = {'error': "true", 'flash_message' : "File Error - line %d: %s" % (reader.line_num, e)}
+                else:
+                    params = {'error': "true", 'flash_message' : "Please verify file format - standard CSV with a header row."}
 
-            newuser = User()
-            newuser.username = username
-            newuser.set_password(password)
-            newuser.is_admin = is_admin in ['true', 'True', '1']
-            newuser.profile = '<h1>Edit your profile <a href = "/edit">here</a></h1>'
-            newuser.vendorname = vendorname
-            newuser.email = email
-            newuser.put()
+                self.render_template('users_index.html',params)
+                return
+            except:
+                params = {'error': "true", 'flash_message' : "Unknown file error - please use a standard CSV with a header row."}
+                self.render_template('users_index.html',params)
+                return
+        else:
+            retval = self.add_user(username=username,vendorname=vendorname,password=password,is_admin=is_admin,email=email)
 
-            params = {'success': "true" , 'flash_message': "Successfully created User:  "  + newuser.username}
-            self.render_template('users_.html',params)
+            if retval is not "":
+                params = {'error': "true", 'flash_message' : retval }
+            else:
+                params = {'Success': "true", 'flash_message' : "Successfully created User:  "  + username}
+
+            self.render_template('users_index.html',params)
 
 class UserHandler(BaseHandler):
     @deployment_admin_required
