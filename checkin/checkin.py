@@ -199,7 +199,38 @@ class CheckInHandler(BaseHandler):
     def post(self):
         self.handlerequest()
 
+
 class UsersHandler(BaseHandler):
+    def edit_user(self,old_username,new_username, vendorname, password, is_admin, email):
+        edit_user = User.get_by_username(old_username)
+        users = User.query()
+
+        if edit_user:
+            if not (new_username.lower() == old_username.lower()):
+                tmp_user = User.get_by_username(new_username)
+
+                if tmp_user:
+                    params = {'users': users,'error': "true", 'flash_message' : "Error - user " + new_username + " already exists."}
+                    self.render_template('users_index.html',params)
+                    return
+                edit_user.username = new_username
+
+            edit_user.vendorname = vendorname
+
+            if not (password == "..."):
+                edit_user.set_password(password)
+
+            edit_user.is_admin = is_admin in ['true', 'True', '1']
+            edit_user.email = email
+            edit_user.put()
+
+            params = {'users': users,'success': "true", 'flash_message' : "Successfully edited user"}
+            self.render_template('users_index.html',params)
+            return
+        params = {'users': users,'error': "true", 'flash_message' : "Could not find user"}
+        self.render_template('users_index.html',params)
+        return
+
     def add_user(self,username, vendorname, password, is_admin, email):
         tmp_user = User.get_by_username(username)
 
@@ -228,12 +259,17 @@ class UsersHandler(BaseHandler):
 
     @deployment_admin_required
     def post(self):
+        users = User.query()
+
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
         is_admin = self.request.get('admin')
         email = self.request.get('email')
+
         bulkfile = self.request.get('bulkfile')
+        command = self.request.get('command')
+        old_username = self.request.get('old_username')
 
         if bulkfile:
             params = {}
@@ -256,45 +292,38 @@ class UsersHandler(BaseHandler):
                         retval = self.add_user(username=row[0],vendorname=row[2],password=row[3],is_admin=row[4],email=row[1])
                         count = count +1
                         if retval is not "":
-                            params = {'error': "true", 'flash_message' : retval}
+                            params = {'users': users,'error': "true", 'flash_message' : retval}
                             self.render_template('users_index.html',params)
                             return
-                params = {'success': "true", 'flash_message' : "Successfully added " + str(count) + " users."}
+                params = {'users': users, 'success': "true", 'flash_message' : "Successfully added " + str(count) + " users."}
                 self.render_template('users_index.html',params)
                 return
             except csv.Error as e:
                 if reader:
-                    params = {'error': "true", 'flash_message' : "File Error - line %d: %s" % (reader.line_num, e)}
+                    params = {'users': users,'error': "true", 'flash_message' : "File Error - line %d: %s" % (reader.line_num, e)}
                 else:
-                    params = {'error': "true", 'flash_message' : "Please verify file format - standard CSV with a header row."}
+                    params = {'users': users,'error': "true", 'flash_message' : "Please verify file format - standard CSV with a header row."}
 
                 self.render_template('users_index.html',params)
                 return
             except:
-                params = {'error': "true", 'flash_message' : "Unknown file error - please use a standard CSV with a header row."}
+                params = {'users': users,'error': "true", 'flash_message' : "Unknown file error - please use a standard CSV with a header row."}
                 self.render_template('users_index.html',params)
                 return
+        elif command.lower() == "edit":
+            return self.edit_user(old_username,username, vendorname, password, is_admin, email)
         else:
             retval = self.add_user(username=username,vendorname=vendorname,password=password,is_admin=is_admin,email=email)
 
             if retval is not "":
-                params = {'error': "true", 'flash_message' : retval }
+                params = {'users': users,'error': "true", 'flash_message' : retval }
             else:
-                params = {'Success': "true", 'flash_message' : "Successfully created User:  "  + username}
+                params = {'users': users,'Success': "true", 'flash_message' : "Successfully created User:  "  + username}
 
             self.render_template('users_index.html',params)
 
-class UserHandler(BaseHandler):
-    @deployment_admin_required
-    def post(self):
-        self.render_template('error_page.html')
 
-class VisitorListHandler(BaseHandler):
-    @admin_required
-    def get(self):
-        self.render_template('error_page.html')
-
-class VisitorHandler(BaseHandler):
+class VisitorsHandler(BaseHandler):
     def handlerequest(self):
         visitor_id = self.request.get('visitor_id')
 
@@ -305,20 +334,20 @@ class VisitorHandler(BaseHandler):
             newvisitor.visitor_id = visitor_id
             newvisitor.put()
             params = {'success': "true" , 'flash_message': "Successfully created Visitor:  "  + newvisitor.visitor_id}
-            self.render_template('index.html',params)
+            self.render_template('visitors_index.html',params)
         else:
             params = {'error': "true" , 'flash_message': "Error - visitor "  + visitor_id  + " already exists!"}
-            self.render_template('add_visitor.html',params)
+            self.render_template('visitors_index.html',params)
 
-    @admin_required
+    @deployment_admin_required
     def get(self):
         visitor_id = self.request.get('visitor_id',-1)
         if (visitor_id == -1):
-            self.render_template('add_visitor.html')
+            self.render_template('visitors_index.html')
         else:
             self.handlerequest()
 
-    @admin_required
+    @deployment_admin_required
     def post(self):
         self.handlerequest();
 
@@ -409,7 +438,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username','email','is_super_admin', 'is_deployment_admin']
+        'user_attributes': ['username','email','is_super_admin','is_deployment_admin','sudoer']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'
@@ -425,12 +454,10 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
     webapp2.Route('/deployments/<deployment_slug>', DeploymentHandler, name='deployment'),
     webapp2.Route('/users', UsersHandler, name='users'),
+    webapp2.Route('/visitors', VisitorsHandler, name='visitors'),
 
     webapp2.Route('/<deployment_slug>/checkin_visitor', CheckInHandler, name='checkin'),
     webapp2.Route('/<deployment_slug>/student', StudentHandler, name='student'),
-    webapp2.Route('/<deployment_slug>/admin_panel/user', UserHandler, name='new_user'),
-    webapp2.Route('/<deployment_slug>/admin_panel/visitor', VisitorHandler, name='new_visitor'),
-    webapp2.Route('/<deployment_slug>/admin_panel/visitors', VisitorListHandler, name='visitor_list'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
 ], config=config, debug=True)

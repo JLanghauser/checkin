@@ -1,0 +1,73 @@
+{% extends "main.html" %} {% block maincontent %}
+
+<h2>Deployments</h2>
+
+<h2> Current Visitors: </h2>
+<h4> Export all of your visitor IDs </h4>
+<form action="/visitors" method="POST">
+<input type="submit" value="Export" />
+<input type="hidden" name="command" value="export" />
+</form>
+
+<h2> Visitor view</h2>
+<h4> Take a look at what it looks like for a specific booth visitor</h4>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+         <tr>
+           <th>Visitor_id</th>
+           <th>Login</th>
+         </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="/visitors" method="POST">
+        <td><input type="text" name="visitor_id" /></td>
+        <input type="hidden" name="command" value="login" />
+        <td><input type="submit" value="Login" /></td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{% if user and user.is_deployment_admin %}
+<h2> Add New Single Visitor: </h2>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+         <tr>
+           <th>Visitor_id</th>
+           <th>Create</th>
+         </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="/visitors" method="POST">
+        <td><input type="text" name="visitor_id" /></td>
+        <td><input type="submit" value="Create" /></td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
+<h2> Add Bulk Visitors </h2>
+<h4> Note: bulk upload file should be a list of visitor IDs, one per line</h4>
+<form enctype="multipart/form-data" action="/visitors" method="post">
+    <label for="filename">Filename</label>
+    <input id="bulkfile" type="file" name="bulkfile" />
+    <input type="submit" value="Upload" />
+</form>
+
+<h2> Generate Bulk Visitors </h2>
+<h4> Automatically add X number of new visitors with unique IDs </h4>
+<form action="/users" method="post">
+    <label for="num_visitors">Number of Visitors</label>
+    <input type="text" name="num_visitors" />
+    <input type="hidden" name="command" value="generate" />
+    <input type="submit" value="Generate" />
+</form>
+
+{% endblock %}

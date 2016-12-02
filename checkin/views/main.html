@@ -56,6 +56,11 @@
 			<img class="center-block logo" src="/img/logo.png">
 		</div>
 	</div>
+  {% if user and user.sudoer %}
+  <div class="alert alert-warning" role="alert">
+    You are currently logged in as someone else.
+  <div>
+  {% endif %}
   {% if flash_message and success %}
     <div class="alert alert-success" role="alert">
       {{ flash_message }}
@@ -107,7 +112,7 @@
         <div class="row" style="margin-left:0px;" >
             <a href="/deployments">Manage Deployments</a>
           |
-            <a href="/users">Manage Users</a>
+            <a href="/users">Manage Booth Users</a>
           |
             <a href="/visitors">Manage Visitors</a>
           |

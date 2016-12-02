@@ -1,4 +1,5 @@
 # checkin
 dev_appserver.py .
-
-appcfg.py --no_cookies -A your-gae-appkey -V v1 update checkin/
+tough-variety-126419
+appcfg.py --no_cookies -A tough-variety-126419 -V v1 update checkin/
+appcfg.py -A tough-variety-126419 -V v1 update checkin/

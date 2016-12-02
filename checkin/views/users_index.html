@@ -2,116 +2,33 @@
 
 <h1>Deployments</h1>
 
-<h2> Current Users: </h2>
-<div class="row">
-    <div class="col-sm-1">
-        Username
-    </div>
-    <div class="col-sm-1">
-        Email address
-    </div>
-    <div class="col-sm-1">
-        Vendor Name
-    </div>
-    <div class="col-sm-1">
-        Password
-    </div>
-    <div class="col-sm-1">
-        Admin
-    </div>
-</div>
-{% for user in users %}
-  {% if user.username == editing_username %}
-<div class="row">
-    <form action="/users/{{ username }}" method="POST">
-        <div class="col-sm-1">
-            <input type="text" name="username" value="{{ user.username }}" />
-        </div>
-        <div class="col-sm-1">
-            <input type="text" name="email" value="{{ user.email }}" />
-        </div>
-        <div class="col-sm-1">
-            <input type="text" name="vendorname" value="{{ user.vendorname }}" />
-        </div>
-        <div class="col-sm-1">
-            <input type="text" name="password" value="....." />
-        </div>
-        <div class="col-sm-1">
-            <input type="checkbox" name="admin" checked="{{ user.admin }}" />
-        </div>
-        <div class="col-sm-1">
-            <input type="hidden" name="user_id" value="{{ user.key.id }}" />
-            <input type="submit" value="Edit" />
-        </div>
-    </form>
-</div>
-{% else %}
-<div class="row">
-    <div class="col-sm-1">
-        {{ user.username }}
-    </div>
-    <div class="col-sm-1">
-        {{ user.email }}
-    </div>
-    <div class="col-sm-1">
-        {{ user.vendorname }}
-    </div>
-    <div class="col-sm-1">
-        ...
-    </div>
-    <div class="col-sm-1">
-        {{ user.is_deployment_admin }}
-    </div>
-    <div class="col-sm-1">
-        <form action="/users" method="GET">
-            <input type="hidden" name="editing_username" value="{{user.username}}">
-            <input type="submit" value="Edit" />
-        </form>
-    </div>
-</div>
-{% endif %} {% endfor %} {% if user and user.is_super_admin %}
+{% if user and user.is_super_admin %}
 <h2> Add New User: </h2>
-<div class="row">
-    <div class="col-sm-1">
-        Username
-    </div>
-    <div class="col-sm-1">
-        Email address
-    </div>
-    <div class="col-sm-1">
-        Vendor Name
-    </div>
-    <div class="col-sm-1">
-        Password
-    </div>
-    <div class="col-sm-1">
-        Admin
-    </div>
-    <div class="col-sm-1">
-        Submit
-    </div>
-</div>
-<div class="row">
-    <form action="/users" method="POST">
-        <div class="col-sm-1">
-            <input type="text" name="username" />
-        </div>
-        <div class="col-sm-1">
-            <input type="text" name="email" />
-        </div>
-        <div class="col-sm-1">
-            <input type="text" name="vendorname" />
-        </div>
-        <div class="col-sm-1">
-            <input type="password" name="password" />
-        </div>
-        <div class="col-sm-1">
-            <input type="checkbox" name="is_deployment_admin" />
-        </div>
-        <div class="col-sm-1">
-            <input type="submit" value="Create" />
-        </div>
-    </form>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>Vendor Name</th>
+           <th>Password</th>
+           <th>Admin</th>
+           <th>Submit</th>
+         </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="/users" method="POST">
+        <td><input type="text" name="username" /></td>
+        <td><input type="text" name="email" /></td>
+        <td><input type="text" name="vendorname" /></td>
+        <td><input type="password" name="password" /></td>
+        <td><input type="checkbox" name="is_deployment_admin" /></td>
+        <td><input type="submit" value="Create" /></td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
 </div>
 {% endif %}
 <h2> Add Bulk Users </h2>
@@ -120,4 +37,67 @@
     <input id="bulkfile" type="file" name="bulkfile" />
     <input type="submit" value="Upload" />
 </form>
+
+<h2> Current Users: </h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>Vendor Name</th>
+           <th>Password</th>
+           <th>Admin</th>
+           <th>Login As This User</th>
+           <th>Edit</th>
+         </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        {% if user.username == editing_username %}
+      <tr>
+          <form action="/users" method="POST">
+          <td><input type="text" name="username" value="{{ user.username }}" /></td>
+          <td><input type="text" name="email" value="{{ user.email }}" /></td>
+          <td><input type="text" name="vendorname" value="{{ user.vendorname }}" /></td>
+          <td><input type="text" name="password" value="....." /></td>
+          <td><input type="checkbox" name="admin" checked="{{ user.admin }}" /></td>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
+          </td>
+          <td>
+                  <input type="hidden" name="old_username" value="{{ user.username }}" />
+                  <input type="hidden" name="command" value="edit" />
+                  <input type="submit" value="Save" />
+          </td>
+          </form>
+      </tr>
+      {% else %}
+      <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.vendorname }}</td>
+          <td>...</td>
+          <td>{{ user.is_deployment_admin }}</td>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
+          </td>
+          <td>
+              <form action="/users" method="GET">
+                  <input type="hidden" name="editing_username" value="{{user.username}}">
+                  <input type="submit" value="Edit" />
+              </form>
+          </td>
+      </tr>
+      {% endif %}
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}

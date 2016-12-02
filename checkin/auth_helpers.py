@@ -93,6 +93,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     username = ndb.StringProperty()
     profile = ndb.TextProperty()
     vendorname = ndb.StringProperty()
+    sudoer = ndb.StringProperty()
 
     def set_password(self, raw_password):
         """Sets the password for the current user
