@@ -1,0 +1,8 @@
+python_http_client==2.0.0
+smtpapi==0.3.1
+pynliner==0.7.1
+sendgrid==2.2.1
+unidecode==0.4.19
+webargs==1.2.0
+titlecase==0.8.1
+poster==0.8.1

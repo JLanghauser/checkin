@@ -53,7 +53,11 @@
   <div class="content">
     <div class="row orangebg">
 		<div>
-			<img class="center-block logo" src="/img/logo.png">
+      {% if logo_url %}
+			   <img class="center-block logo" src="{{ logo_url }}">
+      {% else %}
+        <img class="center-block logo" src="">
+      {% endif %}
 		</div>
 	</div>
   {% if user and user.sudoer %}

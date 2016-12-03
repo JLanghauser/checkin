@@ -7,17 +7,13 @@ from basehandler import *
 from auth_helpers import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
+from google.appengine.ext.webapp import blobstore_handlers
 from random import randint
 import unicodedata
 from time import sleep
 import csv
 import StringIO
-
-class Deployment(ndb.Model):
-    name = ndb.TextProperty(indexed=True)
-    slug = ndb.TextProperty(indexed=True)
-    custom_dns = ndb.TextProperty(indexed=True)
-    custom_subdomain = ndb.TextProperty(indexed=True)
+import json
 
 class MapUserToDeployment (ndb.Model):
     deployment_key = ndb.KeyProperty(kind=Deployment)
@@ -45,6 +41,81 @@ class MainPage(BaseHandler):
             self.render_template('index.html',params)
         else:
             self.render_template('index.html')
+
+class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
+        try:
+            upload = self.get_uploads()[0]
+            self.response.headers['Content-Type'] = 'application/json'
+            obj = {'success': 'true','key': str(upload.key()),}
+            self.response.out.write(json.dumps(obj))
+        except:
+            self.error(500)
+
+class MainDeploymentPage(BaseHandler):
+    @deployment_admin_required
+    def post(self,deployment_slug):
+        name = self.request.get('name')
+        new_slug = self.request.get('slug')
+        custom_dns = self.request.get('custom_dns')
+        custom_subdomain = self.request.get('custom_subdomain')
+        logo_url = self.request.get('logo_url')
+
+        existing_deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
+        if not existing_deployment or len(existing_deployment) < 1:
+            params = {'error': "true" , 'flash_message': "Error - doesn't exist!"}
+            self.render_template('deployments_index.html',params)
+            return
+
+        existing_deployment = existing_deployment[0]
+        tmp_deployment_slug = None
+        tmp_deployment_custom_dns = None
+        tmp_deployment_subdomain = None
+
+        if not (new_slug == deployment_slug):
+            tmp_deployment_slug = Deployment.query(Deployment.slug == new_slug).fetch(1)
+
+        if not (custom_dns == existing_deployment.custom_dns):
+            tmp_deployment_custom_dns = Deployment.query(Deployment.custom_dns == custom_dns,
+                Deployment.custom_subdomain == custom_subdomain).fetch(1)
+
+        if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
+           (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
+            deployments = self.user.get_deployments()
+            params = {'error': "true" , 'flash_message': "Error - already exists!", 'deployments' : deployments}
+            self.render_template('deployments_index.html',params)
+        else:
+            existing_deployment.name = name
+            existing_deployment.slug = new_slug
+            existing_deployment.custom_dns = custom_dns
+            existing_deployment.custom_subdomain = custom_subdomain
+            existing_deployment.put()
+
+            if existing_deployment.logo_url != logo_url:
+                existing_deployment.upload_img(logo_url)
+
+            sleep(0.5)
+            deployments = self.user.get_deployments()
+            params = {'success': "true" , 'flash_message': "Successfully update Deployment:  "  + existing_deployment.name, 'deployments' : deployments}
+            self.render_template('deployments_index.html',params)
+
+    def get(self,deployment_slug):
+        user = self.user
+
+        deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
+        if not deployment or len(deployment) < 1:
+            params = {'error': "true" , 'flash_message': "Error - doesn't exist!"}
+            self.render_template('index.html',params)
+            return
+
+        deployment = deployment[0]
+
+        if (user):
+            params = {'logo_url': deployment.logo_url, 'userprofile': user.profile, 'user' : user}
+            self.render_template('index.html',params)
+        else:
+            params = {'logo_url': deployment.logo_url}
+            self.render_template('index.html',params)
 
 
 class StudentHandler(BaseHandler):
@@ -201,9 +272,11 @@ class CheckInHandler(BaseHandler):
 
 
 class UsersHandler(BaseHandler):
-    def edit_user(self,old_username,new_username, vendorname, password, is_admin, email):
+    def edit_user(self,old_username,new_username, vendorname, password, is_deployment_admin, email):
+        calling_user = self.user
+        users = calling_user.get_users()
+
         edit_user = User.get_by_username(old_username)
-        users = User.query()
 
         if edit_user:
             if not (new_username.lower() == old_username.lower()):
@@ -220,7 +293,7 @@ class UsersHandler(BaseHandler):
             if not (password == "..."):
                 edit_user.set_password(password)
 
-            edit_user.is_admin = is_admin in ['true', 'True', '1']
+            edit_user.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
             edit_user.email = email
             edit_user.put()
 
@@ -231,7 +304,7 @@ class UsersHandler(BaseHandler):
         self.render_template('users_index.html',params)
         return
 
-    def add_user(self,username, vendorname, password, is_admin, email):
+    def add_user(self,username, vendorname, password, is_deployment_admin, email):
         tmp_user = User.get_by_username(username)
 
         if tmp_user:
@@ -244,27 +317,29 @@ class UsersHandler(BaseHandler):
             newuser.username = username
             newuser.vendorname = vendorname
             newuser.set_password(password)
-            newuser.is_admin = is_admin in ['true', 'True', '1']
+            newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1','on']
             newuser.profile = '<h1>Edit your profile <a href = "/edit">here</a></h1>'
             newuser.email = email
             newuser.put()
+            sleep(0.5)
             return ""
 
     @deployment_admin_required
     def get(self):
         editing_username = self.request.get('editing_username','')
-        users = User.query()
-        params = {'users': users, 'editing_username' : editing_username}
+        users = self.user.get_users()
+        deployments = self.user.get_deployments()
+        params = {'users': users, 'deployments': deployments, 'editing_username' : editing_username}
         self.render_template('users_index.html',params)
 
     @deployment_admin_required
     def post(self):
-        users = User.query()
+        calling_user = self.user
 
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
-        is_admin = self.request.get('admin')
+        is_deployment_admin = self.request.get('is_deployment_admin')
         email = self.request.get('email')
 
         bulkfile = self.request.get('bulkfile')
@@ -289,12 +364,14 @@ class UsersHandler(BaseHandler):
                     if not skipped_header_row:
                         skipped_header_row = True
                     else:
-                        retval = self.add_user(username=row[0],vendorname=row[2],password=row[3],is_admin=row[4],email=row[1])
+                        retval = self.add_user(username=row[0],vendorname=row[2],password=row[3],is_deployment_admin=row[4],email=row[1])
                         count = count +1
                         if retval is not "":
+                            users = calling_user.get_users()
                             params = {'users': users,'error': "true", 'flash_message' : retval}
                             self.render_template('users_index.html',params)
                             return
+                users = calling_user.get_users()
                 params = {'users': users, 'success': "true", 'flash_message' : "Successfully added " + str(count) + " users."}
                 self.render_template('users_index.html',params)
                 return
@@ -307,13 +384,15 @@ class UsersHandler(BaseHandler):
                 self.render_template('users_index.html',params)
                 return
             except:
+                users = calling_user.get_users()
                 params = {'users': users,'error': "true", 'flash_message' : "Unknown file error - please use a standard CSV with a header row."}
                 self.render_template('users_index.html',params)
                 return
         elif command.lower() == "edit":
-            return self.edit_user(old_username,username, vendorname, password, is_admin, email)
+            return self.edit_user(old_username,username, vendorname, password, is_deployment_admin, email)
         else:
-            retval = self.add_user(username=username,vendorname=vendorname,password=password,is_admin=is_admin,email=email)
+            retval = self.add_user(username=username,vendorname=vendorname,password=password,is_deployment_admin=is_deployment_admin,email=email)
+            users = calling_user.get_users()
 
             if retval is not "":
                 params = {'users': users,'error': "true", 'flash_message' : retval }
@@ -352,7 +431,7 @@ class VisitorsHandler(BaseHandler):
         self.handlerequest();
 
 class RandomVisitorHandler(BaseHandler):
-    @admin_required
+    @deployment_admin_required
     def get(self):
         # get count
         entity_count = MapUserToVisitor.query().count()
@@ -388,10 +467,14 @@ class DeploymentsHandler(BaseHandler):
         slug = self.request.get('slug')
         custom_dns = self.request.get('custom_dns')
         custom_subdomain = self.request.get('custom_subdomain')
+        logo_url = self.request.get('logo_url','')
 
-        tmp_deployment = Deployment.query(Deployment.slug == slug).fetch(1)
+        tmp_deployment_slug = Deployment.query(Deployment.slug == slug).fetch(1)
+        tmp_deployment_custom_dns = Deployment.query(Deployment.custom_dns == custom_dns,
+                                                     Deployment.custom_subdomain == custom_subdomain).fetch(1)
 
-        if tmp_deployment and len(tmp_deployment) :
+        if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
+           (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
             deployments = Deployment.query()
             params = {'error': "true" , 'flash_message': "Error - already exists!", 'deployments' : deployments}
             self.render_template('deployments_index.html',params)
@@ -402,35 +485,15 @@ class DeploymentsHandler(BaseHandler):
             newdeployment.custom_dns = custom_dns
             newdeployment.custom_subdomain = custom_subdomain
             newdeployment.put()
-
+            if logo_url:
+                newdeployment.upload_img(logo_url)
             sleep(0.5)
             deployments = Deployment.query()
             params = {'success': "true" , 'flash_message': "Successfully created Deployment:  "  + newdeployment.name, 'deployments' : deployments}
             self.render_template('deployments_index.html',params)
 
-class DeploymentHandler(BaseHandler):
-    @deployment_admin_required
-    def post(self,deployment_slug):
-        name = self.request.get('name')
-        slug = self.request.get('slug')
-        custom_dns = self.request.get('custom_dns')
-        custom_subdomain = self.request.get('custom_subdomain')
-
-        existing_deployment = Deployment.query(Deployment.slug == deployment_slug).fetch(1)
-        if not existing_deployment or len(existing_deployment) < 1:
-            params = {'error': "true" , 'flash_message': "Error - doesn't exist!"}
-            self.render_template('deployments_index.html',params)
-            return
-
-        existing_deployment = existing_deployment[0]
-        sleep(0.5)
-        deployments = Deployment.query()
-        params = {'success': "true" , 'flash_message': "Successfully update Deployment:  "  + existing_deployment.name, 'deployments' : deployments}
-        self.render_template('deployments_index.html',params)
-
-
 class MapUserToVisitorHandler(BaseHandler):
-    @admin_required
+    @deployment_admin_required
     def get(self):
         self.response.out.write("MapUserToVisitorHandler get")
 
@@ -447,12 +510,14 @@ config = {
 
 app = webapp2.WSGIApplication([
     webapp2.Route('/', MainPage, name='home'),
+    webapp2.Route('/upload_image', UploadHandler, name='upload'),
+    webapp2.Route('/deployments/<deployment_slug>', MainDeploymentPage, name='deployment_main'),
+
     webapp2.Route('/error', ErrorPage, name='error'),
     webapp2.Route('/sign_in', SignInHandler, name='sign_in'),
     webapp2.Route('/sign_out', SignOutHandler, name='sign_out'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
     webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
-    webapp2.Route('/deployments/<deployment_slug>', DeploymentHandler, name='deployment'),
     webapp2.Route('/users', UsersHandler, name='users'),
     webapp2.Route('/visitors', VisitorsHandler, name='visitors'),
 
@@ -460,4 +525,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/<deployment_slug>/student', StudentHandler, name='student'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor', RandomVisitorHandler, name='random_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors', MapUserToVisitorHandler, name='list_maps')
+
 ], config=config, debug=True)

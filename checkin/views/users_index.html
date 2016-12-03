@@ -1,9 +1,19 @@
 {% extends "main.html" %} {% block maincontent %}
 
 <h1>Deployments</h1>
+<h4>If you manage several events you can select one from the dropdown </h4>
+<select>
+  {% for dep in deployments %}
+    <option value="{{ dep.slug }}">{{ dep.name }}</option>
+  {% endfor %}
+</select>
+<form action="/users" method="POST">
+  <input type="submit" value="switch" />
+</form>
 
 {% if user and user.is_super_admin %}
 <h2> Add New User: </h2>
+<h4>You can add users - they will be mapped to your current event</h4>
 <div class="table-responsive">
   <table class="table table-striped">
     <thead>
@@ -32,6 +42,9 @@
 </div>
 {% endif %}
 <h2> Add Bulk Users </h2>
+<h4>You can upload users in bulk using a file upload</h4>
+<h4>Note: Upload files should be CSV formatted with a header row</h4>
+<h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin </h4>
 <form enctype="multipart/form-data" action="/users" method="post">
     <label for="filename">Filename</label>
     <input id="bulkfile" type="file" name="bulkfile" />
@@ -48,8 +61,8 @@
            <th>Vendor Name</th>
            <th>Password</th>
            <th>Admin</th>
-           <th>Login As This User</th>
            <th>Edit</th>
+           <th>Login As This User</th>
          </tr>
     </thead>
     <tbody>
@@ -61,19 +74,23 @@
           <td><input type="text" name="email" value="{{ user.email }}" /></td>
           <td><input type="text" name="vendorname" value="{{ user.vendorname }}" /></td>
           <td><input type="text" name="password" value="....." /></td>
-          <td><input type="checkbox" name="admin" checked="{{ user.admin }}" /></td>
-          <td>
-            <form action="/users" method="GET">
-                <input type="hidden" name="editing_username" value="{{user.username}}">
-                <input type="submit" value="Login As" />
-            </form>
-          </td>
+          {% if user.is_deployment_admin %}
+            <td><input type="checkbox" name="is_deployment_admin" checked="checked" /></td>
+          {% else %}
+            <td><input type="checkbox" name="is_deployment_admin"/></td>
+          {% endif %}
           <td>
                   <input type="hidden" name="old_username" value="{{ user.username }}" />
                   <input type="hidden" name="command" value="edit" />
                   <input type="submit" value="Save" />
           </td>
           </form>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
+          </td>
       </tr>
       {% else %}
       <tr>
@@ -83,16 +100,16 @@
           <td>...</td>
           <td>{{ user.is_deployment_admin }}</td>
           <td>
-            <form action="/users" method="GET">
-                <input type="hidden" name="editing_username" value="{{user.username}}">
-                <input type="submit" value="Login As" />
-            </form>
-          </td>
-          <td>
               <form action="/users" method="GET">
                   <input type="hidden" name="editing_username" value="{{user.username}}">
                   <input type="submit" value="Edit" />
               </form>
+          </td>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
           </td>
       </tr>
       {% endif %}

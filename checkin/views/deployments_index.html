@@ -4,92 +4,84 @@
 
 <h1>Deployments</h1>
 
+
 <h2> Current Deployments: </h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Name</th>
+           <th>Slug</th>
+           <th>Custom Hostname</th>
+           <th>Subdomain</th>
+           <th>Logo URL</th>
+           <th>Update</th>
+         </tr>
+    </thead>
+    <tbody>
 {% for deployment in deployments %}
   {% if deployment.slug == editing_slug  %}
-    <div class="row">
-      <form action="/deployments/{{ deployment.slug }}" method="POST">
-        <div class="col-sm-1">
-          <input type="text" name="name" value = "{{ deployment.name }}" />
-        </div>
-        <div class="col-sm-1">
-          <input type="text" name="slug" value = "{{ deployment.slug }}" />
-        </div>
-        <div class="col-sm-1">
-          <input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" />
-        </div>
-        <div class="col-sm-1">
-          <input type="text" name="custom_subdomain" value = "{{ deployment.custom_subdomain }}" />
-        </div>
-        <div class="col-sm-1">
-          <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
-          <input type="submit" value="Update" />
-        </div>
-      </form>
-    </div>
+          <form action="/deployments/{{ deployment.slug }}" method="POST">
+          <tr>
+            <td><input type="text" name="name" value = "{{ deployment.name }}" /></td>
+            <td><input type="text" name="slug" value = "{{ deployment.slug }}" /></td>
+            <td><input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" /></td>
+            <td><input type="text" name="custom_subdomain" value = "{{ deployment.custom_subdomain }}" /></td>
+            <td><input type="text" name="logo_url" value = "{{ deployment.logo_url }}" /></td>
+            <td>
+                <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
+                <input type="submit" value="Update" />
+            </td>
+          </tr>
+          </form>
   {% else %}
-    <div class="row">
-      <div class="col-sm-1">
-        {{ deployment.name }}
-      </div>
-      <div class="col-sm-1">
-        {{ deployment.slug }}
-      </div>
-      <div class="col-sm-1">
-        {{ deployment.custom_dns }}
-      </div>
-      <div class="col-sm-1">
-        {{ deployment.custom_subdomain }}
-      </div>
-      <div class="col-sm-1">
-        <form action="/deployments" method="GET">
-          <input type="hidden" name="editing_slug" value="{{deployment.slug}}">
-          <input type="submit" value="Edit" />
-        </form>
-      </div>
-    </div>
+        <tr>
+          <td>{{ deployment.name }}</td>
+          <td>{{ deployment.slug }}</td>
+          <td>{{ deployment.custom_dns }}</td>
+          <td>{{ deployment.custom_subdomain }}</td>
+          <td>{{ deployment.logo_url }}</td>
+          <td>
+            <form action="/deployments" method="GET">
+              <input type="hidden" name="editing_slug" value="{{deployment.slug}}">
+              <input type="submit" value="Edit" />
+            </form>
+          </td>
+        </tr>
   {% endif %}
-
 {% endfor %}
+</tbody>
+</table>
+</div>
 
 {% if user and user.is_super_admin %}
   <h2> Add New Deployment: </h2>
-  <div class="row">
-    <div class="col-sm-1">
-      Name
-    </div>
-    <div class="col-sm-1">
-      Slug
-    </div>
-    <div class="col-sm-1">
-      Hostname
-    </div>
-    <div class="col-sm-1">
-      Subdomain
-    </div>
-    <div class="col-sm-1">
-      Submit
-    </div>
-  </div>
-  <div class="row">
-    <form action="/deployments" method="POST">
-      <div class="col-sm-1">
-        <input type="text" name="name" />
-      </div>
-      <div class="col-sm-1">
-        <input type="text" name="slug" />
-      </div>
-      <div class="col-sm-1">
-        <input type="text" name="custom_dns" />
-      </div>
-      <div class="col-sm-1">
-        <input type="text" name="custom_subdomain" />
-      </div>
-      <div class="col-sm-1">
-        <input type="submit" value="Create" />
-      </div>
-    </form>
-  </div>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+           <tr>
+             <th>Name</th>
+             <th>Slug</th>
+             <th>Custom Hostname</th>
+             <th>Subdomain</th>
+             <th>Logo URL</th>
+             <th>Submit</th>
+           </tr>
+      </thead>
+      <tbody>
+      <tr>
+          <form action="/deployments" method="POST">
+          <td><input type="text" name="name" /></td>
+          <td><input type="text" name="slug" /></td>
+          <td><input type="text" name="custom_dns" /></td>
+          <td><input type="text" name="custom_subdomain" /></td>
+          <td><input type="text" name="logo_url" /></td>
+          <td><input type="submit" value="Create" /></td>
+          </form>
+      </tr>
+      </tbody>
+    </table>
+</div>
 {% endif %}
 
 {% endblock %}
