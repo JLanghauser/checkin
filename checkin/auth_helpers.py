@@ -25,6 +25,23 @@ class Deployment(ndb.Model):
         else:
             return ""
 
+    @classmethod
+    def get_by_slug(cls, slug, subject='auth'):
+        """Returns a deployment object based on a slug.
+
+            :param slug:
+                The slug of the requested deployment.
+
+            :returns:
+                returns user or none if
+        """
+        qry = Deployment.query(Deployment.slug == slug)
+        deployment = qry.get()
+
+        if deployment:
+            return deployment
+        return None
+
     def upload_img(self, logo_url):
         image_url = logo_url
         filetype = 'image/%s' % image_url.split('.')[-1]
@@ -64,7 +81,7 @@ def deployment_admin_required(handler):
     def check_deployment_admin(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            self.redirect(self.uri_for('sign_in'), abort=True)
+            self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
         else:
             if (self.user.is_super_admin):
                 return handler(self, *args, **kwargs)
@@ -93,7 +110,7 @@ def super_admin_required(handler):
     def check_super_admin(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            self.redirect(self.uri_for('sign_in'), abort=True)
+            self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
         else:
             if self.user.is_super_admin and self.user.is_super_admin == True:
                 return handler(self, *args, **kwargs)

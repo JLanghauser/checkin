@@ -11,6 +11,8 @@ from webapp2_extras import security
 from webapp2_extras import sessions
 from webapp2_extras import auth
 import os
+import csv
+import StringIO
 import urllib
 from google.appengine.ext.webapp import template
 
@@ -66,7 +68,19 @@ class BaseHandler(webapp2.RequestHandler):
       for key, value in kwargs.items():
           params[key] = value
       return params
-      
+
+  def get_csv_reader(self,csv_file,should_sniff=True):
+      file_stream = StringIO.StringIO(csv_file)
+      if should_sniff:
+          dialect = csv.Sniffer().sniff(file_stream.read(1024))
+          file_stream.seek(0)
+          has_headers = csv.Sniffer().has_header(file_stream.read(1024))
+          file_stream.seek(0)
+          reader = csv.reader(file_stream, dialect)
+      else:
+          reader = csv.reader(file_stream)
+      return reader
+
   def render_template(self, view_filename, params={}):
     user = self.user_info
     params['user'] = user

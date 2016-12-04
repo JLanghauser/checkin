@@ -134,7 +134,7 @@ class DeploymentHandler(BaseHandler):
 
 class StudentHandler(BaseHandler):
 
-    def handlerequest(self, deployment_slug):
+    def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', '').strip()
 
         if (visitor_id == '' or not deployment_slug):
@@ -172,15 +172,20 @@ class StudentHandler(BaseHandler):
                           'flash_message': "No such student " + visitor_id}
                 self.render_template('studentlogin.html', params)
 
-    def get(self):
+    def get(self,deployment_slug=None):
         visitor_id = self.request.get('visitor_id', '')
         if (visitor_id == ''):
-            self.render_template('studentlogin.html')
+            dep = Deployment.get_by_slug(deployment_slug)
+            if dep:
+                self.render_template('studentlogin.html',
+                                    self.get_params_hash(logo_url=dep.logo_url))
+            else:
+                self.render_template('studentlogin.html')
         else:
-            self.handlerequest()
+            self.handlerequest(deployment_slug)
 
     def post(self):
-        self.handlerequest()
+        self.handlerequest(deployment_slug)
 
 
 class SignInHandler(BaseHandler):
@@ -316,7 +321,7 @@ class CheckInHandler(BaseHandler):
                 self.render_template('checkin_visitor.html', params)
 
     @user_login_required
-    def get(self):
+    def get(self, deployment_slug=None):
         self.handlerequest(None)
 
     @user_login_required
@@ -411,15 +416,10 @@ class UsersHandler(BaseHandler):
             out_str = ''
             reader = None
             try:
-                file_stream = StringIO.StringIO(bulkfile)
-                dialect = csv.Sniffer().sniff(file_stream.read(1024))
-                file_stream.seek(0)
-                has_headers = csv.Sniffer().has_header(file_stream.read(1024))
-                file_stream.seek(0)
-                reader = csv.reader(file_stream, dialect)
-                skipped_header_row = False
+                reader = self.get_csv_reader(bulkfile)
 
                 count = 0
+                skipped_header_row = False
                 for row in reader:
                     if not skipped_header_row:
                         skipped_header_row = True
@@ -473,34 +473,98 @@ class UsersHandler(BaseHandler):
 
 class VisitorsHandler(BaseHandler):
 
-    def handlerequest(self):
-        visitor_id = self.request.get('visitor_id')
+    def add_visitor(self,visitor_id,deployment=None):
+        if deployment:
+            qry = Visitor.query(Visitor.visitor_id == visitor_id,
+                                Visitor.deployment_key == deployment.key)
+        else:
+            qry = Visitor.query(Visitor.visitor_id == visitor_id)
 
-        qry = Visitor.query(Visitor.visitor_id == visitor_id)
         visitor = qry.get()
         if (visitor is None):
             newvisitor = Visitor()
             newvisitor.visitor_id = visitor_id
+            if deployment:
+                newvisitor.deployment_key = deployment.key
             newvisitor.put()
-            params = {'success': "true",
-                      'flash_message': "Successfully created Visitor:  " + newvisitor.visitor_id}
-            self.render_template('visitors_index.html', params)
+            return ""
         else:
-            params = {'error': "true", 'flash_message': "Error - visitor " +
-                      visitor_id + " already exists!"}
+            return "Error - Visitor " + visitor_id + " already exists."
+
+    def handlerequest(self,deployment_slug=None,bulk_file=None):
+        visitor_id = self.request.get('visitor_id')
+        deployment = Deployment.get_by_slug(deployment_slug)
+
+        if bulk_file:
+            reader = None
+            try:
+                reader = self.get_csv_reader(bulk_file,False)
+                count = 0
+                for row in reader:
+                    retval = self.add_visitor(row[0],deployment)
+                    if retval is not "":
+                        params = {'error': "true",'flash_message': retval}
+                        if deployment:
+                            params['logo_url'] = deployment.logo_url
+
+                        self.render_template('visitors_index.html', params)
+                        return
+                    else:
+                        count = count + 1
+
+                if deployment:
+                    params = {'success': "true",
+                          'flash_message': "Successfully added "
+                               + str(count) + " visitors.",
+                           'logo_url':deployment.logo_url}
+                else:
+                    params = {'success': "true",
+                          'flash_message': "Successfully added "
+                               + str(count) + " visitors."}
+
+                self.render_template('visitors_index.html', params)
+                return
+            except csv.Error as e:
+                if reader:
+                    params = {'users': users, 'error': "true",
+                              'flash_message': "File Error - line %d: %s" % (reader.line_num, e)}
+                else:
+                    params = {'users': users, 'error': "true",
+                              'flash_message': "Please verify file format - standard CSV with a header row."}
+                self.render_template('visitors_index.html', params)
+
+        else:
+            retval = self.add_visitor(visitor_id=visitor_id,
+                                      deployment=deployment)
+            if retval == "":
+                params = {'success': "true",
+                          'flash_message': "Successfully created Visitor:  " + newvisitor.visitor_id}
+            else:
+                params = {'error': "true", 'flash_message': retval}
+
+            if deployment:
+                params["logo_url"] = deployment.logo_url
+
             self.render_template('visitors_index.html', params)
 
     @deployment_admin_required
-    def get(self):
+    def get(self,deployment_slug=None):
         visitor_id = self.request.get('visitor_id', -1)
         if (visitor_id == -1):
-            self.render_template('visitors_index.html')
+            dep = Deployment.get_by_slug(deployment_slug)
+
+            if dep:
+                self.render_template('visitors_index.html',
+                            self.get_params_hash(logo_url=dep.logo_url))
+            else:
+                self.render_template('visitors_index.html')
         else:
             self.handlerequest()
 
     @deployment_admin_required
-    def post(self):
-        self.handlerequest()
+    def post(self,deployment_slug=None):
+        bulk_file = self.request.get('bulkfile', None)
+        self.handlerequest(deployment_slug,bulk_file)
 
 
 class RandomVisitorHandler(BaseHandler):
@@ -604,11 +668,18 @@ app = webapp2.WSGIApplication([
                   SignOutHandler, name='sign_out_deployments'),
 
     webapp2.Route('/checkin_visitor', CheckInHandler, name='checkin'),
-    ##webapp2.Route('/deployments/view/<deployment_slug>/checkin_visitor',
-##                  CheckInHandler, name='checkin_deployments'),
+    webapp2.Route('/deployments/view/<deployment_slug>/checkin_visitor',
+                   CheckInHandler, name='checkin_deployments'),
+
+    webapp2.Route('/student',StudentHandler, name='student'),
+    webapp2.Route('/deployments/view/<deployment_slug>/student',
+                   StudentHandler, name='student_deployments'),
 
     webapp2.Route('/deployments/<deployment_slug>/',
                   DeploymentHandler, name='deployment_main'),
+
+    webapp2.Route('/deployments/view/<deployment_slug>/visitors',
+                  VisitorsHandler, name='visitors_deployments'),
 
     webapp2.Route('/edit', UserEditHandler, name='edit'),
 
@@ -617,10 +688,9 @@ app = webapp2.WSGIApplication([
 
     webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
     webapp2.Route('/users', UsersHandler, name='users'),
-    webapp2.Route('/visitors', VisitorsHandler, name='visitors'),
 
-    webapp2.Route('/<deployment_slug>/student',
-                  StudentHandler, name='student'),
+
+
     webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor',
                   RandomVisitorHandler, name='random_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors',
