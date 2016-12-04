@@ -56,7 +56,7 @@
       {% if logo_url %}
 			   <img class="center-block logo" src="{{ logo_url }}">
       {% else %}
-        <img class="center-block logo" src="">
+        <img class="center-block logo" src="/img/generic_logo.png">
       {% endif %}
 		</div>
 	</div>
@@ -93,11 +93,11 @@
       <hr/>
       <p>
         {% if not user %}
-          <a href="/sign_in">Login</a>
+          <a href="sign_in">Login</a>
         |
         {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="/sign_out">Logout</a>        |
-          <a href="/checkin_visitor">Checkin Student</a> |
+          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="sign_out">Logout</a>        |
+          <a href="checkin_visitor">Checkin Student</a> |
           <a href="/edit">Edit Profile</a> |
           <a href="/">Home</a>
           |

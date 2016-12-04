@@ -10,6 +10,7 @@ from google.appengine.api import urlfetch
 from time import sleep
 import json
 
+
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
     slug = ndb.TextProperty(indexed=True)
@@ -20,7 +21,7 @@ class Deployment(ndb.Model):
 
     def get_logo_url(self):
         if self.logo:
-            return images.get_serving_url(self.logo,1600,False,True)
+            return images.get_serving_url(self.logo, 1600, False, True)
         else:
             return ""
 
@@ -39,84 +40,80 @@ class Deployment(ndb.Model):
         else:
             return "error fetching URL"
 
-        multipart_param = MultipartParam('file', raw_img, filename=filename, filetype=filetype)
+        multipart_param = MultipartParam(
+            'file', raw_img, filename=filename, filetype=filetype)
         datagen, headers = multipart_encode([multipart_param])
         upload_url = blobstore.create_upload_url('/upload_image')
         result = urlfetch.fetch(
-                            url=upload_url,
-                            payload="".join(datagen),
-                            method=urlfetch.POST,
-                            headers=headers)
+            url=upload_url,
+            payload="".join(datagen),
+            method=urlfetch.POST,
+            headers=headers)
 
         blob = blobstore.get(json.loads(result.content)["key"])
 
         self.logo = blob.key()
         self.put()
 
-def user_required(handler):
-  """
-    Decorator that checks if there's a user associated with the current session.
-    Will also fail if there's no session present.
-  """
-  def check_login(self, *args, **kwargs):
-    auth = self.auth
-    if not auth.get_user_by_session():
-      self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
-    elif self.user.is_super_admin:
-      return handler(self, *args, **kwargs)
-    else:
-        keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
-        mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
-                                          MapUserToDeployment.user_key == self.user.key).fetch()
-        if count(mapped_users) > 0:
-            return handler(self, *args, **kwargs)
-
-        self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
-
-  return check_login
-
 def deployment_admin_required(handler):
-  """
-    Decorator that checks if there's a user associated with the current session.
-    And that that user is an admin. Will also fail if there's no session present.
-  """
-  def check_deployment_admin(self, *args, **kwargs):
-    auth = self.auth
-    if not auth.get_user_by_session():
-      self.redirect(self.uri_for('sign_in'), abort=True)
-    else:
-      if (self.user.is_super_admin):
-        return handler(self, *args, **kwargs)
-      elif (self.user.is_deployment_admin):
-        if 'deployment_key' in kwargs:
-            keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
-            mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
-                                          MapUserToDeployment.user_key == self.user.key).fetch()
-            if count(mapped_users) > 0:
-             return handler(self, *args, **kwargs)
-            else:
-             self.redirect(self.uri_for('error'), abort=True)
+    """
+      Decorator that checks if there's a user associated with the current session.
+      And that that user is an admin. Will also fail if there's no session present.
+    """
+
+    def check_deployment_admin(self, *args, **kwargs):
+        auth = self.auth
+        if not auth.get_user_by_session():
+            self.redirect(self.uri_for('sign_in'), abort=True)
         else:
-            return handler(self, *args, **kwargs)
-      else:
-        self.redirect(self.uri_for('error'), abort=True)
-  return check_deployment_admin
+            if (self.user.is_super_admin):
+                return handler(self, *args, **kwargs)
+            elif (self.user.is_deployment_admin):
+                if 'deployment_key' in kwargs:
+                    keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
+                    mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
+                                                              MapUserToDeployment.user_key == self.user.key).fetch()
+                    if count(mapped_users) > 0:
+                        return handler(self, *args, **kwargs)
+                    else:
+                        self.redirect(self.uri_for('error'), abort=True)
+                else:
+                    return handler(self, *args, **kwargs)
+            else:
+                self.redirect(self.uri_for('error'), abort=True)
+    return check_deployment_admin
+
 
 def super_admin_required(handler):
-  """
-    Decorator that checks if there's a user associated with the current session.
-    And that that user is an admin. Will also fail if there's no session present.
-  """
-  def check_super_admin(self, *args, **kwargs):
-    auth = self.auth
-    if not auth.get_user_by_session():
-      self.redirect(self.uri_for('sign_in'), abort=True)
-    else:
-      if self.user.is_super_admin and self.user.is_super_admin == True:
-        return handler(self, *args, **kwargs)
-      else:
-        self.redirect(self.uri_for('error'), abort=True)
-  return check_super_admin
+    """
+      Decorator that checks if there's a user associated with the current session.
+      And that that user is an admin. Will also fail if there's no session present.
+    """
+
+    def check_super_admin(self, *args, **kwargs):
+        auth = self.auth
+        if not auth.get_user_by_session():
+            self.redirect(self.uri_for('sign_in'), abort=True)
+        else:
+            if self.user.is_super_admin and self.user.is_super_admin == True:
+                return handler(self, *args, **kwargs)
+            else:
+                self.redirect(self.uri_for('error'), abort=True)
+    return check_super_admin
+
+def user_login_required(handler):
+    """
+      Decorator that checks if there's a user associated with the current session.
+      Will also fail if there's no session present.
+    """
+
+    def check_user_login(self, *args, **kwargs):
+        auth = self.auth
+        if not auth.get_user_by_session():
+            self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
+        else:
+            return handler(self, *args, **kwargs)
+    return check_user_login
 
 class User(webapp2_extras.appengine.auth.models.User):
     is_super_admin = ndb.BooleanProperty()
@@ -136,25 +133,31 @@ class User(webapp2_extras.appengine.auth.models.User):
             raw_password, length=12)
 
     def get_users(self):
-          if self.is_super_admin and self.is_super_admin == True:
-              return User.query()
-          elif self.is_deployment_admin and self.is_deployment_admin == True:
-              qry = MapUserToDeployment.query(MapUserToDeployment.user_key == self.key)
-              map_deps = qry.fetch(projection=[MapUserToDeployment.deployment_key])
-              qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key.IN(map_deps))
-              map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
-              #Entity.query().fetch(20,keys_only=True)
-              users = ndb.get_multi(map_users_keys)
-              return users
-          else:
+        if self.is_super_admin and self.is_super_admin == True:
+            return User.query()
+        elif self.is_deployment_admin and self.is_deployment_admin == True:
+            qry = MapUserToDeployment.query(
+                MapUserToDeployment.user_key == self.key)
+            map_deps = qry.fetch(
+                projection=[MapUserToDeployment.deployment_key])
+            qry2 = MapUserToDeployment.query(
+                MapUserToDeployment.deployment_key.IN(map_deps))
+            map_users_keys = qry2.fetch(
+                projection=[MapUserToDeployment.user_key])
+            # Entity.query().fetch(20,keys_only=True)
+            users = ndb.get_multi(map_users_keys)
+            return users
+        else:
             return []
 
     def get_deployments(self):
         if self.is_super_admin and self.is_super_admin == True:
             return Deployment.query()
         else:
-            qry = MapUserToDeployment.query(MapUserToDeployment.user_key == self.key)
-            map_deps_keys = qry.fetch(projection=[MapUserToDeployment.deployment_key])
+            qry = MapUserToDeployment.query(
+                MapUserToDeployment.user_key == self.key)
+            map_deps_keys = qry.fetch(
+                projection=[MapUserToDeployment.deployment_key])
             deployments = ndb.get_multi(map_deps_keys)
             return deployments
 

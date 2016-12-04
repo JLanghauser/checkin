@@ -58,6 +58,15 @@ class BaseHandler(webapp2.RequestHandler):
       """Shortcut to access the current session."""
       return self.session_store.get_session(backend="datastore")
 
+  def get_params_hash(self,**kwargs):
+      params = {}
+      user = self.user
+      params['user']= user
+
+      for key, value in kwargs.items():
+          params[key] = value
+      return params
+      
   def render_template(self, view_filename, params={}):
     user = self.user_info
     params['user'] = user
