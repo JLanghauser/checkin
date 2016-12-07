@@ -399,7 +399,7 @@ class CheckInHandler(BaseHandler):
 
     @user_login_required
     def get(self, deployment_slug=None):
-        self.handlerequest(None)
+        self.handlerequest(deployment_slug)
 
     @user_login_required
     def post(self, deployment_slug=None):
