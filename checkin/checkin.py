@@ -346,6 +346,7 @@ class UserEditHandler(BaseHandler):
 class CheckInHandler(BaseHandler):
     def get_deployment_params(self,deployment):
         params = {}
+        params['deployment_slug'] = deployment.slug
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text
@@ -354,22 +355,27 @@ class CheckInHandler(BaseHandler):
     def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', -1)
         deployment = None
+        params = {}
+        post_deployment_slug = self.request.get('deployment_slug', None)
 
         if deployment_slug:
             deployment = Deployment.get_by_slug(deployment_slug)
 
-        if (visitor_id == -1):
-            params = {}
-            if deployment:
+        if not deployment and post_deployment_slug:
+            deployment = Deployment.get_by_slug(post_deployment_slug)
+
+        if deployment:
                 params = self.get_deployment_params(deployment)
 
+        if (visitor_id == -1):
             self.render_template('checkin_visitor.html',params)
         else:
 
             if not deployment:
-                params = {
-                    'error': "true", 'flash_message': "Invalid or No Deployment Passed"}
+                params['error'] = "true"
+                params['flash_message'] = "Invalid or No Deployment Passed"
                 self.render_template('checkin_visitor.html', params)
+                return
 
             new_map = MapUserToVisitor()
             new_map.user_key = self.user.key
@@ -386,15 +392,15 @@ class CheckInHandler(BaseHandler):
                     new_map.visitor_key = visitor.key
                     new_map.deployment_key = visitor.deployment_key
                     new_map.put()
-                    params = {'visitor_id': visitor_id}
+                    params['visitor_id'] = visitor_id
                     self.render_template('successful_checkin.html', params)
                 else:
-                    params = {
-                        'error': "true", 'flash_message': "You've already checked in visitor " + visitor_id}
+                    params['error'] = 'true'
+                    params['flash_message'] = "You've already checked in visitor " + visitor_id
                     self.render_template('checkin_visitor.html', params)
             else:
-                params = {'error': "true",
-                          'flash_message': "Cannot find visitor " + visitor_id}
+                params['error'] = 'true'
+                params['flash_message'] = 'Cannot find visitor ' + visitor_id
                 self.render_template('checkin_visitor.html', params)
 
     @user_login_required
