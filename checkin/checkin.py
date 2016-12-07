@@ -210,7 +210,7 @@ class StudentHandler(BaseHandler):
         else:
             self.handlerequest(deployment_slug)
 
-    def post(self):
+    def post(self,deployment_slug=None):
         self.handlerequest(deployment_slug)
 
 
@@ -329,10 +329,10 @@ class UserEditHandler(BaseHandler):
             self.auth.unset_session()
             self.auth.set_session(self.auth.store.user_to_dict(tmpuser))
 
-            if deployment_slug:
-                self.redirect('/', abort=False)
+            if deployment:
+                self.redirect(self.request.url.replace("/edit","/"))
             else:
-                self.redirect(self.uri_for('home'), abort=False)
+                self.redirect(self.uri_for('home'))
 
 
     def get(self,deployment_slug=None):
@@ -344,18 +344,31 @@ class UserEditHandler(BaseHandler):
 
 
 class CheckInHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
     def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', -1)
+        deployment = None
+
+        if deployment_slug:
+            deployment = Deployment.get_by_slug(deployment_slug)
+
         if (visitor_id == -1):
-            self.render_template('checkin_visitor.html')
+            params = {}
+            if deployment:
+                params = self.get_deployment_params(deployment)
+
+            self.render_template('checkin_visitor.html',params)
         else:
-            deployment = Deployment.query(
-                Deployment.slug == deployment_slug).get()
 
             if not deployment:
                 params = {
-                    'error': "true", 'flash_message': "Cannot find deployment " + deployment_slug}
+                    'error': "true", 'flash_message': "Invalid or No Deployment Passed"}
                 self.render_template('checkin_visitor.html', params)
 
             new_map = MapUserToVisitor()
