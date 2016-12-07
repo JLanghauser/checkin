@@ -51,7 +51,9 @@
 
   <body>
   <div class="content">
-    <div class="row orangebg">
+    <!--#2ec3e5-->
+    <!--#ffac33-->
+    <div class="row orangebg" style="background-color:#{{header_color}};">
 		<div>
       {% if logo_url %}
 			   <img class="center-block logo" src="{{ logo_url }}">
@@ -98,7 +100,7 @@
         {% else %}
           Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="sign_out">Logout</a>        |
           <a href="checkin_visitor">Checkin Student</a> |
-          <a href="/edit">Edit Profile</a> |
+          <a href="edit">Edit Profile</a> |
           <a href="/">Home</a>
           |
         {% endif %}
@@ -129,7 +131,8 @@
         {% endif %}
 
       </p>
-      <p>Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.</p>
+      <!--Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.-->
+      <p>{% autoescape off %}{{footer_text}}{% endautoescape %}</p>
     </footer>
   </div>
 

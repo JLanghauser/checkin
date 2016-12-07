@@ -18,6 +18,8 @@ class Deployment(ndb.Model):
     custom_subdomain = ndb.TextProperty(indexed=True)
     logo = ndb.BlobKeyProperty()
     logo_url = ndb.ComputedProperty(lambda self: self.get_logo_url())
+    header_background_color = ndb.TextProperty(indexed=True)
+    footer_text = ndb.TextProperty(indexed=True)
 
     def get_logo_url(self):
         if self.logo:

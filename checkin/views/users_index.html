@@ -2,12 +2,17 @@
 
 <h1>Deployments</h1>
 <h4>If you manage several events you can select one from the dropdown </h4>
-<select>
-  {% for dep in deployments %}
-    <option value="{{ dep.slug }}">{{ dep.name }}</option>
-  {% endfor %}
-</select>
 <form action="/users" method="POST">
+  <select name="selected_deployment_slug">
+    {% for dep in deployments %}
+      {% if dep.slug == selected_deployment_slug %}
+        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+      {% else %}
+        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+
   <input type="submit" value="switch" />
 </form>
 
@@ -34,6 +39,7 @@
         <td><input type="text" name="vendorname" /></td>
         <td><input type="password" name="password" /></td>
         <td><input type="checkbox" name="is_deployment_admin" /></td>
+        <input type="hidden" name="deployment_slug" value="{{ selected_deployment_slug }}" />
         <td><input type="submit" value="Create" /></td>
         </form>
       </tr>
@@ -44,7 +50,7 @@
 <h2> Add Bulk Users </h2>
 <h4>You can upload users in bulk using a file upload</h4>
 <h4>Note: Upload files should be CSV formatted with a header row</h4>
-<h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin </h4>
+<h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin,Deployment_Slug </h4>
 <form enctype="multipart/form-data" action="/users" method="post">
     <label for="filename">Filename</label>
     <input id="bulkfile" type="file" name="bulkfile" />

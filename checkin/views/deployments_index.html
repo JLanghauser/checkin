@@ -14,6 +14,8 @@
            <th>Slug</th>
            <th>Custom Hostname</th>
            <th>Subdomain</th>
+           <th>Background Color</th>
+           <th>Footer Text</th>
            <th>Logo URL</th>
            <th>Update</th>
          </tr>
@@ -21,12 +23,14 @@
     <tbody>
 {% for deployment in deployments %}
   {% if deployment.slug == editing_slug  %}
-          <form action="/deployments/{{ deployment.slug }}" method="POST">
+          <form action="/deployments/{{ deployment.slug }}/" method="POST">
           <tr>
             <td><input type="text" name="name" value = "{{ deployment.name }}" /></td>
             <td><input type="text" name="slug" value = "{{ deployment.slug }}" /></td>
             <td><input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" /></td>
             <td><input type="text" name="custom_subdomain" value = "{{ deployment.custom_subdomain }}" /></td>
+            <td><input type="text" name="header_background_color" value = "{{ deployment.header_background_color }}" /></td>
+            <td><input type="text" name="footer_text" value = "{{ deployment.footer_text }}" /></td>
             <td><input type="text" name="logo_url" value = "{{ deployment.logo_url }}" /></td>
             <td>
                 <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
@@ -40,6 +44,8 @@
           <td>{{ deployment.slug }}</td>
           <td>{{ deployment.custom_dns }}</td>
           <td>{{ deployment.custom_subdomain }}</td>
+          <td>{{ deployment.header_background_color }}</td>
+          <td>{{ deployment.footer_text }}</td>
           <td>{{ deployment.logo_url }}</td>
           <td>
             <form action="/deployments" method="GET">
@@ -64,6 +70,8 @@
              <th>Slug</th>
              <th>Custom Hostname</th>
              <th>Subdomain</th>
+             <th>Background Color</th>
+             <th>Footer Text</th>
              <th>Logo URL</th>
              <th>Submit</th>
            </tr>
@@ -75,6 +83,8 @@
           <td><input type="text" name="slug" /></td>
           <td><input type="text" name="custom_dns" /></td>
           <td><input type="text" name="custom_subdomain" /></td>
+          <td><input type="text" name="header_background_color" /></td>
+          <td><input type="text" name="footer_text" /></td>
           <td><input type="text" name="logo_url" /></td>
           <td><input type="submit" value="Create" /></td>
           </form>

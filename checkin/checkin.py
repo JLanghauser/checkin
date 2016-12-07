@@ -40,6 +40,16 @@ class ErrorPage(BaseHandler):
 
 
 class MainPage(BaseHandler):
+    def get_deployment_params(self,deployment,**kwargs):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+
+        for key, value in kwargs.items():
+            params[key] = value
+        return params
+
 
     def get(self, deployment_slug=None):
         user = self.user
@@ -54,13 +64,13 @@ class MainPage(BaseHandler):
         if (user):
             if dep:
                 params = self.get_params_hash(
-                    userprofile=user.profile, logo_url=dep.logo_url)
+                    self.get_deployment_params(dep,userprofile=user.profile))
             else:
-                params = self.get_params_hash(userprofile=user.profile)
+                params = self.get_params_hash({},userprofile=user.profile)
             self.render_template('index.html', params)
         else:
             if dep:
-                params = self.get_params_hash(logo_url=dep.logo_url)
+                params = self.get_params_hash(self.get_deployment_params(dep))
             else:
                 params = {}
             self.render_template('index.html', params)
@@ -87,6 +97,15 @@ class DeploymentHandler(BaseHandler):
         custom_dns = self.request.get('custom_dns')
         custom_subdomain = self.request.get('custom_subdomain')
         logo_url = self.request.get('logo_url')
+        header_background_color = self.request.get('header_background_color')
+        footer_text = self.request.get('footer_text')
+
+        if len(header_background_color) > 6:
+            params = {'error': "true",
+                      'flash_message': "Error - background color should be an html color code (6 characters long)"}
+            self.render_template('deployments_index.html', params)
+            return
+
 
         existing_deployment = Deployment.query(
             Deployment.slug == deployment_slug).fetch(1)
@@ -120,6 +139,8 @@ class DeploymentHandler(BaseHandler):
             existing_deployment.slug = new_slug
             existing_deployment.custom_dns = custom_dns
             existing_deployment.custom_subdomain = custom_subdomain
+            existing_deployment.header_background_color = header_background_color
+            existing_deployment.footer_text = footer_text
             existing_deployment.put()
 
             if existing_deployment.logo_url != logo_url:
@@ -133,6 +154,12 @@ class DeploymentHandler(BaseHandler):
 
 
 class StudentHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
     def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', '').strip()
@@ -177,8 +204,7 @@ class StudentHandler(BaseHandler):
         if (visitor_id == ''):
             dep = Deployment.get_by_slug(deployment_slug)
             if dep:
-                self.render_template('studentlogin.html',
-                                    self.get_params_hash(logo_url=dep.logo_url))
+                self.render_template('studentlogin.html',self.get_params_hash(self.get_deployment_params(dep)))
             else:
                 self.render_template('studentlogin.html')
         else:
@@ -189,6 +215,12 @@ class StudentHandler(BaseHandler):
 
 
 class SignInHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
     def handlerequest(self, deployment_slug=None):
         raw_password = self.request.get('password')
@@ -211,13 +243,30 @@ class SignInHandler(BaseHandler):
                     else:
                         self.redirect(self.uri_for('home'), abort=False)
             else:
-                params = {'error': "true",
-                          'flash_message': "Error signing in - please try again"}
+                dep = None
+                params = {}
+                if deployment_slug:
+                    dep = Deployment.get_by_slug(deployment_slug)
+
+                if dep:
+                    params = self.get_deployment_params(dep)
+
+                params['error'] = "true"
+                params['flash_message'] = "Error signing in - please try again"
                 self.render_template('sign_in.html', params)
 
         else:
-            params = {'error': "true",
-                      'flash_message': "Error signing in - please try again"}
+            dep = None
+            params = {}
+            if deployment_slug:
+                dep = Deployment.get_by_slug(deployment_slug)
+
+            if dep:
+                params = self.get_deployment_params(dep)
+
+            params['error'] = "true"
+            params['flash_message'] = "Error signing in - please try again"
+
             self.render_template('sign_in.html', params)
 
     def get(self, deployment_slug=None):
@@ -232,10 +281,11 @@ class SignInHandler(BaseHandler):
                 dep = Deployment.query(
                     Deployment.slug == deployment_slug).fetch(1)
                 if dep and len(dep) > 0:
-                    params = self.get_params_hash(
-                        redirect_to=redirect_to, logo_url=dep[0].logo_url)
+                    dep = dep[0]
+                    params = self.get_params_hash(self.get_deployment_params(dep),
+                        redirect_to=redirect_to)
             else:
-                params = self.get_params_hash(redirect_to=redirect_to)
+                params = self.get_params_hash({},redirect_to=redirect_to)
 
             self.render_template('sign_in.html', params)
 
@@ -255,28 +305,42 @@ class SignOutHandler(BaseHandler):
 
 
 class UserEditHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
-    def handlerequest(self):
+    def handlerequest(self,deployment_slug=None):
+        deployment = None
+        params = {}
+        if deployment_slug:
+            deployment = Deployment.get_by_slug(deployment_slug)
+            params = self.get_deployment_params(deployment)
+
         profile_param = self.request.get('profile', -1)
         if (profile_param == -1):
-            user = self.user
-            params = {'userprofile': user.profile}
-            self.render_template('edit_user.html', params)
+            self.render_template('edit_user.html', self.get_params_hash(params))
         else:
             self.user.profile = profile_param.strip()
             self.user.put()
             tmpuser = self.user
             self.auth.unset_session()
             self.auth.set_session(self.auth.store.user_to_dict(tmpuser))
-            self.redirect(self.uri_for('home'), abort=False)
+
+            if deployment_slug:
+                self.redirect('/', abort=False)
+            else:
+                self.redirect(self.uri_for('home'), abort=False)
 
 
-    def get(self):
-        self.handlerequest()
+    def get(self,deployment_slug=None):
+        self.handlerequest(deployment_slug)
 
     @user_login_required
-    def post(self):
-        self.handlerequest()
+    def post(self,deployment_slug=None):
+        self.handlerequest(deployment_slug)
 
 
 class CheckInHandler(BaseHandler):
@@ -331,7 +395,14 @@ class CheckInHandler(BaseHandler):
 
 class UsersHandler(BaseHandler):
 
-    def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
+
+    def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email,deployment_slug):
         calling_user = self.user
         users = calling_user.get_users()
 
@@ -358,6 +429,22 @@ class UsersHandler(BaseHandler):
             edit_user.email = email
             edit_user.put()
 
+            dep = Deployment.get_by_slug(deployment_slug)
+            if not dep:
+                params = {'users': users, 'error': "true",
+                              'flash_message': "Invalid Deployment_sug: " + deployment_slug}
+                self.render_template('users_index.html', params)
+                return
+
+            maps = MapUserToDeployment.query(MapUserToDeployment.user_key == edit_user.key)
+            for map in maps:
+                map.key.delete()
+
+            new_map = MapUserToDeployment()
+            new_map.user_key = edit_user.key
+            new_map.deployment_key = dep.key
+            new_map.put()
+
             params = {'users': users, 'success': "true",
                       'flash_message': "Successfully edited user"}
             self.render_template('users_index.html', params)
@@ -367,7 +454,7 @@ class UsersHandler(BaseHandler):
         self.render_template('users_index.html', params)
         return
 
-    def add_user(self, username, vendorname, password, is_deployment_admin, email):
+    def add_user(self, username, vendorname, password, is_deployment_admin, email,deployment_slug):
         tmp_user = User.get_by_username(username)
 
         if tmp_user:
@@ -376,16 +463,25 @@ class UsersHandler(BaseHandler):
             if not username:
                 return "Error - username cannot be blank."
 
+            dep = Deployment.get_by_slug(deployment_slug)
+            if not dep:
+                return "Invalid deployment_slug: " + deployment_slug
+
             newuser = User()
             newuser.username = username
             newuser.vendorname = vendorname
             newuser.set_password(password)
-            newuser.is_deployment_admin = is_deployment_admin in [
-                'true', 'True', '1', 'on']
-            newuser.profile = '<h1>Edit your profile <a href = "/edit">here</a></h1>'
+            newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
+            newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
             newuser.email = email
             newuser.put()
             sleep(0.5)
+
+
+            new_map = MapUserToDeployment()
+            new_map.user_key = newuser.key
+            new_map.deployment_key = dep.key
+            new_map.put()
             return ""
 
     @deployment_admin_required
@@ -395,12 +491,19 @@ class UsersHandler(BaseHandler):
         deployments = self.user.get_deployments()
         params = {'users': users, 'deployments': deployments,
                   'editing_username': editing_username}
+        if len(deployments.fetch()) > 0:
+            params["selected_deployment_slug"] = deployments.fetch()[0].slug
+        else:
+            params["selected_deployment_slug"] = ""
+
         self.render_template('users_index.html', params)
 
     @deployment_admin_required
     def post(self):
         calling_user = self.user
 
+        selected_deployment_slug = self.request.get('selected_deployment_slug')
+        deployment_slug = self.request.get('deployment_slug')
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
@@ -410,6 +513,16 @@ class UsersHandler(BaseHandler):
         bulkfile = self.request.get('bulkfile')
         command = self.request.get('command')
         old_username = self.request.get('old_username')
+
+        if selected_deployment_slug:
+            editing_username = self.request.get('editing_username', '')
+            users = self.user.get_users()
+            deployments = self.user.get_deployments()
+            params = {'users': users, 'deployments': deployments,
+                      'editing_username': editing_username,
+                      'selected_deployment_slug' : selected_deployment_slug}
+            self.render_template('users_index.html', params)
+            return
 
         if bulkfile:
             params = {}
@@ -425,7 +538,7 @@ class UsersHandler(BaseHandler):
                         skipped_header_row = True
                     else:
                         retval = self.add_user(username=row[0], vendorname=row[2], password=row[
-                                               3], is_deployment_admin=row[4], email=row[1])
+                                               3], is_deployment_admin=row[4], email=row[1],deployment_slug=row[5])
                         count = count + 1
                         if retval is not "":
                             users = calling_user.get_users()
@@ -458,7 +571,8 @@ class UsersHandler(BaseHandler):
             return self.edit_user(old_username, username, vendorname, password, is_deployment_admin, email)
         else:
             retval = self.add_user(username=username, vendorname=vendorname,
-                                   password=password, is_deployment_admin=is_deployment_admin, email=email)
+                                   password=password, is_deployment_admin=is_deployment_admin, email=email,
+                                   deployment_slug=deployment_slug)
             users = calling_user.get_users()
 
             if retval is not "":
@@ -472,6 +586,12 @@ class UsersHandler(BaseHandler):
 
 
 class VisitorsHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
     def add_visitor(self,visitor_id,deployment=None):
         if deployment:
@@ -506,6 +626,9 @@ class VisitorsHandler(BaseHandler):
                         params = {'error': "true",'flash_message': retval}
                         if deployment:
                             params['logo_url'] = deployment.logo_url
+                            params['logo_url'] = deployment.logo_url
+                            params['header_color'] = deployment.header_background_color
+                            params['footer_text'] =  deployment.footer_text
 
                         self.render_template('visitors_index.html', params)
                         return
@@ -515,8 +638,11 @@ class VisitorsHandler(BaseHandler):
                 if deployment:
                     params = {'success': "true",
                           'flash_message': "Successfully added "
-                               + str(count) + " visitors.",
-                           'logo_url':deployment.logo_url}
+                               + str(count) + " visitors."}
+
+                    params['header_color'] = deployment.header_background_color
+                    params['logo_url'] = deployment.logo_url
+                    params['footer_text'] =  deployment.footer_text
                 else:
                     params = {'success': "true",
                           'flash_message': "Successfully added "
@@ -544,6 +670,8 @@ class VisitorsHandler(BaseHandler):
 
             if deployment:
                 params["logo_url"] = deployment.logo_url
+                params['header_color'] = deployment.header_background_color
+                params['footer_text'] =  deployment.footer_text
 
             self.render_template('visitors_index.html', params)
 
@@ -555,7 +683,7 @@ class VisitorsHandler(BaseHandler):
 
             if dep:
                 self.render_template('visitors_index.html',
-                            self.get_params_hash(logo_url=dep.logo_url))
+                            self.get_params_hash(self.get_deployment_params(dep)))
             else:
                 self.render_template('visitors_index.html')
         else:
@@ -608,6 +736,14 @@ class DeploymentsHandler(BaseHandler):
         custom_dns = self.request.get('custom_dns')
         custom_subdomain = self.request.get('custom_subdomain')
         logo_url = self.request.get('logo_url', '')
+        header_background_color = self.request.get('header_background_color')
+        footer_text = self.request.get('footer_text')
+
+        if len(header_background_color) > 6:
+            params = {'error': "true",
+                      'flash_message': "Error - background color should be an html color code (6 characters long)"}
+            self.render_template('deployments_index.html', params)
+            return
 
         tmp_deployment_slug = Deployment.query(
             Deployment.slug == slug).fetch(1)
@@ -626,6 +762,9 @@ class DeploymentsHandler(BaseHandler):
             newdeployment.slug = slug
             newdeployment.custom_dns = custom_dns
             newdeployment.custom_subdomain = custom_subdomain
+            newdeployment.header_background_color = header_background_color
+            newdeployment.footer_text = footer_text
+
             newdeployment.put()
             if logo_url:
                 newdeployment.upload_img(logo_url)
@@ -681,6 +820,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments/view/<deployment_slug>/visitors',
                   VisitorsHandler, name='visitors_deployments'),
 
+    webapp2.Route('/deployments/view/<deployment_slug>/edit', UserEditHandler, name='edit_deployments'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
 
     webapp2.Route('/upload_image', UploadHandler, name='upload'),

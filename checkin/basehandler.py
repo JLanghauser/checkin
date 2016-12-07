@@ -60,10 +60,12 @@ class BaseHandler(webapp2.RequestHandler):
       """Shortcut to access the current session."""
       return self.session_store.get_session(backend="datastore")
 
-  def get_params_hash(self,**kwargs):
-      params = {}
+  def get_params_hash(self,starting_array,**kwargs):
+      params = starting_array
       user = self.user
-      params['user']= user
+      if user:
+          params['user']= user
+          params['userprofile'] = user.profile
 
       for key, value in kwargs.items():
           params[key] = value
