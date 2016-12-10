@@ -14,23 +14,9 @@ from time import sleep
 import csv
 import StringIO
 import json
-
-
-class MapUserToDeployment (ndb.Model):
-    deployment_key = ndb.KeyProperty(kind=Deployment)
-    user_key = ndb.KeyProperty(kind=User)
-
-
-class Visitor(ndb.Model):
-    deployment_key = ndb.KeyProperty(kind=Deployment)
-    visitor_id = ndb.TextProperty(indexed=True)
-
-
-class MapUserToVisitor (ndb.Model):
-    deployment_key = ndb.KeyProperty(kind=Deployment)
-    user_key = ndb.KeyProperty(kind=User)
-    visitor_key = ndb.KeyProperty(kind=Visitor)
-
+from models import *
+from reports import *
+from sample import *
 
 class ErrorPage(BaseHandler):
 
@@ -382,7 +368,7 @@ class CheckInHandler(BaseHandler):
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
                                 Visitor.deployment_key == deployment.key)
             visitor = qry.get()
-            if (visitor):
+            if (visitor or visitor_id == 9999999):
                 maps = MapUserToVisitor.query(ndb.AND(
                     MapUserToVisitor.visitor_key == visitor.key,
                     MapUserToVisitor.user_key == self.user.key)
@@ -620,7 +606,7 @@ class VisitorsHandler(BaseHandler):
             qry = Visitor.query(Visitor.visitor_id == visitor_id)
 
         visitor = qry.get()
-        if (visitor is None):
+        if (visitor is None and visitor_id != 9999999):
             newvisitor = Visitor()
             newvisitor.visitor_id = visitor_id
             if deployment:
@@ -848,11 +834,16 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
     webapp2.Route('/users', UsersHandler, name='users'),
 
+    webapp2.Route('/reports', ReportsHandler, name='reports'),
 
+
+    webapp2.Route('/deployments/view/<deployment_slug>/sample', SampleHandler, name='sample_deployment'),
 
     webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor',
                   RandomVisitorHandler, name='random_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors',
                   MapUserToVisitorHandler, name='list_maps')
+
+
 
 ], config=config, debug=True)

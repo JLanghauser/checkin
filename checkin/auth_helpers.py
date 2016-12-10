@@ -20,10 +20,18 @@ class Deployment(ndb.Model):
     logo_url = ndb.ComputedProperty(lambda self: self.get_logo_url())
     header_background_color = ndb.TextProperty(indexed=True)
     footer_text = ndb.TextProperty(indexed=True)
+    sample_qr_code = ndb.BlobKeyProperty()
+    sample_qr_code_url = ndb.ComputedProperty(lambda self: self.get_sample_qr_code_url())
 
     def get_logo_url(self):
         if self.logo:
             return images.get_serving_url(self.logo, 1600, False, True)
+        else:
+            return ""
+
+    def get_sample_qr_code_url(self):
+        if self.sample_qr_code:
+            return images.get_serving_url(self.sample_qr_code, 1600, False, True)
         else:
             return ""
 
@@ -43,6 +51,22 @@ class Deployment(ndb.Model):
         if deployment:
             return deployment
         return None
+
+    def upload_qr_code(self,qrcodeimg):
+        multipart_param = MultipartParam(
+            'file', qrcodeimg, filename='sample_' + self.slug, filetype='png')
+        datagen, headers = multipart_encode([multipart_param])
+        upload_url = blobstore.create_upload_url('/upload_image')
+        result = urlfetch.fetch(
+            url=upload_url,
+            payload="".join(datagen),
+            method=urlfetch.POST,
+            headers=headers)
+
+        blob = blobstore.get(json.loads(result.content)["key"])
+
+        self.sample_qr_code = blob.key()
+        self.put()
 
     def upload_img(self, logo_url):
         image_url = logo_url

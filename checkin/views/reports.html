@@ -1,0 +1,55 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Reports</h1>
+<h4>View several reports on deployment statistics</h4>
+
+<h1>Deployments</h1>
+<h4>If you manage several events you can select one from the dropdown </h4>
+<form action="reports" method="POST">
+  <select name="selected_deployment_slug">
+    {% for dep in deployments %}
+      {% if dep.slug == selected_deployment_slug %}
+        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+      {% else %}
+        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+
+  <input type="submit" value="generate" />
+</form>
+
+<h2>Pre-Event Booth Information Report</h2>
+<h4>list of user accounts that have modified their profile</h4>
+{% if boothreport %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>HasEdited</th>
+         </tr>
+    </thead>
+    <tbody>
+  {% for row in boothreport %}
+    {% if row and 'username' in row %}
+    <tr>
+      <td>{{ row.username }}</td>
+      <td>{{ row.email }}</td>
+      <td>{{ row.hasedited }}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<h2>Post-Event Visitor Information Report</h2>
+<h4>See the breakdown of checkins for booths and users</h4>
+
+
+{% endblock %}

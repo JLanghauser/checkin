@@ -6,3 +6,5 @@ unidecode==0.4.19
 webargs==1.2.0
 titlecase==0.8.1
 poster==0.8.1
+pypng==0.0.18
+pyqrcode==1.2.1
