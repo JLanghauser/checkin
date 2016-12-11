@@ -52,11 +52,12 @@ class Deployment(ndb.Model):
             return deployment
         return None
 
-    def upload_qr_code(self,qrcodeimg):
+    def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
-            'file', qrcodeimg, filename='sample_' + self.slug, filetype='png')
+            'file', qrcodeimg, filename='sample_'+ self.slug, filetype=image_type)
         datagen, headers = multipart_encode([multipart_param])
         upload_url = blobstore.create_upload_url('/upload_image')
+
         result = urlfetch.fetch(
             url=upload_url,
             payload="".join(datagen),
@@ -64,7 +65,6 @@ class Deployment(ndb.Model):
             headers=headers)
 
         blob = blobstore.get(json.loads(result.content)["key"])
-
         self.sample_qr_code = blob.key()
         self.put()
 

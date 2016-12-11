@@ -8,3 +8,5 @@ titlecase==0.8.1
 poster==0.8.1
 pypng==0.0.18
 pyqrcode==1.2.1
+Pillow==3.4.2
+qrcode==5.3.0
