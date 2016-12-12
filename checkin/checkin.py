@@ -790,7 +790,7 @@ class MapUserToVisitorHandler(BaseHandler):
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
-        'user_attributes': ['username', 'email', 'is_super_admin', 'is_deployment_admin', 'sudoer']
+        'user_attributes': ['username', 'email', 'is_super_admin', 'is_deployment_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'

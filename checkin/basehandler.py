@@ -64,6 +64,10 @@ class BaseHandler(webapp2.RequestHandler):
       params = starting_array
       user = self.user
       if user:
+        #   sudos = SudoLogin.query(SudoLogin.admin_key == user.key).fetch(1)
+        #   if sudos and len(sudos) > 0 and sudos[0]:
+        #       user = sudos[0].user_key
+        #       params['sudo'] = True
           params['user']= user
           params['userprofile'] = user.profile
 
