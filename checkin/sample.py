@@ -55,7 +55,6 @@ class SampleHandler(BaseHandler):
             params[key] = value
         return params
 
-    @user_login_required
     def get(self, deployment_slug=None):
         params = {}
         if deployment_slug:
@@ -76,15 +75,15 @@ class SampleHandler(BaseHandler):
             else:
                 visitor = visitor[0]
 
-            vis_map = MapUserToVisitor.query(
-                                   MapUserToVisitor.user_key == self.user.key,
-                                   MapUserToVisitor.visitor_key == visitor.key,
-                                   MapUserToVisitor.deployment_key == dep.key).fetch()
-
-            if vis_map and len(vis_map) > 0 and vis_map[0]:
-                params['complete'] = 'true'
-            else:
-                params['complete'] = 'false'
+            # vis_map = MapUserToVisitor.query(
+            #                        MapUserToVisitor.user_key == self.user.key,
+            #                        MapUserToVisitor.visitor_key == visitor.key,
+            #                        MapUserToVisitor.deployment_key == dep.key).fetch()
+            #
+            # if vis_map and len(vis_map) > 0 and vis_map[0]:
+            #     params['complete'] = 'true'
+            # else:
+            params['complete'] = 'false'
 
         self.render_template('sample.html',params)
 

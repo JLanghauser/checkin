@@ -107,7 +107,10 @@ def deployment_admin_required(handler):
     def check_deployment_admin(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
+            if 'X-Custom-Referrer' in self.request.headers:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.headers['X-Custom-Referrer'], abort=True)
+            else:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.url, abort=True)
         else:
             if (self.user.is_super_admin):
                 return handler(self, *args, **kwargs)
@@ -136,7 +139,10 @@ def super_admin_required(handler):
     def check_super_admin(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            self.redirect(self.uri_for('sign_in') + '?redirect_to=' + self.request.url, abort=True)
+            if 'X-Custom-Referrer' in self.request.headers:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.headers['X-Custom-Referrer'], abort=True)
+            else:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.url, abort=True)
         else:
             if self.user.is_super_admin and self.user.is_super_admin == True:
                 return handler(self, *args, **kwargs)
@@ -153,7 +159,10 @@ def user_login_required(handler):
     def check_user_login(self, *args, **kwargs):
         auth = self.auth
         if not auth.get_user_by_session():
-            self.redirect("sign_in" + '?redirect_to=' + self.request.url, abort=True)
+            if 'X-Custom-Referrer' in self.request.headers:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.headers['X-Custom-Referrer'], abort=True)
+            else:
+                self.redirect("sign_in" + '?redirect_to=' + self.request.url, abort=True)
         else:
             return handler(self, *args, **kwargs)
     return check_user_login

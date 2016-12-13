@@ -23,6 +23,28 @@
 
 <h2>Pre-Event Booth Information Report</h2>
 <h4>list of user accounts that have modified their profile</h4>
+{% if boothreport_stats %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Total Edited</th>
+           <th>Total Unedited</th>
+         </tr>
+    </thead>
+    <tbody>
+    <tr>
+      {% for row in boothreport_stats %}
+        {% if row and 'edited' in row %}
+          <td>{{ row.edited }}</td>
+          <td>{{ row.unedited }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    </tbody>
+  </table>
+  </div>
+{% endif %}
 {% if boothreport %}
 <div class="table-responsive">
   <table class="table table-striped">

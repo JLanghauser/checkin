@@ -95,14 +95,16 @@
       <hr/>
       <p>
         {% if not user %}
-          <a href="sign_in">Login</a>
+          <a href="sign_in">Login</a> |
+          <a href="sample">Sample Student Checkin</a> |
+          <a href="/">Home</a>
         |
         {% else %}
           Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="sign_out">Logout</a>        |
           <a href="checkin_visitor">Checkin Student</a> |
           <a href="edit">Edit Profile</a> |
-          <a href="sample">Sample Checkin</a> |
-          <a href="/">Home</a>
+          <a href="/">Home</a> |
+          <a href="sample">Sample Student Checkin</a>
           |
         {% endif %}
         {% if user and user.is_super_admin %}

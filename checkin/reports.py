@@ -21,6 +21,8 @@ import json
 class ReportsHandler(BaseHandler):
     def get_booth_report(self,deployment=None):
         report = []
+        edited_count = 0
+        unedited_count = 0
         if deployment:
             map_list = MapUserToDeployment.query(MapUserToDeployment.deployment_key == deployment.key)
             for map_item in map_list:
@@ -28,15 +30,22 @@ class ReportsHandler(BaseHandler):
                 if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
                     report_row = {}
                     report_row['username'] = user[0].username
-                    report_row['email'] = user[0].username
+                    report_row['email'] = user[0].email
                     if ("<h1>Edit your profile" in user[0].profile
                         and ">here</a></h1>" in user[0].profile
                         and len(user[0].profile) < 60):
                         report_row['hasedited'] = 'NO'
+                        unedited_count = unedited_count + 1
                     else:
                         report_row['hasedited'] = 'YES'
+                        edited_count = edited_count + 1
                     report.append(report_row)
-        return report
+            report_stats = []
+            report_stats_row = {}
+            report_stats_row['unedited'] = unedited_count
+            report_stats_row['edited'] = edited_count
+            report_stats.append(report_stats_row)
+        return report_stats,report
 
     def get_deployment_params(self,deployment,**kwargs):
         params = {}
@@ -58,7 +67,9 @@ class ReportsHandler(BaseHandler):
         if deployment_slug:
             dep = Deployment.get_by_slug(deployment_slug)
             if dep:
-                params['boothreport'] = self.get_booth_report(dep)
+                 stats, report = self.get_booth_report(dep)
+                 params['boothreport_stats'] = stats
+                 params['boothreport'] = report
 
         self.render_template('reports.html',params)
 
@@ -73,6 +84,6 @@ class ReportsHandler(BaseHandler):
         if deployment_slug:
             dep = Deployment.get_by_slug(deployment_slug)
             if dep:
-                params['boothreport'] = self.get_booth_report(dep)
+                params['boothreport_stats'],params['boothreport'] = self.get_booth_report(dep)
 
         self.render_template('reports.html',params)

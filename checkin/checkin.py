@@ -153,10 +153,12 @@ class StudentHandler(BaseHandler):
         if (visitor_id == '' or not deployment_slug):
             self.render_template('error_page.html')
         else:
-            deployment = Deployment.query(
-                Deployment.slug == deployment_slug).get()
+            deployment = Deployment.get_by_slug(deployment_slug)
+
             if not deployment:
                 self.render_template('error_page.html')
+
+            params = self.get_deployment_params(deployment)
 
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
                                 Visitor.deployment_key == deployment.key)
@@ -165,24 +167,28 @@ class StudentHandler(BaseHandler):
             if (visitor):
                 vkey = visitor.key
                 maps = MapUserToVisitor.query(
-                    MapUserToVisitor.visitor_key == vkey).fetch()
+                    MapUserToVisitor.visitor_key == vkey,
+                    MapUserToVisitor.deployment_key == deployment.key).fetch()
                 profiles = []
                 for map_item in maps:
                     ukey = map_item.user_key
-                    u = User.get_by_id(ukey.id(), parent=ukey.parent(
-                    ), app=ukey.app(), namespace=ukey.namespace())
-                    if ("<h1>Edit your profile" in u.profile and ">here</a></h1>" in u.profile and len(u.profile) < 60):
+                    u = ukey.get()
+
+                    if ( not u.profile
+                         or ("<h1>Edit your profile" in u.profile
+                         and ">here</a></h1>" in u.profile
+                         and len(u.profile) < 60)):
                         profiles.append("<h2>" + u.vendorname + "</h2>" +
                                         "<h3>This organization hasn't included any information)</h3>")
                     else:
                         profiles.append(
                             "<h2>" + u.vendorname + "</h2>" + u.profile)
 
-                params = {'profiles': profiles}
+                params['profiles'] = profiles
                 self.render_template('student.html', params)
             else:
-                params = {'error': "true",
-                          'flash_message': "No such student " + visitor_id}
+                params['error'] = "true"
+                params['flash_message'] = "No such student " + visitor_id
                 self.render_template('studentlogin.html', params)
 
     def get(self,deployment_slug=None):
@@ -371,7 +377,8 @@ class CheckInHandler(BaseHandler):
             if (visitor or visitor_id == 9999999):
                 maps = MapUserToVisitor.query(ndb.AND(
                     MapUserToVisitor.visitor_key == visitor.key,
-                    MapUserToVisitor.user_key == self.user.key)
+                    MapUserToVisitor.user_key == self.user.key,
+                    MapUserToVisitor.deployment_key == deployment.key)
                 ).count(1)
 
                 if (maps == 0):
