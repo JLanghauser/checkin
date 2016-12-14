@@ -28,7 +28,7 @@ class ReportsHandler(BaseHandler):
                 user = User.query(User.key == map_item.user_key).fetch(1)
                 if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
                     count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == deployment.key,
-                                                MapUserToVisitor.user_key == user[0].key).count(1)
+                                                MapUserToVisitor.user_key == user[0].key).count()
                     report[user[0].vendorname] = count
             sorted_report_items = sorted(report.iteritems(), key=lambda r: r[1])
             sorted_report_items.reverse()

@@ -86,6 +86,7 @@
             <td><input type="checkbox" name="is_deployment_admin"/></td>
           {% endif %}
           <td>
+                  <input type="hidden" name="deployment_slug" value="{{ selected_deployment_slug }}" />
                   <input type="hidden" name="old_username" value="{{ user.username }}" />
                   <input type="hidden" name="command" value="edit" />
                   <input type="submit" value="Save" />

@@ -106,9 +106,9 @@
           <a href="/">Home</a> |
           <a href="sample">Sample Student Checkin</a> |
           {% if user_link and user_link_text %}
-            <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a> 
-          {% endif %}
+            <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
           |
+          {% endif %}
         {% endif %}
         {% if user and user.is_super_admin %}
         <div class="row" style="margin-left:0px;" >
@@ -118,7 +118,6 @@
           |
               <a href="/reports">View Reports</a>
           |
-            <a href="/sudo/admins">Admin View</a>
         </div>
         {% endif %}
 
@@ -130,11 +129,7 @@
           |
             <a href="/visitors">Manage Visitors</a>
           |
-            <a href="/admin_panel/get_random_visitor">Run Raffle</a>
-          |
-            <a href="/sudo/users">User View</a>
-          |
-            <a href="/sudo/students">Visitor View</a>
+            <a href="get_random_visitor">Run Raffle</a>
         </div>
         {% endif %}
 

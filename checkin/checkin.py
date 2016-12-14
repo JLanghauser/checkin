@@ -456,7 +456,7 @@ class UsersHandler(BaseHandler):
             dep = Deployment.get_by_slug(deployment_slug)
             if not dep:
                 params = {'users': users, 'error': "true",
-                              'flash_message': "Invalid Deployment_sug: " + deployment_slug}
+                              'flash_message': "Invalid Deployment_slug: " + deployment_slug}
                 self.render_template('users_index.html', params)
                 return
 
@@ -592,7 +592,7 @@ class UsersHandler(BaseHandler):
                 self.render_template('users_index.html', params)
                 return
         elif command.lower() == "edit":
-            return self.edit_user(old_username, username, vendorname, password, is_deployment_admin, email)
+            return self.edit_user(old_username, username, vendorname, password, is_deployment_admin, email,deployment_slug)
         else:
             retval = self.add_user(username=username, vendorname=vendorname,
                                    password=password, is_deployment_admin=is_deployment_admin, email=email,
@@ -720,28 +720,38 @@ class VisitorsHandler(BaseHandler):
 
 
 class RandomVisitorHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
 
     @deployment_admin_required
-    def get(self):
-        # get count
-        entity_count = MapUserToVisitor.query().count()
+    def get(self,deployment_slug):
+        dep = Deployment.get_by_slug(deployment_slug)
+        if dep:
+            params = self.get_deployment_params(dep)
 
-        # get random number
-        random_index = randint(0, entity_count - 1)
+            # get count
+            entity_count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == dep.key).count()
 
-        # Get all the keys, not the Entities
-        maps = MapUserToVisitor.query().order(MapUserToVisitor.key).fetch()
+            # get random number
+            random_index = randint(0, entity_count - 1)
 
-        counter = 0
-        for map_item in maps:
-            if (random_index == counter):
-                key = map_item.visitor_key
-                rand_visitor = Visitor.get_by_id(
-                    key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
-                params = {'visitor_id': rand_visitor.visitor_id}
-                self.render_template('raffle_results.html', params)
-                return
-            counter = counter + 1
+            # Get all the keys, not the Entities
+            maps = MapUserToVisitor.query(MapUserToVisitor.deployment_key == dep.key).order(MapUserToVisitor.key).fetch()
+
+            counter = 0
+            for map_item in maps:
+                if (random_index == counter):
+                    key = map_item.visitor_key
+                    rand_visitor = Visitor.get_by_id(
+                        key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
+                    params['visitor_id'] = rand_visitor.visitor_id
+                    self.render_template('raffle_results.html', params)
+                    return
+                counter = counter + 1
 
 
 class DeploymentsHandler(BaseHandler):
@@ -874,8 +884,9 @@ app = webapp2.WSGIApplication([
 
     webapp2.Route('/deployments/view/<deployment_slug>/sample', SampleHandler, name='sample_deployment'),
 
-    webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor',
+    webapp2.Route('/deployments/view/<deployment_slug>/get_random_visitor',
                   RandomVisitorHandler, name='random_visitor'),
+
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors',
                   MapUserToVisitorHandler, name='list_maps'),
 
