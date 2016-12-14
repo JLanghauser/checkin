@@ -16,9 +16,24 @@ from time import sleep
 import csv
 import StringIO
 import json
+import operator
 
 
 class ReportsHandler(BaseHandler):
+    def get_booth_checkin_report(self,deployment=None):
+        report = {}
+        if deployment:
+            map_list = MapUserToDeployment.query(MapUserToDeployment.deployment_key == deployment.key)
+            for map_item in map_list:
+                user = User.query(User.key == map_item.user_key).fetch(1)
+                if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
+                    count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == deployment.key,
+                                                MapUserToVisitor.user_key == user[0].key).count(1)
+                    report[user[0].vendorname] = count
+            sorted_report_items = sorted(report.iteritems(), key=lambda r: r[1])
+            sorted_report_items.reverse()
+            return sorted_report_items
+        return []
     def get_booth_report(self,deployment=None):
         report = []
         edited_count = 0
@@ -85,5 +100,6 @@ class ReportsHandler(BaseHandler):
             dep = Deployment.get_by_slug(deployment_slug)
             if dep:
                 params['boothreport_stats'],params['boothreport'] = self.get_booth_report(dep)
+                params['boothcheckinreport'] = self.get_booth_checkin_report(dep)
 
         self.render_template('reports.html',params)

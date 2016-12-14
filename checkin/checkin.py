@@ -31,6 +31,8 @@ class MainPage(BaseHandler):
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text
+        params['user_link'] =  deployment.user_link
+        params['user_link_text'] =  deployment.user_link_text
 
         for key, value in kwargs.items():
             params[key] = value
@@ -85,6 +87,10 @@ class DeploymentHandler(BaseHandler):
         logo_url = self.request.get('logo_url')
         header_background_color = self.request.get('header_background_color')
         footer_text = self.request.get('footer_text')
+        student_link = self.request.get('student_link')
+        student_link_text = self.request.get('student_link_text')
+        user_link = self.request.get('user_link')
+        user_link_text = self.request.get('user_link_text')
 
         if len(header_background_color) > 6:
             params = {'error': "true",
@@ -127,6 +133,10 @@ class DeploymentHandler(BaseHandler):
             existing_deployment.custom_subdomain = custom_subdomain
             existing_deployment.header_background_color = header_background_color
             existing_deployment.footer_text = footer_text
+            existing_deployment.student_link = student_link
+            existing_deployment.student_link_text = student_link_text
+            existing_deployment.user_link = user_link
+            existing_deployment.user_link_text = user_link_text
             existing_deployment.put()
 
             if existing_deployment.logo_url != logo_url:
@@ -145,6 +155,8 @@ class StudentHandler(BaseHandler):
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text
+        params['student_link'] =  deployment.student_link
+        params['student_link_text'] =  deployment.student_link_text
         return params
 
     def handlerequest(self, deployment_slug=None):
@@ -750,6 +762,10 @@ class DeploymentsHandler(BaseHandler):
         logo_url = self.request.get('logo_url', '')
         header_background_color = self.request.get('header_background_color')
         footer_text = self.request.get('footer_text')
+        student_link = self.request.get('student_link')
+        student_link_text = self.request.get('student_link_text')
+        user_link = self.request.get('user_link')
+        user_link_text = self.request.get('user_link_text')
 
         if len(header_background_color) > 6:
             params = {'error': "true",
@@ -776,6 +792,10 @@ class DeploymentsHandler(BaseHandler):
             newdeployment.custom_subdomain = custom_subdomain
             newdeployment.header_background_color = header_background_color
             newdeployment.footer_text = footer_text
+            newdeployment.student_link = student_link
+            newdeployment.student_link_text = student_link_text
+            newdeployment.user_link = user_link
+            newdeployment.user_link_text = user_link_text
 
             newdeployment.put()
             if logo_url:
@@ -793,6 +813,14 @@ class MapUserToVisitorHandler(BaseHandler):
     def get(self):
         self.response.out.write("MapUserToVisitorHandler get")
 
+class UserRefreshHack(BaseHandler):
+
+    @super_admin_required
+    def get(self):
+        users = User.query()
+        for u in users:
+            u.put()
+        self.response.out.write("done")
 
 config = {
     'webapp2_extras.auth': {
@@ -849,7 +877,11 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/<deployment_slug>/admin_panel/get_random_visitor',
                   RandomVisitorHandler, name='random_visitor'),
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors',
-                  MapUserToVisitorHandler, name='list_maps')
+                  MapUserToVisitorHandler, name='list_maps'),
+
+
+    webapp2.Route('/John/Langhauser/UserRefreshHack',
+                  UserRefreshHack, name='hack_refresh')
 
 
 

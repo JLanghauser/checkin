@@ -22,6 +22,10 @@ class Deployment(ndb.Model):
     footer_text = ndb.TextProperty(indexed=True)
     sample_qr_code = ndb.BlobKeyProperty()
     sample_qr_code_url = ndb.ComputedProperty(lambda self: self.get_sample_qr_code_url())
+    student_link = ndb.TextProperty(indexed=True)
+    student_link_text = ndb.TextProperty(indexed=True)
+    user_link = ndb.TextProperty(indexed=True)
+    user_link_text = ndb.TextProperty(indexed=True)
 
     def get_logo_url(self):
         if self.logo:
@@ -173,6 +177,7 @@ class User(webapp2_extras.appengine.auth.models.User):
     username = ndb.StringProperty()
     profile = ndb.TextProperty()
     vendorname = ndb.StringProperty()
+    username_lower = ndb.ComputedProperty(lambda self: self.username.lower())
 
     def set_password(self, raw_password):
         """Sets the password for the current user
@@ -244,9 +249,18 @@ class User(webapp2_extras.appengine.auth.models.User):
         :returns:
             returns user or none if
         """
+        username = username.lower()
+
         qry = User.query(User.username == username)
         user = qry.get()
 
         if user:
             return user
+
+        qry = User.query(User.username_lower == username)
+        user = qry.get()
+
+        if user:
+            return user
+
         return None

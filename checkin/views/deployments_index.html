@@ -17,6 +17,10 @@
            <th>Background Color</th>
            <th>Footer Text</th>
            <th>Logo URL</th>
+           <th>Student Link</th>
+           <th>Student Link Text</th>
+           <th>User Link</th>
+           <th>User Link Text</th>
            <th>Update</th>
          </tr>
     </thead>
@@ -32,6 +36,10 @@
             <td><input type="text" name="header_background_color" value = "{{ deployment.header_background_color }}" /></td>
             <td><input type="text" name="footer_text" value = "{{ deployment.footer_text }}" /></td>
             <td><input type="text" name="logo_url" value = "{{ deployment.logo_url }}" /></td>
+            <td><input type="text" name="student_link" value = "{{ deployment.student_link }}" /></td>
+            <td><input type="text" name="student_link_text" value = "{{ deployment.student_link_text }}" /></td>
+            <td><input type="text" name="user_link" value = "{{ deployment.user_link }}" /></td>
+            <td><input type="text" name="user_link_text" value = "{{ deployment.user_link_text }}" /></td>
             <td>
                 <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
                 <input type="submit" value="Update" />
@@ -47,6 +55,10 @@
           <td>{{ deployment.header_background_color }}</td>
           <td>{{ deployment.footer_text }}</td>
           <td>{{ deployment.logo_url }}</td>
+          <td>{{ deployment.student_link }}</td>
+          <td>{{ deployment.student_link_text }}</td>
+          <td>{{ deployment.user_link }}</td>
+          <td>{{ deployment.user_link_text }}</td>
           <td>
             <form action="/deployments" method="GET">
               <input type="hidden" name="editing_slug" value="{{deployment.slug}}">
@@ -73,6 +85,10 @@
              <th>Background Color</th>
              <th>Footer Text</th>
              <th>Logo URL</th>
+             <th>Student Link</th>
+             <th>Student Link Text</th>
+             <th>User Link</th>
+             <th>User Link Text</th>
              <th>Submit</th>
            </tr>
       </thead>
@@ -86,6 +102,10 @@
           <td><input type="text" name="header_background_color" /></td>
           <td><input type="text" name="footer_text" /></td>
           <td><input type="text" name="logo_url" /></td>
+          <td><input type="text" name="student_link" /></td>
+          <td><input type="text" name="student_link_text" /></td>
+          <td><input type="text" name="user_link" /></td>
+          <td><input type="text" name="user_link_text" /></td>
           <td><input type="submit" value="Create" /></td>
           </form>
       </tr>

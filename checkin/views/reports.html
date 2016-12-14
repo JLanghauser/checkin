@@ -70,8 +70,27 @@
   </div>
 {% endif %}
 
-<h2>Post-Event Visitor Information Report</h2>
-<h4>See the breakdown of checkins for booths and users</h4>
-
+<h2>Event Booth Information Report</h2>
+<h4>See the count of checkins per booth</h4>
+{% if boothcheckinreport %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Booth</th>
+           <th>Number of Checkins</th>
+         </tr>
+    </thead>
+    <tbody>
+  {% for row in boothcheckinreport %}
+    <tr>
+      <td>{{ row.0 }}</td>
+      <td>{{ row.1 }}</td>
+    </tr>
+  {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
 
 {% endblock %}
