@@ -20,6 +20,55 @@ import operator
 
 
 class ReportsHandler(BaseHandler):
+    def get_checkin_raw_data(self,deployment=None,csv_writer=None):
+        report = []
+        users = {}
+        visitors = {}
+
+        if deployment:
+            checkins = MapUserToVisitor.query(
+                            MapUserToVisitor.deployment_key == deployment.key)
+
+            if csv_writer:
+                csv_writer.writerow(['booth_user', 'booth_vendor','student_id'])
+
+            for checkin in checkins:
+                report_row = {}
+
+                if checkin.user_key not in users:
+                    user = User.query(User.key == checkin.user_key).fetch(1)
+                    users[checkin.user_key] = user
+                else:
+                    user = users[checkin.user_key]
+
+                if user and len(user) > 0 and user[0]:
+                    user = user[0]
+                else:
+                    user = None
+
+                report_row['booth_user'] = user.username if user else 'ERROR'
+                report_row['booth_vendor'] = user.vendorname if user else 'ERROR'
+
+                if checkin.visitor_key not in visitors:
+                    visitor = Visitor.query(Visitor.key == checkin.visitor_key,
+                                        Visitor.deployment_key == deployment.key).fetch(1)
+                    visitors[checkin.visitor_key] = visitor
+                else:
+                    visitor = visitors[checkin.visitor_key]
+
+                if visitor and len(visitor) > 0 and visitor[0]:
+                    visitor = visitor[0]
+                else:
+                    visitor = None
+
+                report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
+
+                report.append(report_row)
+                if csv_writer:
+                    csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
+
+        return report
+
     def get_booth_checkin_report(self,deployment=None):
         report = {}
         if deployment:
@@ -34,6 +83,7 @@ class ReportsHandler(BaseHandler):
             sorted_report_items.reverse()
             return sorted_report_items
         return []
+
     def get_booth_report(self,deployment=None):
         report = []
         edited_count = 0
@@ -91,6 +141,8 @@ class ReportsHandler(BaseHandler):
     @deployment_admin_required
     def post(self, deployment_slug=None):
         selected_deployment_slug = self.request.get('selected_deployment_slug', None)
+        export = self.request.get('export', None)
+
         deployments = Deployment.query().fetch()
         if selected_deployment_slug:
             deployment_slug = selected_deployment_slug
@@ -98,7 +150,13 @@ class ReportsHandler(BaseHandler):
         params['deployments'] = deployments
         if deployment_slug:
             dep = Deployment.get_by_slug(deployment_slug)
-            if dep:
+            if dep and export:
+                self.response.headers['Content-Type'] = 'text/csv'
+                self.response.headers['Content-Disposition'] = 'attachment; filename=deploymentexport.csv'
+                writer = csv.writer(self.response.out)
+                raw_data = self.get_checkin_raw_data(dep,writer)
+                return
+            elif dep:
                 params['boothreport_stats'],params['boothreport'] = self.get_booth_report(dep)
                 params['boothcheckinreport'] = self.get_booth_checkin_report(dep)
 

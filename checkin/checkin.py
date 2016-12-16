@@ -688,7 +688,7 @@ class VisitorsHandler(BaseHandler):
                                       deployment=deployment)
             if retval == "":
                 params = {'success': "true",
-                          'flash_message': "Successfully created Visitor:  " + newvisitor.visitor_id}
+                          'flash_message': "Successfully created Visitor:  " + visitor_id}
             else:
                 params = {'error': "true", 'flash_message': retval}
 

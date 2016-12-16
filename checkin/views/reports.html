@@ -93,4 +93,19 @@
   </div>
 {% endif %}
 
+<h2>CSV Export Deployment Raw Info</h2>
+<h4>Get the raw checkin info for a deployment</h4>
+<form action="reports" method="POST">
+  <select name="selected_deployment_slug">
+    {% for dep in deployments %}
+      {% if dep.slug == selected_deployment_slug %}
+        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+      {% else %}
+        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <input type="hidden" name="export" value = "raw" />
+  <input type="submit" value="export" />
+</form>
 {% endblock %}
