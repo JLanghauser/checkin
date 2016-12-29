@@ -5,6 +5,10 @@ api_version: 1
 threadsafe: yes
 
 handlers:
+- url: /_ah/queue/deferred
+  script: google.appengine.ext.deferred.deferred.application
+  login: admin
+  
 - url: /admin/.*
   script: google.appengine.ext.admin.application
   login: admin
@@ -36,6 +40,7 @@ libraries:
 
 builtins:
 - remote_api: on
+- deferred: on
 
 # inbound_services:
 # - warmup
