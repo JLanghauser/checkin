@@ -20,6 +20,24 @@ import operator
 
 
 class ReportsHandler(BaseHandler):
+    def async_generate_report(self,user=None,deployment=None,csv_writer=None,report_type=None):
+        new_stored_data = StoredData()
+        report = None
+
+        if report_type == 'RAW_CHECKINS':
+            report = self.get_checkin_raw_data(deployment,csv_writer)
+        elif report_type == 'BOOTH_CHECKIN_REPORT':
+            report  = self.get_booth_checkin_report(deployment)
+        elif report_type == 'BOOTH_REPORT':
+            report  = self.get_booth_report(deployment)
+
+        new_stored_data.user_key = user.key
+        new_stored_data.deployment_key = deployment.key
+        new_stored_data.data_type = report_type
+        new_stored_data.raw_data = report
+        new_stored_data.put()
+
+
     def get_checkin_raw_data(self,deployment=None,csv_writer=None):
         report = []
         users = {}

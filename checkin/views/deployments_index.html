@@ -10,6 +10,7 @@
   <table class="table table-striped">
     <thead>
          <tr>
+           <th>Link</th>
            <th>Name</th>
            <th>Slug</th>
            <th>Custom Hostname</th>
@@ -29,6 +30,7 @@
   {% if deployment.slug == editing_slug  %}
           <form action="/deployments/{{ deployment.slug }}/" method="POST">
           <tr>
+            <td><a href="deployments/view/{{ deployment.slug }}/" target="_blank"> deployment-page-link </a></td>
             <td><input type="text" name="name" value = "{{ deployment.name }}" /></td>
             <td><input type="text" name="slug" value = "{{ deployment.slug }}" /></td>
             <td><input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" /></td>
@@ -48,6 +50,7 @@
           </form>
   {% else %}
         <tr>
+          <td><a href="deployments/view/{{ deployment.slug }}/" target="_blank"> deployment-page-link </a></td>
           <td>{{ deployment.name }}</td>
           <td>{{ deployment.slug }}</td>
           <td>{{ deployment.custom_dns }}</td>
