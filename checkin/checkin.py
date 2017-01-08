@@ -617,6 +617,57 @@ class VisitorsHandler(BaseHandler):
         params['footer_text'] =  deployment.footer_text
         return params
 
+    def add_bulk_visitors(self,user,deployment,bulk_file):
+        bgjob = BackgroundJob()
+        bgjob.user_key = user.key
+        bgjob.deployment_key = deployment.key
+        bgjob.job_type = "BULK_VISITOR_ADD"
+        bgjob.status = "STARTED"
+        bgjob.put()
+        
+        reader = None
+        try:
+            reader = self.get_csv_reader(bulk_file,False)
+            count = 0
+            for row in reader:
+                retval = self.add_visitor(row[0],deployment)
+                if retval is not "":
+                    params = {'error': "true",'flash_message': retval}
+                    if deployment:
+                        params['logo_url'] = deployment.logo_url
+                        params['logo_url'] = deployment.logo_url
+                        params['header_color'] = deployment.header_background_color
+                        params['footer_text'] =  deployment.footer_text
+
+                    self.render_template('visitors_index.html', params)
+                    return
+                else:
+                    count = count + 1
+
+            if deployment:
+                params = {'success': "true",
+                      'flash_message': "Successfully added "
+                           + str(count) + " visitors."}
+
+                params['header_color'] = deployment.header_background_color
+                params['logo_url'] = deployment.logo_url
+                params['footer_text'] =  deployment.footer_text
+            else:
+                params = {'success': "true",
+                      'flash_message': "Successfully added "
+                           + str(count) + " visitors."}
+
+            self.render_template('visitors_index.html', params)
+            return
+        except csv.Error as e:
+            if reader:
+                params = {'users': users, 'error': "true",
+                          'flash_message': "File Error - line %d: %s" % (reader.line_num, e)}
+            else:
+                params = {'users': users, 'error': "true",
+                          'flash_message': "Please verify file format - standard CSV with a header row."}
+            self.render_template('visitors_index.html', params)
+
     def add_visitor(self,visitor_id,deployment=None):
         if deployment:
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
@@ -640,49 +691,6 @@ class VisitorsHandler(BaseHandler):
         deployment = Deployment.get_by_slug(deployment_slug)
 
         if bulk_file:
-            reader = None
-            try:
-                reader = self.get_csv_reader(bulk_file,False)
-                count = 0
-                for row in reader:
-                    retval = self.add_visitor(row[0],deployment)
-                    if retval is not "":
-                        params = {'error': "true",'flash_message': retval}
-                        if deployment:
-                            params['logo_url'] = deployment.logo_url
-                            params['logo_url'] = deployment.logo_url
-                            params['header_color'] = deployment.header_background_color
-                            params['footer_text'] =  deployment.footer_text
-
-                        self.render_template('visitors_index.html', params)
-                        return
-                    else:
-                        count = count + 1
-
-                if deployment:
-                    params = {'success': "true",
-                          'flash_message': "Successfully added "
-                               + str(count) + " visitors."}
-
-                    params['header_color'] = deployment.header_background_color
-                    params['logo_url'] = deployment.logo_url
-                    params['footer_text'] =  deployment.footer_text
-                else:
-                    params = {'success': "true",
-                          'flash_message': "Successfully added "
-                               + str(count) + " visitors."}
-
-                self.render_template('visitors_index.html', params)
-                return
-            except csv.Error as e:
-                if reader:
-                    params = {'users': users, 'error': "true",
-                              'flash_message': "File Error - line %d: %s" % (reader.line_num, e)}
-                else:
-                    params = {'users': users, 'error': "true",
-                              'flash_message': "Please verify file format - standard CSV with a header row."}
-                self.render_template('visitors_index.html', params)
-
         else:
             retval = self.add_visitor(visitor_id=visitor_id,
                                       deployment=deployment)

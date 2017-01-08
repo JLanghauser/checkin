@@ -12,5 +12,5 @@ pip install --ignore-installed --target=lib pillow
 pip install --ignore-installed --target=lib pyqrcode
 pip install --ignore-installed --target=lib pypng
 
-pip install git+git://github.com/ojii/pymaging.git#egg=pymaging
-pip install git+git://github.com/ojii/pymaging-png.git#egg=pymaging-png
+pip install git+git://github.com/ojii/pymaging.git#egg=pymaging --target=lib
+pip install git+git://github.com/ojii/pymaging-png.git#egg=pymaging-png --target=lib
