@@ -27,6 +27,7 @@ class MapUserToVisitor (ndb.Model):
     deployment_key = ndb.KeyProperty(kind=Deployment)
     user_key = ndb.KeyProperty(kind=User)
     visitor_key = ndb.KeyProperty(kind=Visitor)
+    date_created = ndb.DateTimeProperty()
 
 class SudoLogin (ndb.Model):
     admin_key = ndb.KeyProperty(kind=User)
