@@ -1,20 +1,22 @@
 {% extends "main.html" %} {% block maincontent %}
 
-<h1>Deployments</h1>
-<h4>If you manage several events you can select one from the dropdown </h4>
-<form action="/users" method="POST">
-  <select name="selected_deployment_slug">
-    {% for dep in deployments %}
-      {% if dep.slug == selected_deployment_slug %}
-        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
-      {% else %}
-        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
-      {% endif %}
-    {% endfor %}
-  </select>
+{% if not logo_url and deployments and deployment_len > 0 %}
+  <h1>Deployments</h1>
+  <h4>If you manage several events you can select one from the dropdown </h4>
+  <form action="/users" method="POST">
+    <select name="selected_deployment_slug">
+      {% for dep in deployments %}
+        {% if dep.slug == selected_deployment_slug %}
+          <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+        {% else %}
+          <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
 
-  <input type="submit" value="switch" />
-</form>
+    <input type="submit" value="switch" />
+  </form>
+{% endif %}
 
 {% if user and user.is_super_admin %}
 <h2> Add New User: </h2>

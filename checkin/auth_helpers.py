@@ -188,27 +188,33 @@ class User(webapp2_extras.appengine.auth.models.User):
         self.password = security.generate_password_hash(
             raw_password, length=12)
 
-    def get_users(self):
+    def get_users(self,deployment=None):
         if self.is_super_admin and self.is_super_admin == True:
-            return User.query()
+            if deployment:
+                qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key == deployment.key)
+                map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
+                users = ndb.get_multi(map_users_keys).order(User.vendorname)
+                return users
+            else:
+                return User.query().order(User.vendorname)
         elif self.is_deployment_admin and self.is_deployment_admin == True:
-            qry = MapUserToDeployment.query(
-                MapUserToDeployment.user_key == self.key)
-            map_deps = qry.fetch(
-                projection=[MapUserToDeployment.deployment_key])
-            qry2 = MapUserToDeployment.query(
-                MapUserToDeployment.deployment_key.IN(map_deps))
-            map_users_keys = qry2.fetch(
-                projection=[MapUserToDeployment.user_key])
-            # Entity.query().fetch(20,keys_only=True)
-            users = ndb.get_multi(map_users_keys)
+            qry = MapUserToDeployment.query(MapUserToDeployment.user_key == self.key)
+            map_deps = qry.fetch(projection=[MapUserToDeployment.deployment_key])
+            if deployment:
+                if deployment.key in map_deps:
+                    map_deps = [deployment.key]
+                else:
+                    return []
+            qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key.IN(map_deps))
+            map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
+            users = ndb.get_multi(map_users_keys).order(User.vendorname)
             return users
         else:
             return []
 
     def get_deployments(self):
         if self.is_super_admin and self.is_super_admin == True:
-            return Deployment.query()
+            return Deployment.query().fetch()
         else:
             qry = MapUserToDeployment.query(
                 MapUserToDeployment.user_key == self.key)

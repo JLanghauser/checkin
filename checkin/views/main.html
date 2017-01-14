@@ -51,9 +51,64 @@
 
   <body>
   <div class="content">
-    <!--#2ec3e5-->
-    <!--#ffac33-->
     <div class="row orangebg" style="background-color:#{{header_color}};">
+      <nav class="navbar navbar-default orangebg" style="background-color:#{{header_color}};">
+        <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              {% if not user %}
+                  <li><a href="sign_in">Login</a></li>
+                  <li><a href="sample">Sample Student Checkin</a></li>
+                  <li><a href="/">Home</a></li>
+              {% else %}
+                  <li><center><h4 style="padding-top:5px;">{{ user.username }}</h4></center></li>
+                  <li><a href="sign_out">Logout</a></li>
+                  <li><a href="checkin_visitor">Checkin Student</a></li>
+                  <li><a href="edit">Edit Profile</a></li>
+                  <li><a href="/">Home</a></li>
+                  <li><a href="sample">Sample Student Checkin</a></li>
+                  <li>
+                    {% if user_link != None and user_link_text != None %}
+                      <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
+                    {% endif %}
+                  </li>
+              {% endif %}
+              {% if user and user.is_super_admin %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super Admin<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                      <li><a href="/deployments">Manage Deployments</a></li>
+                      <li><a href="/users">Manage Users</a></li>
+                      <li><a href="/reports">View Reports</a></li>
+                    </ul>
+                </li>
+              {% endif %}
+              {% if user and user.is_deployment_admin %}
+              <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="/deployments">Manage Deployments</a></li>
+                    <li><a href="/users">Manage Users</a></li>
+                    <li><a href="/visitors">Manage Visitors</a></li>
+                    <li><a href="get_random_visitor">Run Raffle</a></li>
+                  </ul>
+              </li>
+              {% endif %}
+            </ul>
+          </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+      </nav>
 		<div>
       {% if logo_url %}
 			   <img class="center-block logo" src="{{ logo_url }}">
@@ -93,47 +148,6 @@
   <div>
     <footer>
       <hr/>
-      <p>
-        {% if not user %}
-          <a href="sign_in">Login</a> |
-          <a href="sample">Sample Student Checkin</a> |
-          <a href="/">Home</a>
-        |
-        {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="sign_out">Logout</a>        |
-          <a href="checkin_visitor">Checkin Student</a> |
-          <a href="edit">Edit Profile</a> |
-          <a href="/">Home</a> |
-          <a href="sample">Sample Student Checkin</a> |
-          {% if user_link and user_link_text %}
-            <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
-          |
-          {% endif %}
-        {% endif %}
-        {% if user and user.is_super_admin %}
-        <div class="row" style="margin-left:0px;" >
-            <a href="/deployments">Manage Deployments</a>
-          |
-            <a href="/users">Manage Users</a>
-          |
-              <a href="/reports">View Reports</a>
-          |
-        </div>
-        {% endif %}
-
-        {% if user and user.is_deployment_admin %}
-        <div class="row" style="margin-left:0px;" >
-            <a href="/deployments">Manage Deployments</a>
-          |
-            <a href="/users">Manage Booth Users</a>
-          |
-            <a href="visitors">Manage Visitors</a>
-          |
-            <a href="get_random_visitor">Run Raffle</a>
-        </div>
-        {% endif %}
-
-      </p>
       <!--Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.-->
       <p>{% autoescape off %}{{footer_text}}{% endautoescape %}</p>
     </footer>

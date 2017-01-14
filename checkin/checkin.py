@@ -502,7 +502,6 @@ class UsersHandler(BaseHandler):
             newuser.put()
             sleep(0.5)
 
-
             new_map = MapUserToDeployment()
             new_map.user_key = newuser.key
             new_map.deployment_key = dep.key
@@ -512,14 +511,17 @@ class UsersHandler(BaseHandler):
     @deployment_admin_required
     def get(self):
         editing_username = self.request.get('editing_username', '')
-        users = self.user.get_users()
         deployments = self.user.get_deployments()
-        params = {'users': users, 'deployments': deployments,
+        params = {'deployments': deployments,
+                   'deployment_len': len(deployments),
                   'editing_username': editing_username}
-        if len(deployments.fetch()) > 0:
-            params["selected_deployment_slug"] = deployments.fetch()[0].slug
+
+        if len(deployments) > 0:
+            params["selected_deployment_slug"] = deployments[0].slug
+            params['users'] = self.user.get_users(deployments[0])
         else:
             params["selected_deployment_slug"] = ""
+            params['users'] = self.user.get_users()
 
         self.render_template('users_index.html', params)
 
@@ -616,6 +618,7 @@ class VisitorsHandler(BaseHandler):
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text
+        params['selected_deployment_slug'] = deployment.slug
         return params
 
     def add_bulk_visitors(self,user,deployment,bulk_file):
@@ -625,7 +628,7 @@ class VisitorsHandler(BaseHandler):
         bgjob.job_type = "BULK_VISITOR_ADD"
         bgjob.status = "STARTED"
         bgjob.put()
-        
+
         reader = None
         try:
             reader = self.get_csv_reader(bulk_file,False)
@@ -692,6 +695,7 @@ class VisitorsHandler(BaseHandler):
         deployment = Deployment.get_by_slug(deployment_slug)
 
         if bulk_file:
+            return
         else:
             retval = self.add_visitor(visitor_id=visitor_id,
                                       deployment=deployment)
@@ -720,7 +724,7 @@ class VisitorsHandler(BaseHandler):
             else:
                 self.render_template('visitors_index.html')
         else:
-            self.handlerequest()
+            self.handlerequest(deployment_slug)
 
     @deployment_admin_required
     def post(self,deployment_slug=None):
