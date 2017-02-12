@@ -48,6 +48,7 @@ class SampleHandler(BaseHandler):
 
     def get_deployment_params(self,deployment,**kwargs):
         params = {}
+        params['slug'] = deployment.slug
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text

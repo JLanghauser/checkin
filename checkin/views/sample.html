@@ -3,7 +3,11 @@
 {% block maincontent %}
 
 <h1>Sample Checkin</h1>
-{% if complete == 'false' %}
+{% if slug == None %}
+<h2> This page cannot be used without a deployment. Please visit this page for a specific deployment </h2>
+{% endif %}
+
+{% if complete == 'false' and slug != None %}
 
   <h2>Use this page to practice the check in process!</h2>
   <h3>Open this webpage on a second device (i.e. not the device you are using to scan QR codes).</h3>
@@ -22,8 +26,8 @@
 
   setTimeout(refresh, 5000);
   </script> -->
-
-{% else %}
+{% endif %}
+{% if complete != 'false' and slug != None  %}
   <center>
     <h1>Congratulations, you have successfully checked in this sample student! </h1>
     <h1>Remember that students can see the profiles of all the booths they checked into. </h1>

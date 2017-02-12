@@ -17,6 +17,7 @@ import json
 from models import *
 from reports import *
 from sample import *
+from pages import *
 
 class ErrorPage(BaseHandler):
 
@@ -845,6 +846,20 @@ class UserRefreshHack(BaseHandler):
             u.put()
         self.response.out.write("done")
 
+class AdminHandler(BaseHandler):
+    def get_deployment_params(self,deployment):
+        params = {}
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        return params
+
+    def get(self,deployment_slug):
+        dep = Deployment.get_by_slug(deployment_slug)
+        params = self.get_deployment_params(dep)
+
+        self.render_template('admin.html',params)
+
 config = {
     'webapp2_extras.auth': {
         'user_model': 'auth_helpers.User',
@@ -883,6 +898,9 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments/view/<deployment_slug>/visitors',
                   VisitorsHandler, name='visitors_deployments'),
 
+    webapp2.Route('/deployments/view/<deployment_slug>/admin',
+                  AdminHandler, name='admin_deployments'),
+
     webapp2.Route('/deployments/view/<deployment_slug>/edit', UserEditHandler, name='edit_deployments'),
     webapp2.Route('/edit', UserEditHandler, name='edit'),
 
@@ -895,13 +913,19 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/reports', ReportsHandler, name='reports'),
 
 
+    webapp2.Route('/sample', SampleHandler, name='sample_no_deployment'),
     webapp2.Route('/deployments/view/<deployment_slug>/sample', SampleHandler, name='sample_deployment'),
+
+
 
     webapp2.Route('/deployments/view/<deployment_slug>/get_random_visitor',
                   RandomVisitorHandler, name='random_visitor'),
 
     webapp2.Route('/<deployment_slug>/admin_panel/get_all_map_user_to_visitors',
                   MapUserToVisitorHandler, name='list_maps'),
+
+    webapp2.Route('/custom-domains',InstructionsHandler, name='domain_instructions'),
+    webapp2.Route('/deployments/view/<deployment_slug>/custom-domains',InstructionsHandler, name='domain_instructions'),
 
 
     webapp2.Route('/John/Langhauser/UserRefreshHack',

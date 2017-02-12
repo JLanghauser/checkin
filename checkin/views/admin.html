@@ -1,0 +1,181 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<ul class="nav nav-tabs">
+   <li><a href="#domain" data-toggle="tab">Custom Domain</a></li>
+   <li><a href="#look" data-toggle="tab">Look and Feel</a></li>
+   <li><a href="#surveys" data-toggle="tab">Surveys</a></li>
+   <li><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
+   <li><a href="#booths" data-toggle="tab">Manage Booths</a></li>
+   <li><a href="#raffle" data-toggle="tab">Run Raffle</a></li>
+   <li><a href="#analytics" data-toggle="tab">Analytics</a></li>
+</ul>
+
+<div class="tab-content">
+   <div class="tab-pane active" id="domain">
+     <h2>Set up the custom subdomain for your app.</h2>
+     <h3>1) Begin with a domain that you control.</h3>
+     <label for="basic-url">Domain</label>
+     <div class="input-group">
+       <span class="input-group-addon" id="basic-addon3">http://www.</span>
+       <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+     </div>
+     <h3>(ex: if your website is <a href="http://www.csfair.nyc/">http://www.csfair.nyc/</a>, the domain is csfair.nyc.)
+
+     <h3>2) Choose a subdomain to use for the checkin app. "Checkin" is a popular choice of subdomain (ex: <a href="http://checkin.csfair.nyc/">http://checkin.csfair.nyc</a>)</h3>
+     <label for="basic-url">Subdomain</label>
+     <div class="input-group">
+       <span class="input-group-addon" id="basic-addon3">http://</span>
+       <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+       <span class="input-group-addon" id="basic-addon3">.example.com</span>
+     </div>
+     <h3>3) To connect the app to your website, you need to add the following DNS record to your domain. This can typically be done by logging into your domain name provider's online control panel:</h3>
+
+     <button type="button" class="btn btn-primary navbar-btn">Save</button>
+   </div>
+
+   <div class="tab-pane container" id="look">
+      <div class="form-group row">
+        <label for="example-text-input" class="col-2 col-form-label">Event Name:</label>
+        <div class="col-10">
+          <input class="form-control" type="text" value="" id="example-text-input">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="example-text-input" class="col-2 col-form-label">Header Background Color:</label>
+        <div class="col-10">
+          <input class="form-control" type="text" value="" id="example-text-input">
+        </div>
+      </div>
+      <h3>Header Logo</h3>
+      <h3>(recommended size ??x?? px)</h3>
+      <button type="button" class="btn btn-primary navbar-btn">Upload New...</button>
+      <h3>Footer Content</h3>
+      <h3>Use the rich text editor below to design the contents of the footer, which will appear on each page of the app:</h3>
+
+      <button type="button" class="btn btn-primary navbar-btn">Save</button>
+   </div>
+
+   <div class="tab-pane container" id="surveys">
+     <h3>You can embed a survey link for students and one for exhibitors. These links will appear for them when they log into the app.</h3>
+     <div class="form-group row">
+       <label for="example-text-input" class="col-2 col-form-label">Student survey URL:</label>
+       <div class="col-10">
+         <input class="form-control" type="text" value="" id="example-text-input">
+       </div>
+     </div>
+     <div class="form-group row">
+       <label for="example-text-input" class="col-2 col-form-label">Student survey text:</label>
+       <div class="col-10">
+         <input class="form-control" type="text" value="" id="example-text-input">
+       </div>
+     </div>
+     <div class="form-group row">
+       <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey URL:</label>
+       <div class="col-10">
+         <input class="form-control" type="text" value="" id="example-text-input">
+       </div>
+     </div>
+     <div class="form-group row">
+       <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey text:</label>
+       <div class="col-10">
+         <input class="form-control" type="text" value="" id="example-text-input">
+       </div>
+     </div>
+
+     <button type="button" class="btn btn-primary navbar-btn">Save</button>
+   </div>
+   <div class="tab-pane" id="qrcodes">
+     <h3>Each QR code has a sequence number (generally a serial number contiguous with
+the other QR codes) and a Visitor ID (a randomly generated 6-digit number). Each
+QR code corresponds to a single attendee at your event and should be printed on a
+badge.</h3>
+     <h3>Download Previously Generated QR Code Batches:</h3>
+     <h3>0000-2200.zip</h3>
+     <div class="input-group">
+       <span class="input-group-addon" id="basic-addon3">Generate</span>
+       <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+       <span class="input-group-addon" id="basic-addon3">New QR Codes</span>
+       <button type="button" class="btn btn-primary navbar-btn">Go!</button>
+     </div>
+     <h3>(New codes will have contiguous serial numbers starting after the highest existing serial number)</h3>
+     <button type="button" class="btn btn-primary navbar-btn">QR Codes from CSV</button>
+     <h3>(use this feature if you want to manually define the serial numbers and Visitor ID numbers for each QR code. Your CSV file should contain a sequence number and Visitor ID in each row.)</h3>
+     <h3>QR Code Information</h3>
+     <button type="button" class="btn btn-primary navbar-btn">Export All as .CSV</button>
+     <table class = "table table-striped">
+     <caption>Striped Table Layout</caption>
+     <thead>
+        <tr>
+           <th>Sequence</th>
+           <th>Visitor ID</th>
+        </tr>
+     </thead>
+     <tbody>
+        <tr>
+           <td>23232</td>
+           <td>2323</td>
+        </tr>
+     </tbody>
+    </table>
+   </div>
+   <div class="tab-pane" id="booths">
+    <div class="modal fade">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p>Modal body text goes here.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+    </div>
+  </div>
+     <h3>Each booth should have a single booth account shared between all of the exhibitors
+     working at that booth.</h3>
+     <button type="button" class="btn btn-primary navbar-btn">Create New Booth</button>
+     <button type="button" class="btn btn-primary navbar-btn">Bulk Import from CSV</button>
+     <h3>Booths</h3>
+     <table class = "table table-striped">
+     <caption>Booths</caption>
+     <thead>
+        <tr>
+           <th>Display Name</th>
+           <th>Username</th>
+           <th>Email</th>
+           <th>Admin?</th>
+           <th>Actions</th>
+        </tr>
+     </thead>
+     <tbody>
+        <tr>
+           <td>TestBooth</td>
+           <td>TestUser</td>
+           <td>test@email.com</td>
+           <td>No</td>
+           <td>
+             <button type="button" class="btn btn-primary">Edit</button>
+             <button type="button" class="btn btn-primary">Delete</button>
+           </td>
+        </tr>
+     </tbody>
+    </table>
+   </div>
+   <div class="tab-pane" id="raffle">
+     <h3>And the winner is...</h3>
+     <h1>102319 !!!!</h1>
+     <button type="button" class="btn btn-primary">Draw Another Winner</button>
+   </div>
+   <div class="tab-pane" id="analytics">analytics</div>
+</div>
+
+{% endblock %}
