@@ -28,7 +28,7 @@
     <tbody>
 {% for deployment in deployments %}
   {% if deployment.slug == editing_slug  %}
-          <form action="/deployments/{{ deployment.slug }}/" method="POST">
+          <form action="/deployments/{{ deployment.slug }}" method="POST">
           <tr>
             <td><a href="deployments/view/{{ deployment.slug }}/" target="_blank"> deployment-page-link </a></td>
             <td><input type="text" name="name" value = "{{ deployment.name }}" /></td>

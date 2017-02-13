@@ -8,7 +8,8 @@ from google.appengine.api import images
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api import urlfetch
 from time import sleep
-from models import *
+from models.deployment import *
+from models.user import *
 import json
 
 def deployment_admin_required(handler):

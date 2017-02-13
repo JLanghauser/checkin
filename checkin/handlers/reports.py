@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import webapp2
-from models import *
 import cgi
 import datetime
 import webapp2
 from array import *
-from basehandler import *
-from auth_helpers import *
+from base.basehandler import *
+from base.auth_helpers import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -129,15 +128,6 @@ class ReportsHandler(BaseHandler):
             report_stats_row['edited'] = edited_count
             report_stats.append(report_stats_row)
         return report_stats,report
-
-    def get_deployment_params(self,deployment,**kwargs):
-        params = {}
-        params['logo_url'] = deployment.logo_url
-        params['header_color'] = deployment.header_background_color
-        params['footer_text'] =  deployment.footer_text
-        for key, value in kwargs.items():
-            params[key] = value
-        return params
 
     @deployment_admin_required
     def get(self, deployment_slug=None):

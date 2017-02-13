@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 import webapp2
-from models import *
 import cgi
 import datetime
 import webapp2
 from array import *
-from basehandler import *
-from auth_helpers import *
+from base.basehandler import *
+from base.auth_helpers import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
 from google.appengine.ext.webapp import blobstore_handlers
@@ -22,7 +21,7 @@ import sys
 import qrcode
 import qrcode.image.svg
 from qrcode.image.pure import PymagingImage
-from qrcodegen import *
+from base.qrcodegen import *
 
 class SampleHandler(BaseHandler):
     def set_sample_qr_code(self,deployment):

@@ -1,7 +1,6 @@
 import cgi
 import datetime
 import webapp2
-from basehandler import *
 from google.appengine.ext import ndb
 from google.appengine.api import users
 import time
@@ -60,6 +59,26 @@ class BaseHandler(webapp2.RequestHandler):
       """Shortcut to access the current session."""
       return self.session_store.get_session(backend="datastore")
 
+  def add_deployment_params(self,starting_array,deployment=None,**kwargs):
+    params = starting_array
+    if deployment:
+        params['deployment'] = deployment
+        params['logo_url'] = deployment.logo_url
+        params['header_color'] = deployment.header_background_color
+        params['footer_text'] =  deployment.footer_text
+        params['student_link'] =  deployment.student_link
+        params['student_link_text'] =  deployment.student_link_text
+        params['user_link'] =  deployment.user_link
+        params['user_link_text'] =  deployment.user_link_text
+        params['visitors'] =  deployment.get_visitors()
+        params['users'] =  deployment.get_users()
+
+
+    for key, value in kwargs.items():
+        params[key] = value
+
+    return params
+
   def get_params_hash(self,starting_array,**kwargs):
       params = starting_array
       user = self.user
@@ -90,7 +109,17 @@ class BaseHandler(webapp2.RequestHandler):
   def render_template(self, view_filename, params={}):
     user = self.user_info
     params['user'] = user
-    path = os.path.join(os.path.dirname(__file__), 'views', view_filename)
+    path = os.path.join(os.path.dirname(__file__), '../views', view_filename)
+    self.response.out.write(template.render(path, params))
+
+  def render_smart_template(self, target, source, view_filename, deployment=None, params={}):
+    params = self.add_deployment_params(params,deployment)
+    if target == 'DEPLOYMENT' and source == 'ADMIN':
+        view_filename = 'admin.html'
+
+    user = self.user_info
+    params['user'] = user
+    path = os.path.join(os.path.dirname(__file__), '../views', view_filename)
     self.response.out.write(template.render(path, params))
 
   def display_message(self, message):

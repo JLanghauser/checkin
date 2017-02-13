@@ -3,7 +3,7 @@
 {% block maincontent %}
 
 <ul class="nav nav-tabs">
-   <li><a href="#domain" data-toggle="tab">Custom Domain</a></li>
+   <li class="active"><a href="#domain" data-toggle="tab">Custom Domain</a></li>
    <li><a href="#look" data-toggle="tab">Look and Feel</a></li>
    <li><a href="#surveys" data-toggle="tab">Surveys</a></li>
    <li><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
@@ -12,14 +12,19 @@
    <li><a href="#analytics" data-toggle="tab">Analytics</a></li>
 </ul>
 
+<form action="/deployments/view/{{ deployment.slug }}/admin" method="POST">
+  <input type="hidden" name="slug" value= "{{ deployment.slug }}" >
+  <input type="hidden" name="logo_url" value = "{{ deployment.logo_url }}" />
+  <input type="hidden" name="referring_page" value = "ADMIN" />
+  <input type="hidden" name="method" value = "UPDATE" />
 <div class="tab-content">
-   <div class="tab-pane active" id="domain">
+   <div class="tab-pane container active" id="domain">
      <h2>Set up the custom subdomain for your app.</h2>
      <h3>1) Begin with a domain that you control.</h3>
      <label for="basic-url">Domain</label>
      <div class="input-group">
        <span class="input-group-addon" id="basic-addon3">http://www.</span>
-       <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
+       <input type="text" class="form-control" name="custom_dns" aria-describedby="basic-addon3" value = "{{ deployment.custom_dns }}">
      </div>
      <h3>(ex: if your website is <a href="http://www.csfair.nyc/">http://www.csfair.nyc/</a>, the domain is csfair.nyc.)
 
@@ -27,26 +32,29 @@
      <label for="basic-url">Subdomain</label>
      <div class="input-group">
        <span class="input-group-addon" id="basic-addon3">http://</span>
-       <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-       <span class="input-group-addon" id="basic-addon3">.example.com</span>
+       <input type="text" class="form-control" name="custom_subdomain" aria-describedby="basic-addon3" value = "{{ deployment.custom_subdomain }}">
+       <span class="input-group-addon" id="basic-addon3">.{{ deployment.custom_dns }}</span>
      </div>
      <h3>3) To connect the app to your website, you need to add the following DNS record to your domain. This can typically be done by logging into your domain name provider's online control panel:</h3>
 
-     <button type="button" class="btn btn-primary navbar-btn">Save</button>
+     <button type="submit" class="btn btn-primary navbar-btn btn-lg">Save</button>
    </div>
 
    <div class="tab-pane container" id="look">
       <div class="form-group row">
         <label for="example-text-input" class="col-2 col-form-label">Event Name:</label>
         <div class="col-10">
-          <input class="form-control" type="text" value="" id="example-text-input">
+          <input class="form-control" type="text" value="{{ deployment.name }}" name="name">
         </div>
       </div>
       <div class="form-group row">
         <label for="example-text-input" class="col-2 col-form-label">Header Background Color:</label>
-        <div class="col-10">
-          <input class="form-control" type="text" value="" id="example-text-input">
+        <input class="form-control" name="header_background_color" type="text" value="{{ deployment.header_background_color }}" id="header-background-color">
+
+        <div id="cp2" class="input-group colorpicker-component">
+          <span class="input-group-addon"><i></i></span>
         </div>
+
       </div>
       <h3>Header Logo</h3>
       <h3>(recommended size ??x?? px)</h3>
@@ -54,7 +62,7 @@
       <h3>Footer Content</h3>
       <h3>Use the rich text editor below to design the contents of the footer, which will appear on each page of the app:</h3>
 
-      <button type="button" class="btn btn-primary navbar-btn">Save</button>
+      <button type="submit" class="btn btn-primary navbar-btn btn-lg">Save</button>
    </div>
 
    <div class="tab-pane container" id="surveys">
@@ -62,31 +70,33 @@
      <div class="form-group row">
        <label for="example-text-input" class="col-2 col-form-label">Student survey URL:</label>
        <div class="col-10">
-         <input class="form-control" type="text" value="" id="example-text-input">
+         <input class="form-control" type="text" value="{{ deployment.student_link }}" name="student_link">
        </div>
      </div>
      <div class="form-group row">
        <label for="example-text-input" class="col-2 col-form-label">Student survey text:</label>
        <div class="col-10">
-         <input class="form-control" type="text" value="" id="example-text-input">
+         <input class="form-control" type="text" value="{{ deployment.student_link_text }}" name="student_link_text">
        </div>
      </div>
      <div class="form-group row">
        <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey URL:</label>
        <div class="col-10">
-         <input class="form-control" type="text" value="" id="example-text-input">
+         <input class="form-control" type="text" value="{{deployment.user_link}}" name="user_link">
        </div>
      </div>
      <div class="form-group row">
        <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey text:</label>
        <div class="col-10">
-         <input class="form-control" type="text" value="" id="example-text-input">
+         <input class="form-control" type="text" value="{{deployment.user_link_text}}" name="user_link_text">
        </div>
      </div>
 
-     <button type="button" class="btn btn-primary navbar-btn">Save</button>
+     <button type="submit" class="btn btn-primary navbar-btn">Save</button>
+  </form>
    </div>
-   <div class="tab-pane" id="qrcodes">
+
+   <div class="tab-pane container" id="qrcodes">
      <h3>Each QR code has a sequence number (generally a serial number contiguous with
 the other QR codes) and a Visitor ID (a randomly generated 6-digit number). Each
 QR code corresponds to a single attendee at your event and should be printed on a
@@ -113,14 +123,16 @@ badge.</h3>
         </tr>
      </thead>
      <tbody>
+       {% for vi in visitors %}
         <tr>
-           <td>23232</td>
-           <td>2323</td>
+           <td>{{vi.serialized_id}}</td>
+           <td>{{vi.visitor_id}}</td>
         </tr>
+       {% endfor %}
      </tbody>
     </table>
    </div>
-   <div class="tab-pane" id="booths">
+   <div class="tab-pane container" id="booths">
     <div class="modal fade">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -134,7 +146,7 @@ badge.</h3>
             <p>Modal body text goes here.</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary">Save changes</button>
+            <button type="submit" class="btn btn-primary btn-lg">Save changes</button>
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -142,8 +154,8 @@ badge.</h3>
   </div>
      <h3>Each booth should have a single booth account shared between all of the exhibitors
      working at that booth.</h3>
-     <button type="button" class="btn btn-primary navbar-btn">Create New Booth</button>
-     <button type="button" class="btn btn-primary navbar-btn">Bulk Import from CSV</button>
+     <button type="button" class="btn btn-primary navbar-btn btn-lg">Create New Booth</button>
+     <button type="button" class="btn btn-primary navbar-btn btn-lg">Bulk Import from CSV</button>
      <h3>Booths</h3>
      <table class = "table table-striped">
      <caption>Booths</caption>
@@ -157,25 +169,38 @@ badge.</h3>
         </tr>
      </thead>
      <tbody>
+       {% for u in users %}
         <tr>
-           <td>TestBooth</td>
-           <td>TestUser</td>
-           <td>test@email.com</td>
-           <td>No</td>
+           <td>{{u.vendorname}}</td>
+           <td>{{u.username}}</td>
+           <td>{{u.email}}</td>
+           <td>{{u.is_deployment_admin}}</td>
            <td>
              <button type="button" class="btn btn-primary">Edit</button>
              <button type="button" class="btn btn-primary">Delete</button>
            </td>
         </tr>
+       {% endfor %}
      </tbody>
     </table>
    </div>
-   <div class="tab-pane" id="raffle">
+   <div class="tab-pane container" id="raffle">
      <h3>And the winner is...</h3>
      <h1>102319 !!!!</h1>
-     <button type="button" class="btn btn-primary">Draw Another Winner</button>
+     <button type="button" class="btn btn-primary btn-lg">Draw Another Winner</button>
    </div>
    <div class="tab-pane" id="analytics">analytics</div>
 </div>
+
+<script>
+  $(function() {
+      $('#cp2').colorpicker();
+  });
+
+  $('#cp2').colorpicker().on('changeColor', function(e) {
+      $('#header-background-color')[0].value = e.color.toString('hex');
+  });
+</script>
+
 
 {% endblock %}
