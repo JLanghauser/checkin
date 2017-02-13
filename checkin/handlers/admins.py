@@ -25,6 +25,12 @@ from base.qrcodegen import *
 from models.deployment import *
 
 class AdminHandler(BaseHandler):
+    def random_visitor(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def handle_update(self,deployment_slug):
         name = self.request.get('name')
         new_slug = self.request.get('slug')
@@ -41,7 +47,7 @@ class AdminHandler(BaseHandler):
 
         existing_deployment = Deployment.get_by_slug(deployment_slug)
 
-        if header_background_color[0] == '#':
+        if len(header_background_color) > 0 and header_background_color[0] == '#':
             header_background_color = header_background_color[1:]
 
         if len(header_background_color) > 6:
@@ -100,7 +106,7 @@ class AdminHandler(BaseHandler):
     def get(self,deployment_slug):
         dep = Deployment.get_by_slug(deployment_slug)
         params = self.add_deployment_params({},dep)
-        self.render_template('admin.html',params)
+        self.render_smart_template('DEPLOYMENT','ADMIN','admin.html',dep,params)
 
     @deployment_admin_required
     def post(self, deployment_slug):
@@ -120,6 +126,6 @@ class AdminHandler(BaseHandler):
         elif method == 'EDIT_BOOTH':
             self.edit_booth(self.request,deployment_slug)
         elif method == 'RANDOM_VISITOR':
-            self.random_visitor(self.request,deployment_slug)
+            self.random_visitor(deployment_slug)
         elif method == 'DOWNLOAD_RAW_CHECKINS':
             self.download_raw_checkins(self.request,deployment_slug)

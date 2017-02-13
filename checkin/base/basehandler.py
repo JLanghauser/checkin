@@ -72,6 +72,7 @@ class BaseHandler(webapp2.RequestHandler):
         params['user_link_text'] =  deployment.user_link_text
         params['visitors'] =  deployment.get_visitors()
         params['users'] =  deployment.get_users()
+        params['random_visitor'] =  deployment.get_random_visitor()
 
 
     for key, value in kwargs.items():
@@ -115,6 +116,8 @@ class BaseHandler(webapp2.RequestHandler):
   def render_smart_template(self, target, source, view_filename, deployment=None, params={}):
     params = self.add_deployment_params(params,deployment)
     if target == 'DEPLOYMENT' and source == 'ADMIN':
+        if 'activetab' not in params:
+            params['activetab'] = 'domain'
         view_filename = 'admin.html'
 
     user = self.user_info

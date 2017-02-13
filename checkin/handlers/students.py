@@ -14,10 +14,10 @@ import csv
 import StringIO
 import json
 from models.user import *
-from models.deployment import *
 from reports import *
 from sample import *
 from pages import *
+from models.deployment import *
 
 class StudentHandler(BaseHandler):
     def get_deployment_params(self,deployment):

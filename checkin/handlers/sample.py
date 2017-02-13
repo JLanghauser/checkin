@@ -22,6 +22,7 @@ import qrcode
 import qrcode.image.svg
 from qrcode.image.pure import PymagingImage
 from base.qrcodegen import *
+from models.deployment import *
 
 class SampleHandler(BaseHandler):
     def set_sample_qr_code(self,deployment):

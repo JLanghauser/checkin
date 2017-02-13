@@ -14,10 +14,10 @@ import csv
 import StringIO
 import json
 from models.user import *
-from models.deployment import *
 from reports import *
 from sample import *
 from pages import *
+from models.deployment import *
 
 class DeploymentHandler(BaseHandler):
     @deployment_admin_required

@@ -31,6 +31,7 @@ app = webapp2.WSGIApplication([
 
     webapp2.Route('/deployments/<deployment_slug>/',DeploymentHandler, name='deployment_main'),
     webapp2.Route('/deployments/view/<deployment_slug>/',MainPage, name='deployment_home'),
+    webapp2.Route('/deployments/view/<deployment_slug>/home',MainPage, name='deployment_home_explicit'),
     webapp2.Route('/deployments/view/<deployment_slug>/sign_in',SignInHandler, name='sign_in_deployments'),
     webapp2.Route('/deployments/view/<deployment_slug>/sign_out',SignOutHandler, name='sign_out_deployments'),
     webapp2.Route('/deployments/view/<deployment_slug>/checkin_visitor',CheckInHandler, name='checkin_deployments'),

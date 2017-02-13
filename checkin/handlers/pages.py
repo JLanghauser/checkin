@@ -22,6 +22,7 @@ import qrcode
 import qrcode.image.svg
 from qrcode.image.pure import PymagingImage
 from base.qrcodegen import *
+from models.deployment import *
 
 class InstructionsHandler(BaseHandler):
     @deployment_admin_required

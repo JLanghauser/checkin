@@ -25,6 +25,7 @@ import StringIO
 import json
 from visitor import *
 from map_user_to_deployment import *
+from map_user_to_visitor import *
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -78,8 +79,29 @@ class Deployment(ndb.Model):
     def get_users(self):
         qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key == self.key)
         map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
-        users = ndb.get_multi(map_users_keys)
+        users = {}
+        # for mp in map_users_keys:
+        #     u = mp.get()
+        #     users.append(u)
+        #users = ndb.get_multi(map_users_keys)
+        #return users
         return users
+
+    def get_random_visitor(self):
+        entity_count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == self.key).count()
+        if (entity_count > 0):
+            random_index = randint(0, entity_count - 1)
+            maps = MapUserToVisitor.query(MapUserToVisitor.deployment_key == self.key).order(MapUserToVisitor.key).fetch()
+
+            counter = 0
+            for map_item in maps:
+                if (random_index == counter):
+                    key = map_item.visitor_key
+                    rand_visitor = Visitor.get_by_id(
+                        key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
+                    return rand_visitor.visitor_id
+                counter = counter + 1
+        return None
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
