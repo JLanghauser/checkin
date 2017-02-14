@@ -10,7 +10,7 @@
     <li id="analyticstab"><a href="#analytics" data-toggle="tab">Analytics</a></li>
 </ul>
 
-<form action="/deployments/view/{{ deployment.slug }}/admin" method="POST">
+<form action="/deployments/view/{{ deployment.slug }}/admin" method="POST" id = "usrform" enctype="multipart/form-data">
     <input type="hidden" name="slug" value="{{ deployment.slug }}" />
     <input type="hidden" name="logo_url" value="{{ deployment.logo_url }}" />
     <input type="hidden" name="referring_page" value="ADMIN" />
@@ -40,24 +40,34 @@
     </div>
 
     <div class="tab-pane container" id="look">
+      <BR><BR>
       <label class="col-2 col-form-label">Event Name:</label>
       <div class="input-group">
         <input class="form-control" type="text" value="{{ deployment.name }}" name="name">
       </div>
-
-      <label for="example-text-input" class="col-2 col-form-label">Header Background Color:</label>
-      <div class="input-group col-xs-3">
-        <input class="input-group col-xs-4 input-lg" name="header_background_color" type="text" value="{{ deployment.header_background_color }}" id="header-background-color">
-        <div id="cp2" class="input-group colorpicker-component col-xs-3 input-lg">
+      <BR><BR>
+      <label for="cp2" class="col-2 col-form-label">Header Background Color:</label>
+      <div id="cp2" class="input-group colorpicker-component col-xs-2">
+        <input type="text" name = "header_background_color" id = "header-background-color" value="{{ deployment.header_background_color }}" class="form-control" />
         <span class="input-group-addon"><i></i></span>
-        </div>
       </div>
 
         <h3>Header Logo</h3>
         <h3>(recommended size 150x150 px)</h3>
-        <button type="button" class="btn btn-primary navbar-btn">Upload New...</button>
+
+
+        <label for="filename">Filename</label>
+        <input id="image_file"  type="file" name="image_file" />
+        <button type="submit" class="btn btn-primary navbar-btn">Upload New...</button>
+
         <h3>Footer Content</h3>
         <h3>Use the rich text editor below to design the contents of the footer, which will appear on each page of the app:</h3>
+
+        <div>
+          <textarea rows="10" cols="50" name="footer_text" id="footer_text" form="usrform">
+            {% autoescape off %} {{ deployment.footer_text }} {% endautoescape %}
+          </textarea>
+        </div>
 
         <button type="submit" class="btn btn-primary navbar-btn btn-lg">Save</button>
     </div>
@@ -101,16 +111,21 @@ badge.</h3>
     <h3>Download Previously Generated QR Code Batches:</h3>
     <h3>0000-2200.zip</h3>
 
-    <div class="row">
-      <div class="col-xs-4">
-          <div class="input-group">
-            <span class="input-group-addon">Generate</span>
-            <input type="text" maxlength="5" class="form-control input-lg" aria-label="Number of QR Codes">
-            <span class="input-group-addon">New QR Codes</span>
-          </div>
+
+    <form action="/deployments/view/{{ deployment.slug }}/admin" method="POST">
+      <input type="hidden" name="referring_page" value="ADMIN" />
+      <input type="hidden" name="method" value="GENERATE_QR_CODES" />
+      <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+              <span class="input-group-addon">Generate</span>
+              <input type="text" maxlength="5" name="qr_codes_to_generate" class="form-control input-lg" aria-label="Number of QR Codes">
+              <span class="input-group-addon">New QR Codes</span>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary navbar-btn">Go!</button>
       </div>
-      <button type="button" class="btn btn-primary navbar-btn">Go!</button>
-    </div>
+    </form>
 
     <h3>(New codes will have contiguous serial numbers starting after the highest existing serial number)</h3>
 
@@ -146,29 +161,127 @@ badge.</h3>
     </table>
 </div>
 <div class="tab-pane container" id="booths">
-    <div class="modal fade">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>Modal body text goes here.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary btn-lg">Save changes</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <h3>Each booth should have a single booth account shared between all of the exhibitors
      working at that booth.</h3>
-    <button type="button" class="btn btn-primary navbar-btn btn-lg">Create New Booth</button>
+
+    <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addBoothModal">Create New Booth</button>
     <button type="button" class="btn btn-primary navbar-btn btn-lg">Bulk Import from CSV</button>
+
+    <div class="modal fade" id="addBoothModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Booth</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" action="/deployments/view/{{ deployment.slug }}/admin" method="POST">
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="hidden" name="method" value="CREATE_NEW_BOOTH" />
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">Display Name</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="vendorname" name="vendorname" placeholder="Display Name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Username</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="password" id="password" placeholder="Password">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="email" name="email" placeholder="Email">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input name="admin" type="checkbox"> Admin
+                  </label>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Booth</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="editBoothModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Booth</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" action="/deployments/view/{{ deployment.slug }}/admin" method="POST">
+          <input type="hidden" name="old-username" id="edit-old-username" />
+          <input type="hidden" name="referring_page" value="ADMIN" />
+          <input type="hidden" name="method" value="EDIT_BOOTH" />
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Display Name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-vendorname" name="edit-vendorname" placeholder="Display Name" >
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Username</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-username" name="edit-username" placeholder="Username">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-10">
+              <input type="password" class="form-control" name="edit-password" id="edit-password" placeholder="Password">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-email" name="edit-email" placeholder="Email">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input name="admin" id="edit-admin" type="checkbox"> Admin
+                </label>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" >Edit Booth</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+  </div>
+
+
     <h3>Booths</h3>
     <table class="table table-striped">
         <caption>Booths</caption>
@@ -189,8 +302,14 @@ badge.</h3>
                 <td>{{u.email}}</td>
                 <td>{{u.is_deployment_admin}}</td>
                 <td>
-                    <button type="button" class="btn btn-primary">Edit</button>
-                    <button type="button" class="btn btn-primary">Delete</button>
+                    <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editBoothModal' data-vendorname="{{u.vendorname}}" data-username="{{u.username}}" data-email="{{u.email}}" data-admin="{{u.is_deployment_admin}}" data-password="{{u.password}}" >Edit</button>
+
+                    <form action="/deployments/view/{{ deployment.slug }}/admin" method="POST" onsubmit="return confirm('Do you really wish to delete this booth?');">
+                      <input type="hidden" name="referring_page" value="ADMIN" />
+                      <input type="hidden" name="method" value="DELETE_BOOTH" />
+                      <input type="hidden" name="edit-username" value="{{u.username}}" />
+                      <button type="submit" class="btn btn-primary">Delete</button>
+                    </form>
                 </td>
             </tr>
             {% endfor %}
@@ -251,6 +370,35 @@ badge.</h3>
 
     $("#{{ activetab }}").addClass('active');
     $("#{{ activetab }}tab").addClass('active');
+
+    $('#editBoothModal').on('show.bs.modal', function (event) {
+
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var vendorname = button.data('vendorname')
+      var username = button.data('username')
+      var email = button.data('email')
+      var admin = button.data('admin')
+      var password = button.data('password')
+      var old_username = username
+
+      var modal = $(this)
+
+      // //modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body #edit-vendorname').val(vendorname)
+      modal.find('.modal-body #edit-username').val(username)
+      modal.find('.modal-body #edit-email').val(email)
+      modal.find('.modal-body #edit-password').val(password)
+      modal.find('.modal-body #edit-old-username').val(username)
+
+      if (admin === "True" || admin === "true" || admin === "1") {
+        modal.find('.modal-body #edit-admin').prop('checked', true);
+      }
+
+    });
+
+    // function set_up_edit(obj){
+    //   $('#edit-vendorname').value = obj.vendorname
+    // }
 </script>
 
 

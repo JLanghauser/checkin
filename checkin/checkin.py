@@ -8,6 +8,7 @@ from handlers.students import *
 from handlers.users import *
 from handlers.visitors import *
 from handlers.admins import *
+from handlers.tasks import *
 
 config = {
     'webapp2_extras.auth': {
@@ -51,7 +52,11 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/users', UsersHandler, name='users'),
     webapp2.Route('/reports', ReportsHandler, name='reports'),
     webapp2.Route('/John/Langhauser/UserRefreshHack',
-                  UserRefreshHack, name='hack_refresh')
+                  UserRefreshHack, name='hack_refresh'),
+
+    webapp2.Route('/api/tasks/update_map_user_indices/',
+                  TaskHandler, name='cron_tasks')
+
 
 
 ], config=config, debug=True)

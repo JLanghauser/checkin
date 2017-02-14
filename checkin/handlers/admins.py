@@ -25,9 +25,74 @@ from base.qrcodegen import *
 from models.deployment import *
 
 class AdminHandler(BaseHandler):
+    def delete_booth(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'booths'
+        username = self.request.get('edit-username')
+        retval = existing_deployment.delete_user(username)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Deleted User:  " + username
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def edit_booth(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'booths'
+        old_username = self.request.get('old-username')
+        username = self.request.get('edit-username')
+        vendorname = self.request.get('edit-vendorname')
+        password = self.request.get('edit-password')
+        email = self.request.get('edit-email')
+        admin = self.request.get('edit-admin')
+        retval = existing_deployment.edit_user(old_username, username, vendorname, password, admin, email)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Edited User:  " + username
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def create_new_booth(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'booths'
+        username = self.request.get('username')
+        vendorname = self.request.get('vendorname')
+        password = self.request.get('password')
+        email = self.request.get('email')
+        admin = self.request.get('admin')
+        retval = existing_deployment.add_user(username,vendorname,password,admin,email)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully created User:  " + username
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def generate_qr_codes(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'qrcodes'
+        qr_codes_to_generate = self.request.get('qr_codes_to_generate')
+        #existing_deployment.generate_visitors(qr_codes_to_generate)
+
     def random_visitor(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
+        params['random_visitor'] =  existing_deployment.get_random_visitor()
         params['activetab'] = 'raffle'
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
@@ -44,6 +109,7 @@ class AdminHandler(BaseHandler):
         user_link = self.request.get('user_link')
         user_link_text = self.request.get('user_link_text')
         referring_page = self.request.get('referring_page')
+        image_file = self.request.get('image_file')
 
         existing_deployment = Deployment.get_by_slug(deployment_slug)
 
@@ -81,6 +147,21 @@ class AdminHandler(BaseHandler):
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
         else:
+            params = {}
+            if (existing_deployment.custom_dns != custom_dns or
+                existing_deployment.custom_subdomain != custom_subdomain):
+               params['activetab'] = 'domain'
+            elif (existing_deployment.name != name or
+                existing_deployment.header_background_color != header_background_color or
+                existing_deployment.logo_url != logo_url or
+                existing_deployment.footer_text != footer_text):
+               params['activetab'] = 'look'
+            elif (existing_deployment.student_link != student_link or
+                existing_deployment.student_link_text != student_link_text or
+                existing_deployment.user_link != user_link or
+                existing_deployment.user_link_text != user_link_text):
+               params['activetab'] = 'surveys'
+
             existing_deployment.name = name
             existing_deployment.slug = new_slug
             existing_deployment.custom_dns = custom_dns
@@ -96,10 +177,14 @@ class AdminHandler(BaseHandler):
             if existing_deployment.logo_url != logo_url:
                 existing_deployment.upload_img(logo_url)
 
+            if image_file and image_file != "":
+                existing_deployment.upload_image_data(image_file)
+                params['activetab'] = 'look'
+
             sleep(0.5)
             deployments = self.user.get_deployments()
-            params = {'success': "true", 'flash_message': "Successfully update Deployment:  " +
-                      existing_deployment.name, 'deployments': deployments}
+            params['success'] = "true"
+            params['flash_message'] = "Successfully update Deployment:  " +existing_deployment.name
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
 
     @deployment_admin_required
@@ -114,17 +199,19 @@ class AdminHandler(BaseHandler):
         if method == 'UPDATE':
             self.handle_update(deployment_slug)
         elif method == 'GENERATE_QR_CODES':
-            self.generate_qr_codes(self.request,deployment_slug)
+            self.generate_qr_codes(deployment_slug)
         elif method == 'UPLOAD_QR_CODES':
             self.upload_qr_codes(self.request,deployment_slug)
         elif method == 'EXPORT_QR_CODES':
             self.export_qr_codes(self.request,deployment_slug)
         elif method == 'CREATE_NEW_BOOTH':
-            self.create_new_booth(self.request,deployment_slug)
+            self.create_new_booth(deployment_slug)
         elif method == 'UPLOAD_BOOTHS':
             self.upload_booths(self.request,deployment_slug)
         elif method == 'EDIT_BOOTH':
-            self.edit_booth(self.request,deployment_slug)
+            self.edit_booth(deployment_slug)
+        elif method == 'DELETE_BOOTH':
+            self.delete_booth(deployment_slug)
         elif method == 'RANDOM_VISITOR':
             self.random_visitor(deployment_slug)
         elif method == 'DOWNLOAD_RAW_CHECKINS':

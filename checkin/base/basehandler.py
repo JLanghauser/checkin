@@ -72,8 +72,6 @@ class BaseHandler(webapp2.RequestHandler):
         params['user_link_text'] =  deployment.user_link_text
         params['visitors'] =  deployment.get_visitors()
         params['users'] =  deployment.get_users()
-        params['random_visitor'] =  deployment.get_random_visitor()
-
 
     for key, value in kwargs.items():
         params[key] = value

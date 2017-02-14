@@ -42,6 +42,7 @@ class Deployment(ndb.Model):
     student_link_text = ndb.TextProperty(indexed=True)
     user_link = ndb.TextProperty(indexed=True)
     user_link_text = ndb.TextProperty(indexed=True)
+    max_visitor_id = ndb.IntegerProperty(indexed=True)
 
     def get_logo_url(self):
         if self.logo:
@@ -79,12 +80,11 @@ class Deployment(ndb.Model):
     def get_users(self):
         qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key == self.key)
         map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
-        users = {}
-        # for mp in map_users_keys:
-        #     u = mp.get()
-        #     users.append(u)
+        users = []
+        for mp in map_users_keys:
+            u = mp.user_key.get()
+            users.append(u)
         #users = ndb.get_multi(map_users_keys)
-        #return users
         return users
 
     def get_random_visitor(self):
@@ -118,6 +118,99 @@ class Deployment(ndb.Model):
         blob = blobstore.get(json.loads(result.content)["key"])
         self.sample_qr_code = blob.key()
         self.put()
+
+    def upload_image_data(self,image_file):
+        filetype = 'image/jpg'
+        filename = 'test'
+
+        multipart_param = MultipartParam(
+            'file', image_file, filename=filename, filetype=filetype)
+        datagen, headers = multipart_encode([multipart_param])
+        upload_url = blobstore.create_upload_url('/upload_image')
+        result = urlfetch.fetch(
+            url=upload_url,
+            payload="".join(datagen),
+            method=urlfetch.POST,
+            headers=headers)
+
+        blob = blobstore.get(json.loads(result.content)["key"])
+
+        self.logo = blob.key()
+        self.put()
+
+    def generate_visitors(self,num_to_generate):
+        return
+
+    def add_user(self, username, vendorname, password, is_deployment_admin, email):
+        tmp_user = User.get_by_username(username)
+
+        if tmp_user:
+            return "Error - user " + username + " already exists."
+        else:
+            if not username:
+                return "Error - username cannot be blank."
+
+            newuser = User()
+            newuser.username = username
+            newuser.vendorname = vendorname
+            newuser.set_password(password)
+            newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
+            newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
+            newuser.email = email
+            newuser.put()
+            sleep(0.5)
+
+            new_map = MapUserToDeployment()
+            new_map.user_key = newuser.key
+            new_map.deployment_key = self.key
+            new_map.put()
+            sleep(0.5)
+            return ""
+
+    def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email):
+        edit_user = User.get_by_username(old_username)
+
+        if edit_user:
+            if not (new_username.lower() == old_username.lower()):
+                tmp_user = User.get_by_username(new_username)
+
+                if tmp_user:
+                    return "Error - user " + new_username + " already exists."
+
+                edit_user.username = new_username
+
+            edit_user.vendorname = vendorname
+
+            if (password != edit_user.password):
+                edit_user.set_password(password)
+
+            edit_user.is_deployment_admin = is_deployment_admin in [
+                'true', 'True', '1', 'on']
+            edit_user.email = email
+            edit_user.put()
+
+            maps = MapUserToDeployment.query(MapUserToDeployment.user_key == edit_user.key)
+            for map in maps:
+                map.key.delete()
+
+            new_map = MapUserToDeployment()
+            new_map.user_key = edit_user.key
+            new_map.deployment_key = self.key
+            new_map.put()
+            sleep(0.5)
+            return ""
+        return "Could not find user"
+
+    def delete_user(self,username):
+        delete_user = User.get_by_username(username)
+
+        maps = MapUserToDeployment.query(MapUserToDeployment.user_key == delete_user.key)
+        for map in maps:
+            map.key.delete()
+
+        delete_user.key.delete()
+        sleep(0.5)
+        return ""
 
     def upload_img(self, logo_url):
         image_url = logo_url
