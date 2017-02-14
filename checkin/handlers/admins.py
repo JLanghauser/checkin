@@ -25,6 +25,22 @@ from base.qrcodegen import *
 from models.deployment import *
 
 class AdminHandler(BaseHandler):
+    def upload_booths(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'booths'
+        bulkfile = self.request.get('bulkfile')
+        retval = existing_deployment.add_users_in_bulk(bulkfile)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Created Booths"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def delete_booth(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
@@ -87,7 +103,10 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'qrcodes'
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
-        #existing_deployment.generate_visitors(qr_codes_to_generate)
+        existing_deployment.generate_visitors(qr_codes_to_generate)
+        params['success'] = "true"
+        params['flash_message'] = "Successfully generated QRcodes"
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
     def random_visitor(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
@@ -207,7 +226,7 @@ class AdminHandler(BaseHandler):
         elif method == 'CREATE_NEW_BOOTH':
             self.create_new_booth(deployment_slug)
         elif method == 'UPLOAD_BOOTHS':
-            self.upload_booths(self.request,deployment_slug)
+            self.upload_booths(deployment_slug)
         elif method == 'EDIT_BOOTH':
             self.edit_booth(deployment_slug)
         elif method == 'DELETE_BOOTH':

@@ -18,3 +18,8 @@ indexes:
   properties:
   - name: deployment_key
   - name: user_key
+
+- kind: Visitor
+  properties:
+  - name: deployment_key
+  - name: serialized_id

@@ -267,6 +267,7 @@ class SignInHandler(BaseHandler):
             self.render_template('sign_in.html', params)
 
     def get(self, deployment_slug=None):
+        params = {}
         raw_password = self.request.get('password', '')
         login = self.request.get('username', '')
         redirect_to = self.request.get('redirect_to', '')

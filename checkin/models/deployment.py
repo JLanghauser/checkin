@@ -42,7 +42,7 @@ class Deployment(ndb.Model):
     student_link_text = ndb.TextProperty(indexed=True)
     user_link = ndb.TextProperty(indexed=True)
     user_link_text = ndb.TextProperty(indexed=True)
-    max_visitor_id = ndb.IntegerProperty(indexed=True)
+    max_visitor_serial_id = ndb.IntegerProperty(indexed=True)
 
     def get_logo_url(self):
         if self.logo:
@@ -74,7 +74,7 @@ class Deployment(ndb.Model):
         return None
 
     def get_visitors(self):
-        visitors = Visitor.query(Visitor.deployment_key == self.key)
+        visitors = Visitor.query(Visitor.deployment_key == self.key).order(Visitor.serialized_id)
         return visitors
 
     def get_users(self):
@@ -138,8 +138,106 @@ class Deployment(ndb.Model):
         self.logo = blob.key()
         self.put()
 
+    def generate_serial_id(self):
+        starting_id = 0
+        if self.max_visitor_serial_id:
+            starting_id = self.max_visitor_serial_id
+        serialized_id = starting_id + 1
+        return serialized_id
+
+    def generate_visitor_id(self):
+        visitor_id = ""
+        for x in range(0,6):
+            rand_val = str(randint(0, 9))
+            if x == 0:
+                while rand_val == '0':
+                    rand_val = str(randint(0, 9))
+            visitor_id += rand_val
+        return visitor_id
+
     def generate_visitors(self,num_to_generate):
-        return
+        starting_id = 0
+        for i in range(0,int(num_to_generate)):
+            serialized_id = self.generate_serial_id()
+            visitor_id = self.generate_visitor_id()
+            retval = 'START'
+            while retval != '':
+                retval = self.add_visitor(serialized_id,int(visitor_id))
+            self.max_visitor_serial_id = serialized_id
+            self.put()
+        sleep(0.5)
+
+    def add_visitor(self, serialized_id, visitor_id):
+        str_visitor_id = str(visitor_id)
+        qry = Visitor.query(Visitor.visitor_id == str_visitor_id,
+                            Visitor.serialized_id == serialized_id,
+                            Visitor.deployment_key == self.key)
+
+        qry2 = Visitor.query(Visitor.serialized_id == serialized_id,
+                            Visitor.deployment_key == self.key)
+
+        total_visitor = qry.get()
+        serial_visitor = qry2.get()
+
+        if (total_visitor is None and visitor_id != 9999999
+            and visitor_id != 0 and serial_visitor is None):
+            newvisitor = Visitor()
+            newvisitor.visitor_id = str_visitor_id
+            newvisitor.serialized_id = serialized_id
+            newvisitor.deployment_key = self.key
+            newvisitor.put()
+            return ""
+        else:
+            max_id = self.max_visitor_serial_id
+            if total_visitor and total_visitor.serialized_id > max_id:
+                max_id = total_visitor.serialized_id
+
+            if serial_visitor and serial_visitor.serialized_id > max_id:
+                max_id = serial_visitor.serialized_id
+
+            if max_id > self.max_visitor_serial_id:
+                self.max_visitor_serial_id = max_id
+                self.put()
+            return "Error - Bad User"
+
+    def get_csv_reader(self,csv_file,should_sniff=True):
+         file_stream = StringIO.StringIO(csv_file)
+         if should_sniff:
+              dialect = csv.Sniffer().sniff(file_stream.read(1024))
+              file_stream.seek(0)
+              has_headers = csv.Sniffer().has_header(file_stream.read(1024))
+              file_stream.seek(0)
+              reader = csv.reader(file_stream, dialect)
+         else:
+              reader = csv.reader(file_stream)
+         return reader
+
+    def add_users_in_bulk(self,bulkfile):
+        params = {}
+        out_str = ''
+        reader = None
+        try:
+            reader = self.get_csv_reader(bulkfile)
+
+            count = 0
+            skipped_header_row = False
+            for row in reader:
+                if not skipped_header_row:
+                    skipped_header_row = True
+                else:
+                    retval = self.add_user(username=row[0], vendorname=row[2], password=row[3], is_deployment_admin=row[4], email=row[1])
+                    count = count + 1
+                    if retval is not "":
+                        return retval
+            return ""
+        except csv.Error as e:
+            if reader:
+                return "File Error - line %d: %s" % (reader.line_num, e)
+            else:
+                return "Please verify file format - standard CSV with a header row."
+
+        except:
+            return "Unknown file error - please use a standard CSV with a header row."
 
     def add_user(self, username, vendorname, password, is_deployment_admin, email):
         tmp_user = User.get_by_username(username)
