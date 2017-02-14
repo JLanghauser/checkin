@@ -201,7 +201,6 @@ class AdminHandler(BaseHandler):
                 params['activetab'] = 'look'
 
             sleep(0.5)
-            deployments = self.user.get_deployments()
             params['success'] = "true"
             params['flash_message'] = "Successfully update Deployment:  " +existing_deployment.name
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
