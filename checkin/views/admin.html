@@ -23,7 +23,7 @@
         <label>Domain</label>
         <div class="input-group col-xs-3">
             <span class="input-group-addon" id="basic-addon3">http://www.</span>
-            <input type="text" class="form-control input-lg" name="custom_dns" aria-describedby="basic-addon3" value="{{ deployment.custom_dns }}"/>
+            <input type="text" id="custom_dns_input" class="form-control input-lg" name="custom_dns" aria-describedby="basic-addon3" value="{{ deployment.custom_dns }}"/>
         </div>
         <h3>(ex: if your website is <a href="http://www.csfair.nyc/">http://www.csfair.nyc/</a>, the domain is csfair.nyc.)</h3>
 
@@ -31,11 +31,11 @@
         <label>Subdomain</label>
         <div class="input-group col-xs-3">
             <span class="input-group-addon" id="basic-addon3">http://</span>
-            <input type="text" class="form-control input-lg" name="custom_subdomain" aria-describedby="basic-addon3" value="{{ deployment.custom_subdomain }}"/>
-            <span class="input-group-addon" id="basic-addon3">.{{ deployment.custom_dns }}</span>
+            <input type="text" class="form-control input-lg" id="custom_subdomain_input" name="custom_subdomain" aria-describedby="basic-addon3" value="{{ deployment.custom_subdomain }}"/>
+            <span class="input-group-addon" id="custom_dns_addon">.{{ deployment.custom_dns }}</span>
         </div>
         <h3>3) To connect the app to your website, you need to add the following DNS record to your domain. This can typically be done by logging into your domain name provider's online control panel:</h3>
-        <h4>A. Create an A record pointing checkin.csfair.nyc to the ip address 107.178.223.42</h4>
+        <h4>A. Create an A record pointing <span id="domainbadge" class="badge badge-success">{{deployment.custom_subdomain}}.{{deployment.custom_dns}}</span> to the ip address 107.178.223.42</h4>
         <h4>B. Send an email to support@check-me-in.biz. Make sure to include your deployment Name, your custom-dns and your subdomain in your email. Your custom domain will be setup with 48 hours.</h4>
 
         <button type="submit" class="btn btn-primary navbar-btn btn-lg">Save</button>
@@ -380,6 +380,16 @@ badge.</h3>
 
     $("#{{ activetab }}").addClass('active');
     $("#{{ activetab }}tab").addClass('active');
+
+    $("#custom_subdomain_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
+
+    $("#custom_dns_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
 
     $('#editBoothModal').on('show.bs.modal', function (event) {
 
