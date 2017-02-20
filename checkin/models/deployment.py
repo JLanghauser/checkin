@@ -26,6 +26,9 @@ import json
 from visitor import *
 from map_user_to_deployment import *
 from map_user_to_visitor import *
+from PyQRNativeGAE.PyQRNative import *
+from PyQRNativeGAE.PyQRNativeGAE import *
+from background_job import *
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -103,9 +106,17 @@ class Deployment(ndb.Model):
                 counter = counter + 1
         return None
 
+    def set_sample_qr_code(self):
+        url = self.custom_subdomain + "." + self.custom_dns + "/checkin_visitor?visitor_id=9999999"
+        qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
+        qr.addData(url)
+        qr.make()
+        img = qr.make_svg()
+        self.upload_qr_code(img,"image/svg+xml")
+
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
-            'file', qrcodeimg, filename='sample_'+ self.slug, filetype=image_type)
+            'file', qrcodeimg, filename='test-qr-code.svg', filetype=image_type)
         datagen, headers = multipart_encode([multipart_param])
         upload_url = blobstore.create_upload_url('/upload_image')
 
@@ -156,6 +167,12 @@ class Deployment(ndb.Model):
         return visitor_id
 
     def generate_visitors(self,num_to_generate):
+        newbackgroundjob = BackgroundJob()
+        newbackgroundjob.deployment_key = self.key
+        newbackgroundjob.status = 'INPROGRESS'
+        newbackgroundjob.status_message = 'RUNNING - generating ' + num_to_generate + ' qrcodes...'
+        newbackgroundjob.put()
+
         starting_id = 0
         for i in range(0,int(num_to_generate)):
             serialized_id = self.generate_serial_id()
@@ -165,6 +182,9 @@ class Deployment(ndb.Model):
                 retval = self.add_visitor(serialized_id,int(visitor_id))
             self.max_visitor_serial_id = serialized_id
             self.put()
+
+        newbackgroundjob.status = 'COMPLETED'
+        newbackgroundjob.put()
         sleep(0.5)
 
     def add_visitor(self, serialized_id, visitor_id):

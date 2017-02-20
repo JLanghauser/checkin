@@ -18,10 +18,11 @@ import csv
 import StringIO
 import json
 import sys
-import qrcode
-import qrcode.image.svg
-from qrcode.image.pure import PymagingImage
-from base.qrcodegen import *
+from google.appengine.api import images
+# import qrcode
+# import qrcode.image.svg
+# from qrcode.image.pure import PymagingImage
+# from base.qrcodegen import *
 from models.deployment import *
 
 class SampleHandler(BaseHandler):
@@ -65,7 +66,8 @@ class SampleHandler(BaseHandler):
         #   if not dep.sample_qr_code:
             #self.set_sample_qr_code(dep)
             #params['sample_url'] = dep.get_sample_qr_code_url()
-            params['sample_url'] = '/img/ri_sample.png'
+            #params['sample_url'] = '/img/ri_sample.png'
+            params['sample_url'] = dep.get_sample_qr_code_url()
             visitor = Visitor.query( Visitor.visitor_id == "9999999",
                                      Visitor.deployment_key == dep.key).fetch(1)
             if not visitor or len(visitor) == 0 or not visitor[0]:
@@ -95,7 +97,7 @@ class SampleHandler(BaseHandler):
             dep = Deployment.get_by_slug(deployment_slug)
             params = self.get_deployment_params(dep)
 
-            params['sample_url'] = '/img/ri_sample.png'
+            params['sample_url'] = images.get_serving_url(dep.sample_qr_code,300,False,True)
             visitor = Visitor.query( Visitor.visitor_id == "9999999",
                                      Visitor.deployment_key == dep.key).fetch(1)
             if not visitor or len(visitor) == 0 or not visitor[0]:

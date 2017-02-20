@@ -9,6 +9,7 @@ from handlers.users import *
 from handlers.visitors import *
 from handlers.admins import *
 from handlers.tasks import *
+from handlers.background_jobs import *
 
 config = {
     'webapp2_extras.auth': {
@@ -42,6 +43,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments/view/<deployment_slug>/custom-domains',InstructionsHandler, name='domain_instructions'),
 
     webapp2.Route('/deployments/view/<deployment_slug>/admin',AdminHandler, name='admin_deployments'),
+    webapp2.Route('/deployments/view/<deployment_slug>/backgroundjobs',BackgroundJobs, name='background_jobs'),
+    webapp2.Route('/deployments/view/<deployment_slug>/visitorsasync',VisitorsAsyncHandler, name='background_jobs'),
 
     webapp2.Route('/deployments/view/<deployment_slug>/visitors',VisitorsHandler, name='visitors_deployments'),
     webapp2.Route('/deployments/view/<deployment_slug>/get_random_visitor',RandomVisitorHandler, name='random_visitor'),

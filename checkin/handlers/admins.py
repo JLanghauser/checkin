@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import webapp2
 import cgi
 import datetime
 import webapp2
@@ -18,13 +17,13 @@ import csv
 import StringIO
 import json
 import sys
-import qrcode
-import qrcode.image.svg
-from qrcode.image.pure import PymagingImage
-from base.qrcodegen import *
 from models.deployment import *
+from google.appengine.ext import deferred
 
 class AdminHandler(BaseHandler):
+    def upload_qr_codes(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+
     def upload_booths(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
@@ -103,9 +102,9 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'qrcodes'
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
-        existing_deployment.generate_visitors(qr_codes_to_generate)
+        deferred.defer(existing_deployment.generate_visitors,qr_codes_to_generate)
         params['success'] = "true"
-        params['flash_message'] = "Successfully generated QRcodes"
+        #params['flash_message'] = "Successfully generated QRcodes"
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
     def random_visitor(self,deployment_slug):
@@ -200,6 +199,7 @@ class AdminHandler(BaseHandler):
                 existing_deployment.upload_image_data(image_file)
                 params['activetab'] = 'look'
 
+            existing_deployment.set_sample_qr_code()
             sleep(0.5)
             params['success'] = "true"
             params['flash_message'] = "Successfully update Deployment:  " +existing_deployment.name
@@ -219,7 +219,7 @@ class AdminHandler(BaseHandler):
         elif method == 'GENERATE_QR_CODES':
             self.generate_qr_codes(deployment_slug)
         elif method == 'UPLOAD_QR_CODES':
-            self.upload_qr_codes(self.request,deployment_slug)
+            self.upload_qr_codes(deployment_slug)
         elif method == 'EXPORT_QR_CODES':
             self.export_qr_codes(self.request,deployment_slug)
         elif method == 'CREATE_NEW_BOOTH':

@@ -18,10 +18,10 @@ import csv
 import StringIO
 import json
 import sys
-import qrcode
-import qrcode.image.svg
-from qrcode.image.pure import PymagingImage
-from base.qrcodegen import *
+# import qrcode
+# import qrcode.image.svg
+# from qrcode.image.pure import PymagingImage
+# from base.qrcodegen import *
 from models.deployment import *
 
 class InstructionsHandler(BaseHandler):

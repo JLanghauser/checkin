@@ -1,4 +1,6 @@
 from google.appengine.ext import ndb
+from google.appengine.api import users
+from user import *
 
 class BackgroundJob (ndb.Model):
     user_key = ndb.KeyProperty(kind=User)

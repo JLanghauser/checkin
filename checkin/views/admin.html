@@ -1,5 +1,5 @@
 {% extends "main.html" %} {% block maincontent %}
-
+<div id="backgroundjobs"></div>
 <ul class="nav nav-tabs">
     <li id="domaintab"><a href="#domain" data-toggle="tab">Custom Domain</a></li>
     <li id="looktab"><a href="#look" data-toggle="tab">Look and Feel</a></li>
@@ -143,21 +143,24 @@ badge.</h3>
       </div>
     </div>
     <button type="button" class="btn btn-primary navbar-btn">Export All as .CSV</button>
+
     <table class="table table-striped">
         <caption>Striped Table Layout</caption>
         <thead>
             <tr>
                 <th>Sequence</th>
                 <th>Visitor ID</th>
+                <th>QR Code Link</th>
             </tr>
         </thead>
         <tbody>
-            {% for vi in visitors %}
-            <tr>
-                <td>{{vi.serialized_id}}</td>
-                <td>{{vi.visitor_id}}</td>
-            </tr>
-            {% endfor %}
+          {% for vi in visitors %}
+          <tr>
+              <td>{{vi.serialized_id}}</td>
+              <td>{{vi.visitor_id}}</td>
+              <td><a href="{{vi.qr_code_url}}" target="_blank">qrcode</a></td>
+          </tr>
+          {% endfor %}
         </tbody>
     </table>
 </div>
@@ -416,9 +419,32 @@ badge.</h3>
 
     });
 
-    // function set_up_edit(obj){
-    //   $('#edit-vendorname').value = obj.vendorname
-    // }
+    job_listener = setInterval(function () {
+      $.ajax({
+        url: "backgroundjobs",
+        type: "get",
+        data:'id=test',
+        success: function(result){
+          $("#backgroundjobs").html(result);
+        },
+        error:function(){}
+      });
+    }, 1000);
+
+
+    $(document).ready(function() {
+        $('#qrcodestable').DataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ajax": "visitorsasync",
+            "columns": [
+            {data: "serialized_id"},
+            { data: "visitor_id" },
+            { data: "qr_code_url" }
+        ]
+        } );
+    } );
+
 </script>
 
 

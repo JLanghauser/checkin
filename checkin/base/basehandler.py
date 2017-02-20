@@ -14,6 +14,7 @@ import csv
 import StringIO
 import urllib
 from google.appengine.ext.webapp import template
+import json
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -104,6 +105,10 @@ class BaseHandler(webapp2.RequestHandler):
       else:
           reader = csv.reader(file_stream)
       return reader
+
+  def render_json(self,obj):
+      self.response.headers['Content-Type'] = 'application/json'
+      self.response.out.write(json.dumps(obj))
 
   def render_template(self, view_filename, params={}):
     user = self.user_info

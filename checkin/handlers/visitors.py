@@ -18,6 +18,46 @@ from models.deployment import *
 from reports import *
 from sample import *
 from pages import *
+from datatables import *
+from requests import *
+from google.appengine.datastore.datastore_query import Cursor
+
+class VisitorsAsyncHandler(BaseHandler):
+    @deployment_admin_required
+    def get(self,deployment_slug=None):
+        page = self.request.get('page')
+        perpage = self.request.get('perpage')
+        order = self.request.get('order')
+        cursor = Cursor(urlsafe=self.request.get('cursor'))
+
+        page = int(page) if page else 1
+        perpage = int(perpage) if perpage else 10 #10,25,50,100
+        order = int(order) if order else 0
+
+
+        dep = Deployment.get_by_slug(deployment_slug)
+        query = Visitor.query(Visitor.deployment_key==dep.key)
+
+        if (order == 0):
+            query = query.order(Visitor.serialized_id)
+        else:
+            query = query.order(Visitor.visitor_id)
+
+        visitors, next_cursor, more = query.fetch_page(perpage, start_cursor=cursor)
+        vser = []
+        for v in visitors:
+            vser.append('{' + str(v.serialized_id) + ',' + str(v.visitor_id) + ',' + str(v.qr_code_url) + '}')
+
+
+        obj = {
+            'success': 'true',
+            'length': len(visitors),
+            'next_cursor': next_cursor.urlsafe(),
+            'more': more,
+            'payload': vser,
+          }
+        self.render_json(obj)
+
 
 class VisitorsHandler(BaseHandler):
     def get_deployment_params(self,deployment):
