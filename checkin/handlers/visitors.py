@@ -25,36 +25,45 @@ from google.appengine.datastore.datastore_query import Cursor
 class VisitorsAsyncHandler(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug=None):
-        page = self.request.get('page')
-        perpage = self.request.get('perpage')
+        start = self.request.get('start')
+        length = self.request.get('length')
         order = self.request.get('order')
-        cursor = Cursor(urlsafe=self.request.get('cursor'))
+        order_column = 0
+        order_dir = 'asc'
 
-        page = int(page) if page else 1
-        perpage = int(perpage) if perpage else 10 #10,25,50,100
-        order = int(order) if order else 0
+        if order and order[0] and order[0][column]:
+            order_column = int(order[0][column])
+        if order and order[0] and order[0][dir]:
+            order_dir = order[0][dir]
 
+        start = int(start) if start else 0
+        length = int(length) if length else 10 #10,25,50,100
 
         dep = Deployment.get_by_slug(deployment_slug)
         query = Visitor.query(Visitor.deployment_key==dep.key)
+        total = query.count()
+        if (order_column == 0):
+            if order_dir == 'asc':
+                query = query.order(Visitor.serialized_id)
+            else:
+                query = query.order(-Visitor.serialized_id)
+        elif (order_column == 1):
+            if order_dir == 'asc':
+                query = query.order(Visitor.visitor_id)
+            else:
+                query = query.order(-Visitor.visitor_id)
 
-        if (order == 0):
-            query = query.order(Visitor.serialized_id)
-        else:
-            query = query.order(Visitor.visitor_id)
-
-        visitors, next_cursor, more = query.fetch_page(perpage, start_cursor=cursor)
+        visitors = query.fetch(offset=start,limit=length)
         vser = []
         for v in visitors:
-            vser.append('{' + str(v.serialized_id) + ',' + str(v.visitor_id) + ',' + str(v.qr_code_url) + '}')
+            vser.append([v.serialized_id,v.visitor_id,v.qr_code_url])
 
 
         obj = {
             'success': 'true',
-            'length': len(visitors),
-            'next_cursor': next_cursor.urlsafe(),
-            'more': more,
-            'payload': vser,
+            'recordsTotal': total,
+            'recordsFiltered':total,
+            'data': vser,
           }
         self.render_json(obj)
 

@@ -144,7 +144,26 @@ badge.</h3>
     </div>
     <button type="button" class="btn btn-primary navbar-btn">Export All as .CSV</button>
 
-    <table class="table table-striped">
+
+    <table id="qrcodestable" class="display" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Sequence</th>
+                    <th>Visitor ID</th>
+                    <th>QR Code Link</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                  <th>Sequence</th>
+                  <th>Visitor ID</th>
+                  <th>QR Code Link</th>
+                </tr>
+            </tfoot>
+        </table>
+
+
+    <!--<table class="table table-striped">
         <caption>Striped Table Layout</caption>
         <thead>
             <tr>
@@ -162,7 +181,7 @@ badge.</h3>
           </tr>
           {% endfor %}
         </tbody>
-    </table>
+    </table>-->
 </div>
 <div class="tab-pane container" id="booths">
     <h3>Each booth should have a single booth account shared between all of the exhibitors
@@ -419,6 +438,29 @@ badge.</h3>
 
     });
 
+
+    $(document).ready(function() {
+        var table = $('#qrcodestable').DataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ordering": false,
+            "searching":false,
+            "ajax": 'visitorsasync',
+            "columnDefs": [ {
+                "targets": 2,
+                "data": 2,
+                "render": function ( data, type, full, meta ) {
+                  return '<a target="_blank" href="'+data+'">QR Code</a>';
+                }
+              } ]
+        } );
+
+        setInterval( function () {
+          table.ajax.reload();
+        }, 30000 );
+
+    } );
+
     job_listener = setInterval(function () {
       $.ajax({
         url: "backgroundjobs",
@@ -431,19 +473,6 @@ badge.</h3>
       });
     }, 1000);
 
-
-    $(document).ready(function() {
-        $('#qrcodestable').DataTable( {
-            "processing": true,
-            "serverSide": true,
-            "ajax": "visitorsasync",
-            "columns": [
-            {data: "serialized_id"},
-            { data: "visitor_id" },
-            { data: "qr_code_url" }
-        ]
-        } );
-    } );
 
 </script>
 

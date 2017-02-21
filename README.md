@@ -5,6 +5,11 @@ appcfg.py --no_cookies -A tough-variety-126419 -V v1 update checkin/
 appcfg.py -A tough-variety-126419 -V v9 update checkin/
 
 
+pip install -t lib -r requirements.txt
+
+pip install -t lib datatables
+pip install -t lib requests
+
 # install
 source env/bin/activate
 pip install --ignore-installed --target=lib qrcode
