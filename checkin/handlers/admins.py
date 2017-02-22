@@ -104,7 +104,7 @@ class AdminHandler(BaseHandler):
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
         deferred.defer(existing_deployment.generate_visitors,qr_codes_to_generate)
         params['success'] = "true"
-        #params['flash_message'] = "Successfully generated QRcodes"
+        params['flash_message'] = "Successfully started generating QRcodes"
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
     def random_visitor(self,deployment_slug):
@@ -149,6 +149,7 @@ class AdminHandler(BaseHandler):
         tmp_deployment_slug = None
         tmp_deployment_custom_dns = None
         tmp_deployment_subdomain = None
+        update_all_qr_codes = False
 
         if not (new_slug == deployment_slug):
             tmp_deployment_slug = Deployment.query(
@@ -157,6 +158,10 @@ class AdminHandler(BaseHandler):
         if not (custom_dns == existing_deployment.custom_dns):
             tmp_deployment_custom_dns = Deployment.query(Deployment.custom_dns == custom_dns,
                                                          Deployment.custom_subdomain == custom_subdomain).fetch(1)
+            update_all_qr_codes = True
+
+        if not (custom_subdomain == existing_deployment.custom_subdomain):
+            update_all_qr_codes = True
 
         if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
                 (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
@@ -200,9 +205,13 @@ class AdminHandler(BaseHandler):
                 params['activetab'] = 'look'
 
             existing_deployment.set_sample_qr_code()
+            existing_deployment.put()
+            if update_all_qr_codes == True:
+                deferred.defer(existing_deployment.update_all_qr_codes)
+
             sleep(0.5)
             params['success'] = "true"
-            params['flash_message'] = "Successfully update Deployment:  " +existing_deployment.name
+            params['flash_message'] = "Successfully updated Deployment:  " +existing_deployment.name
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
 
     @deployment_admin_required

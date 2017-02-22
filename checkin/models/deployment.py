@@ -54,8 +54,11 @@ class Deployment(ndb.Model):
             return ""
 
     def get_sample_qr_code_url(self):
-        if self.sample_qr_code:
-            return images.get_serving_url(self.sample_qr_code, 1600, False, True)
+        if self.sample_qr_code and blobstore.get(self.sample_qr_code):
+            try:
+                return images.get_serving_url(self.sample_qr_code, 1600, False, True)
+            except:
+                return ""
         else:
             return ""
 
@@ -113,6 +116,21 @@ class Deployment(ndb.Model):
         qr.make()
         img = qr.make_svg()
         self.upload_qr_code(img,"image/svg+xml")
+
+    def update_all_qr_codes(self):
+        newbackgroundjob = BackgroundJob()
+        newbackgroundjob.deployment_key = self.key
+        newbackgroundjob.status = 'INPROGRESS'
+        newbackgroundjob.status_message = 'RUNNING - updating QR codes for all visitors...'
+        newbackgroundjob.put()
+
+        visitors = Visitor.query(Visitor.deployment_key == self.key)
+        for visitor in visitors:
+            visitor.put()
+
+        newbackgroundjob.status = 'COMPLETED'
+        newbackgroundjob.put()
+        sleep(0.5)
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(

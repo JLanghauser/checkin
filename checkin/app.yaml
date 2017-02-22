@@ -41,6 +41,10 @@ libraries:
 - name: PIL
   version: latest
 
+skip_files:
+    - lib/PIL*
+
+
 builtins:
 - remote_api: on
 - deferred: on

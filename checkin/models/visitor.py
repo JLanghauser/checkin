@@ -25,8 +25,11 @@ class Visitor(ndb.Model):
         self.set_qr_code();
 
     def get_qr_code_url(self):
-        if self.qr_code:
-            return images.get_serving_url(self.qr_code, 1600, False, True)
+        if self.qr_code and blobstore.get(self.qr_code):
+            try:
+                return images.get_serving_url(self.qr_code, 1600, False, True)
+            except:
+                return ""
         else:
             return ""
 

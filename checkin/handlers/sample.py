@@ -97,7 +97,11 @@ class SampleHandler(BaseHandler):
             dep = Deployment.get_by_slug(deployment_slug)
             params = self.get_deployment_params(dep)
 
-            params['sample_url'] = images.get_serving_url(dep.sample_qr_code,300,False,True)
+            if (dep.sample_qr_code):
+                params['sample_url'] = images.get_serving_url(dep.sample_qr_code,300,False,True)
+            else:
+                params['sample_url'] = ""
+                
             visitor = Visitor.query( Visitor.visitor_id == "9999999",
                                      Visitor.deployment_key == dep.key).fetch(1)
             if not visitor or len(visitor) == 0 or not visitor[0]:

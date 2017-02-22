@@ -71,7 +71,6 @@ class BaseHandler(webapp2.RequestHandler):
         params['student_link_text'] =  deployment.student_link_text
         params['user_link'] =  deployment.user_link
         params['user_link_text'] =  deployment.user_link_text
-        params['visitors'] =  deployment.get_visitors()
         params['users'] =  deployment.get_users()
 
     for key, value in kwargs.items():
