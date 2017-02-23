@@ -10,6 +10,7 @@ from time import sleep
 import csv
 import StringIO
 import json
+from background_job import *
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -20,6 +21,7 @@ class Visitor(ndb.Model):
     visitor_id = ndb.TextProperty(indexed=True)
     qr_code = ndb.BlobKeyProperty()
     qr_code_url = ndb.ComputedProperty(lambda self: self.get_qr_code_url())
+    checkin_url = ndb.TextProperty(indexed=True)
 
     def _pre_put_hook(self):
         self.set_qr_code();
@@ -34,13 +36,23 @@ class Visitor(ndb.Model):
             return ""
 
     def set_qr_code(self):
+        newbackgroundjob = BackgroundJob()
+        newbackgroundjob.deployment_key = self.deployment_key
+        newbackgroundjob.status = 'CHILDPROCESS'
+        newbackgroundjob.status_message = 'RUNNING - updating QR Code'
+        newbackgroundjob.put()
+
         dep = self.deployment_key.get()
         url = dep.custom_subdomain + "." + dep.custom_dns + "/checkin_visitor?visitor_id=" +self.visitor_id
+        self.checkin_url = url
         qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
         qr.addData(url)
         qr.make()
         img = qr.make_svg()
         self.upload_qr_code(img,"image/svg+xml")
+
+        newbackgroundjob.status = 'PROCESSED'
+        newbackgroundjob.put()
 
     def upload_qr_code(self,qrcodeimg,image_type,withput=False):
         multipart_param = MultipartParam(

@@ -32,6 +32,12 @@ class BackgroundJobs(BaseHandler):
                 job.status_message = job.status_message.replace('RUNNING','FINISHED')
                 job.status='PROCESSED'
                 job.put()
+            if 'updating QR codes for all visitors' in job.status_message:
+                remaining = BackgroundJob.query(BackgroundJob.deployment_key == dep.key,BackgroundJob.status == 'CHILDPROCESS').count()
+                mins =  int(round(.5*remaining))
+                secs =  abs(int(round(30*remaining)) - mins*60)
+                job.status_message = 'RUNNING - updating QR codes for all visitors:  ~' + str(mins) + ' minutes, ' +  str(secs) + ' seconds remaining...'
+                job.put()
 
         params = {'jobs': jobs}
         self.render_smart_template('DEPLOYMENT',None,'background_job.html',dep,params)

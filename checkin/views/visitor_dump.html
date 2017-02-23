@@ -1,0 +1,6 @@
+{% for v in visitors %}
+  <BR>
+  <img src="{{v.qr_code_url}}"/>
+  <h1>{{ v.serialized_id }} : {{ v.visitor_id }} ({{ v.checkin_url }})</h1>
+  <BR>
+{% endfor %}

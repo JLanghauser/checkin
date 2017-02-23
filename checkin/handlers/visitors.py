@@ -22,13 +22,21 @@ from datatables import *
 from requests import *
 from google.appengine.datastore.datastore_query import Cursor
 
+class VisitorDump(BaseHandler):
+    @deployment_admin_required
+    def get(self,deployment_slug=None):
+        dep = Deployment.get_by_slug(deployment_slug)
+        visitors = Visitor.query(Visitor.deployment_key==dep.key).order(Visitor.serialized_id).fetch()
+        params = {'visitors': visitors}
+        self.render_smart_template('DEPLOYMENT','VISITORS','visitor_dump.html',dep,params)
+
 class VisitorsAsyncHandler(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug=None):
         start = self.request.get('start')
         length = self.request.get('length')
         order = self.request.get('order')
-        order_column = 1
+        order_column = 0
         order_dir = 'asc'
 
         if order and order[0] and order[0][column]:

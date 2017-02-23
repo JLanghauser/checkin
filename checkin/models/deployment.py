@@ -29,6 +29,7 @@ from map_user_to_visitor import *
 from PyQRNativeGAE.PyQRNative import *
 from PyQRNativeGAE.PyQRNativeGAE import *
 from background_job import *
+from google.appengine.ext import deferred
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -117,6 +118,17 @@ class Deployment(ndb.Model):
         img = qr.make_svg()
         self.upload_qr_code(img,"image/svg+xml")
 
+
+    def wait_for_finish(self,background_key):
+        newbackgroundjob = background_key.get()
+        while (BackgroundJob.query(BackgroundJob.deployment_key == self.key,BackgroundJob.status == 'CHILDPROCESS').count() > 0):
+            sleep(0.5)
+
+
+        newbackgroundjob.status = 'COMPLETED'
+        newbackgroundjob.put()
+        sleep(0.5)
+
     def update_all_qr_codes(self):
         newbackgroundjob = BackgroundJob()
         newbackgroundjob.deployment_key = self.key
@@ -126,11 +138,10 @@ class Deployment(ndb.Model):
 
         visitors = Visitor.query(Visitor.deployment_key == self.key)
         for visitor in visitors:
-            visitor.put()
+            deferred.defer(visitor.put)
 
-        newbackgroundjob.status = 'COMPLETED'
-        newbackgroundjob.put()
-        sleep(0.5)
+        deferred.defer(self.wait_for_finish,newbackgroundjob.key)
+
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
