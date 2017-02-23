@@ -130,17 +130,18 @@ class Deployment(ndb.Model):
         sleep(0.5)
 
     def update_all_qr_codes(self):
-        newbackgroundjob = BackgroundJob()
-        newbackgroundjob.deployment_key = self.key
-        newbackgroundjob.status = 'INPROGRESS'
-        newbackgroundjob.status_message = 'RUNNING - updating QR codes for all visitors...'
-        newbackgroundjob.put()
+        if BackgroundJob.query(BackgroundJob.deployment_key == self.key, BackgroundJob.status == 'INPROGRESS').count() == 0:
+            newbackgroundjob = BackgroundJob()
+            newbackgroundjob.deployment_key = self.key
+            newbackgroundjob.status = 'INPROGRESS'
+            newbackgroundjob.status_message = 'RUNNING - updating QR codes for all visitors...'
+            newbackgroundjob.put()
 
-        visitors = Visitor.query(Visitor.deployment_key == self.key)
-        for visitor in visitors:
-            deferred.defer(visitor.put)
+            visitors = Visitor.query(Visitor.deployment_key == self.key)
+            for visitor in visitors:
+                deferred.defer(visitor.put)
 
-        deferred.defer(self.wait_for_finish,newbackgroundjob.key)
+            deferred.defer(self.wait_for_finish,newbackgroundjob.key)
 
 
     def upload_qr_code(self,qrcodeimg,image_type):
