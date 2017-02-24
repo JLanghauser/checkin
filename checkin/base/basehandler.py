@@ -109,6 +109,11 @@ class BaseHandler(webapp2.RequestHandler):
       self.response.headers['Content-Type'] = 'application/json'
       self.response.out.write(json.dumps(obj))
 
+  def render_csv(self,obj,name):
+      self.response.headers['Content-Type'] = 'text/csv'
+      self.response.headers['Content-disposition'] = 'attachment; filename=' + name
+      self.response.out.write(obj)
+
   def render_template(self, view_filename, params={}):
     user = self.user_info
     params['user'] = user

@@ -10,6 +10,7 @@ from handlers.visitors import *
 from handlers.admins import *
 from handlers.tasks import *
 from handlers.background_jobs import *
+from handlers.blob_store import *
 
 config = {
     'webapp2_extras.auth': {
@@ -46,9 +47,12 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments/view/<deployment_slug>/backgroundjobs',BackgroundJobs, name='background_jobs'),
     webapp2.Route('/deployments/view/<deployment_slug>/visitorsasync',VisitorsAsyncHandler, name='background_jobs'),
     webapp2.Route('/deployments/view/<deployment_slug>/dump_badges',VisitorDump, name='visitor_export'),
+    webapp2.Route('/deployments/view/<deployment_slug>/dump_badges_csv',VisitorCSV, name='visitor_csv'),
 
     webapp2.Route('/deployments/view/<deployment_slug>/visitors',VisitorsHandler, name='visitors_deployments'),
     webapp2.Route('/deployments/view/<deployment_slug>/get_random_visitor',RandomVisitorHandler, name='random_visitor'),
+
+    webapp2.Route('/blobstore/images/<photo_key>',ViewPhotoHandler, name='blob_server'),
 
     webapp2.Route('/upload_image', UploadHandler, name='upload'),
     webapp2.Route('/error', ErrorPage, name='error'),

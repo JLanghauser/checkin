@@ -11,6 +11,7 @@ import csv
 import StringIO
 import json
 from background_job import *
+from google.appengine.runtime import DeadlineExceededError
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -23,36 +24,40 @@ class Visitor(ndb.Model):
     qr_code_url = ndb.ComputedProperty(lambda self: self.get_qr_code_url())
     checkin_url = ndb.TextProperty(indexed=True)
 
-    def _pre_put_hook(self):
-        self.set_qr_code();
-
     def get_qr_code_url(self):
-        if self.qr_code and blobstore.get(self.qr_code):
-            try:
-                return images.get_serving_url(self.qr_code, 1600, False, True)
-            except:
+        try:
+            if self.qr_code and blobstore.get(self.qr_code):
+                return images.get_serving_url(self.qr_code)
+            else:
                 return ""
-        else:
-            return ""
+        except:
+            return "/blobstore/images/" + str(self.qr_code)
 
-    def set_qr_code(self):
-        newbackgroundjob = BackgroundJob()
-        newbackgroundjob.deployment_key = self.deployment_key
-        newbackgroundjob.status = 'CHILDPROCESS'
-        newbackgroundjob.status_message = 'RUNNING - updating QR Code'
-        newbackgroundjob.put()
+    def set_qr_code(self,withput=False):
+        newbackgroundjob = None
+        try:
+            newbackgroundjob = BackgroundJob()
+            newbackgroundjob.deployment_key = self.deployment_key
+            newbackgroundjob.status = 'CHILDPROCESS'
+            newbackgroundjob.status_message = 'RUNNING - updating QR Code'
+            newbackgroundjob.put()
 
-        dep = self.deployment_key.get()
-        url = dep.custom_subdomain + "." + dep.custom_dns + "/checkin_visitor?visitor_id=" +self.visitor_id
-        self.checkin_url = url
-        qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
-        qr.addData(url)
-        qr.make()
-        img = qr.make_svg()
-        self.upload_qr_code(img,"image/svg+xml")
+            dep = self.deployment_key.get()
+            url = dep.custom_subdomain + "." + dep.custom_dns + "/checkin_visitor?visitor_id=" +self.visitor_id
+            self.checkin_url = url
+            qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
+            qr.addData(url)
+            qr.make()
+            img = qr.make_svg()
+            self.upload_qr_code(img,"image/svg+xml",withput=withput)
+            newbackgroundjob.key.delete()
 
-        newbackgroundjob.status = 'PROCESSED'
-        newbackgroundjob.put()
+        except DeadlineExceededError:
+            if newbackgroundjob:
+                newbackgroundjob.key.delete()
+            deferred.defer(self.set_qr_code,True)
+
+
 
     def upload_qr_code(self,qrcodeimg,image_type,withput=False):
         multipart_param = MultipartParam(

@@ -207,7 +207,7 @@ class AdminHandler(BaseHandler):
             existing_deployment.set_sample_qr_code()
             existing_deployment.put()
             if update_all_qr_codes == True:
-                deferred.defer(existing_deployment.update_all_qr_codes)
+                deferred.defer(existing_deployment.update_all_qr_codes,0)
 
             sleep(0.5)
             params['success'] = "true"

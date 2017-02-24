@@ -74,6 +74,7 @@ class SampleHandler(BaseHandler):
                 visitor = Visitor()
                 visitor.visitor_id = "9999999"
                 visitor.deployment_key = dep.key
+                visitor.set_qr_code()
                 visitor.put()
             else:
                 visitor = visitor[0]
@@ -101,13 +102,14 @@ class SampleHandler(BaseHandler):
                 params['sample_url'] = images.get_serving_url(dep.sample_qr_code,300,False,True)
             else:
                 params['sample_url'] = ""
-                
+
             visitor = Visitor.query( Visitor.visitor_id == "9999999",
                                      Visitor.deployment_key == dep.key).fetch(1)
             if not visitor or len(visitor) == 0 or not visitor[0]:
                 visitor = Visitor()
                 visitor.visitor_id = "9999999"
                 visitor.deployment_key = dep.key
+                visitor.set_qr_code()
                 visitor.put()
             else:
                 visitor = visitor[0]
