@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from globalconstants import *
 import cgi
 import datetime
 import webapp2
@@ -26,18 +27,28 @@ class BackgroundJobs(BaseHandler):
     def get(self,deployment_slug):
         user = self.user
         dep = Deployment.get_by_slug(deployment_slug)
-        jobs = BackgroundJob.query(BackgroundJob.deployment_key == dep.key,BackgroundJob.status.IN(['INPROGRESS', 'COMPLETED']))
+        jobs = BackgroundJob.query(BackgroundJob.deployment_key == dep.key,
+                                   BackgroundJob.status.IN([1,2]))
         for job in jobs:
-            if job.status == 'COMPLETED':
-                job.status_message = job.status_message.replace('RUNNING','FINISHED')
-                job.status='PROCESSED'
+            children = ChildProcess.query(
+                                ChildProcess.background_job_key == job.key).count()
+
+            progress = 100.0 - int(100/NUM_BACKGROUND_JOB_WORKERS * children)
+
+            if job.status == 2:
+                job.key.delete()
+            elif children == 0:
+                job.status = 2
+                job.status_message = 'Finished job.'
                 job.put()
-            elif 'updating QR codes for all visitors' in job.status_message:
-                remaining = BackgroundJob.query(BackgroundJob.deployment_key == dep.key,BackgroundJob.status == 'CHILDPROCESS').count()
-                mins =  int(round(.5*remaining))
-                secs =  abs(int(round(30*remaining)) - mins*60)
-                job.status_message = 'RUNNING - updating QR codes for all visitors:  ~' + str(mins) + ' minutes, ' +  str(secs) + ' seconds remaining...'
+            elif job.job_type == 0:
+                job.status_message = 'Adding Badges to system: ' + str(progress) + ' percent complete'
+                job.put()
+            elif job.job_type == 1:
+                job.status_message = 'Updating all badges: ' + str(progress) + ' percent complete'
                 job.put()
 
+        jobs = BackgroundJob.query(BackgroundJob.deployment_key == dep.key,
+                                   BackgroundJob.status == 1)
         params = {'jobs': jobs}
         self.render_smart_template('DEPLOYMENT',None,'background_job.html',dep,params)

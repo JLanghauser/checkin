@@ -60,7 +60,7 @@ class CheckInHandler(BaseHandler):
                 if (maps == 0):
                     new_map.visitor_key = visitor.key
                     new_map.deployment_key = visitor.deployment_key
-                    new_map.date_created = datetime.utcnow()
+                    new_map.date_created = datetime.datetime.utcnow()
                     new_map.put()
                     params['visitor_id'] = visitor_id
                     self.render_template('successful_checkin.html', params)

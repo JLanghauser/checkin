@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from globalconstants import *
 import time
 import webapp2_extras.appengine.auth.models
 from google.appengine.ext import ndb
@@ -121,48 +122,24 @@ class Deployment(ndb.Model):
         self.upload_qr_code(img,"image/svg+xml")
         sleep(0.5)
 
+    def update_all_qr_codes(self,user):
+        total_to_save = visitors = Visitor.query(Visitor.deployment_key == self.key).count()
+        background_job = BackgroundJob.create_new(user.key,self.key,1)
+        num_workers = NUM_BACKGROUND_JOB_WORKERS
+        offset = 0
 
-    def wait_for_finish(self,background_key):
-        newbackgroundjob = background_key.get()
-        while (BackgroundJob.query(BackgroundJob.deployment_key == self.key,BackgroundJob.status == 'CHILDPROCESS').count() > 0):
-            sleep(0.5)
-
-        newbackgroundjob.status = 'COMPLETED'
-        newbackgroundjob.put()
-        sleep(0.5)
-
-    def update_all_qr_codes(self,start=0):
-        try:
-            newbackgroundjob = None
-            if BackgroundJob.query(BackgroundJob.deployment_key == self.key, BackgroundJob.status == 'INPROGRESS').count() == 0:
-                newbackgroundjob = BackgroundJob()
-                newbackgroundjob.deployment_key = self.key
-                newbackgroundjob.status = 'INPROGRESS'
-                newbackgroundjob.status_message = 'RUNNING - updating QR codes for all visitors...'
-                newbackgroundjob.put()
+        for i in range(0,num_workers):
+            if i == num_workers-1:
+                 limit = int(total_to_save/num_workers) + total_to_save % num_workers
             else:
-                newbackgroundjob = BackgroundJob.query(BackgroundJob.deployment_key == self.key, BackgroundJob.status == 'INPROGRESS').get()
-                newbackgroundjob.status_message = 'RUNNING - updating QR codes for all visitors...'
-                newbackgroundjob.put()
+                 limit = int(total_to_save/num_workers)
+            child = ChildProcess.create_new(background_job.key)
+            deferred.defer(Visitor.updateqrcodes,self.key,child.key,offset,limit)
+            offset = offset + int(total_to_save/num_workers)
+            sleep(1)
 
-            visitors = Visitor.query(Visitor.deployment_key == self.key).order(Visitor.serialized_id)
-
-            offset = 0
-            for visitor in visitors:
-                if offset > start:
-                    deferred.defer(visitor.set_qr_code,True)
-                offset = offset + 1
-                #key_param = visitor.key.urlsafe()
-
-                # task = taskqueue.add(
-                #             queue_name='backgroundqueue',
-                #             url='/tasks/update_visitor',
-                #             params={'visitor_key': str(key_param)})
-
-
-            deferred.defer(self.wait_for_finish,newbackgroundjob.key)
-        except DeadlineExceededError:
-            deferred.defer(self.update_all_qr_codes,offset)
+        background_job.status = 1
+        background_job.put()
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
@@ -199,98 +176,66 @@ class Deployment(ndb.Model):
         self.logo = blob.key()
         self.put()
 
-    def generate_serial_id(self,seed):
-        starting_id = seed
-        if self.max_visitor_serial_id and self.max_visitor_serial_id > starting_id:
-            starting_id = self.max_visitor_serial_id
-        serialized_id = starting_id + 1
-        return serialized_id
 
-    def generate_visitor_id(self):
-        visitor_id = ""
-        for x in range(0,6):
-            rand_val = str(randint(0, 9))
-            if x == 0:
-                while rand_val == '0':
-                    rand_val = str(randint(0, 9))
-            visitor_id += rand_val
-        return visitor_id
+    def generate_visitors(self,num_to_generate,user):
+        background_job = BackgroundJob.create_new(user.key,self.key,0)
+        num_workers = NUM_BACKGROUND_JOB_WORKERS
+        start = self.max_visitor_serial_id
+        if start:
+            start = start + 1
+        else:
+            start = 1
 
-    def generate_visitors(self,num_to_generate):
-        num_done = 0
-        try:
-            newbackgroundjob = None
-            if BackgroundJob.query(BackgroundJob.deployment_key == self.key, BackgroundJob.status == 'INPROGRESS').count() == 0:
-                newbackgroundjob = BackgroundJob()
-                newbackgroundjob.deployment_key = self.key
-                newbackgroundjob.status = 'INPROGRESS'
-                newbackgroundjob.status_message = 'RUNNING - generating ' + num_to_generate + ' qrcodes...'
-                newbackgroundjob.put()
+        i = 0
+        should_update = False
+        while i < num_workers and should_update == False:
+            if i == num_workers-1 or num_to_generate < num_workers:
+                 end =  start + int(num_to_generate/num_workers) + num_to_generate % num_workers - 1
+                 should_update = True
             else:
-                newbackgroundjob = BackgroundJob.query(BackgroundJob.deployment_key == self.key, BackgroundJob.status == 'INPROGRESS').fetch(1)[0]
-                newbackgroundjob.status_message = 'RUNNING - generating ' + num_to_generate + ' qrcodes...'
-                newbackgroundjob.put()
+                 end = start + int(num_to_generate/num_workers) - 1
+            child = ChildProcess.create_new(background_job.key)
+            deferred.defer(Visitor.generate, self.key, child.key, start, end, should_update)
+            start = end + 1
+            i = i + 1
+            sleep(1)
 
-            serialized_id = 0
-            for i in range(0,int(num_to_generate)):
-                retval = 'START'
-                while retval != '':
-                    serialized_id = self.generate_serial_id(serialized_id)
-                    visitor_id = self.generate_visitor_id()
-                    retval = self.add_visitor(serialized_id,int(visitor_id))
-
-                self.max_visitor_serial_id = serialized_id
-                self.put()
-                num_done = num_done + 1
-
-            newbackgroundjob.status = 'COMPLETED'
-            newbackgroundjob.put()
-            sleep(0.5)
-        except DeadlineExceededError:
-            deferred.defer(self.generate_visitors, int(num_to_generate) - num_done)
-            return
+        background_job.status = 1
+        background_job.put()
 
     def add_visitor(self, serialized_id, visitor_id):
         str_visitor_id = str(visitor_id)
-        qry = Visitor.query(Visitor.visitor_id == str_visitor_id,
-                            Visitor.serialized_id == serialized_id,
-                            Visitor.deployment_key == self.key)
+        identical_object = Visitor.query(Visitor.deployment_key == self.key,
+                            Visitor.visitor_id == str_visitor_id,
+                            Visitor.serialized_id == serialized_id).get()
 
-        qry2 = Visitor.query(Visitor.serialized_id == serialized_id,
-                            Visitor.deployment_key == self.key)
+        same_serial = Visitor.query(Visitor.deployment_key == self.key,
+                             Visitor.serialized_id == serialized_id).get()
 
-        qry3 = Visitor.query(Visitor.visitor_id == str_visitor_id,
-                            Visitor.deployment_key == self.key)
+        same_visitor = Visitor.query(Visitor.visitor_id == str_visitor_id,
+                            Visitor.deployment_key == self.key).get()
 
-        total_visitor = qry.get()
-        serial_visitor = qry2.get()
-        visitor_visitor = qry3.get()
 
-        if (total_visitor is None and visitor_id != 9999999
-            and visitor_id != 0 and serial_visitor is None
-            and visitor_visitor is None):
-            newvisitor = Visitor()
-            newvisitor.visitor_id = str_visitor_id
-            newvisitor.serialized_id = serialized_id
-            newvisitor.deployment_key = self.key
-            newvisitor.set_qr_code()
-            newvisitor.put()
-            return ""
-        else:
-            max_id = self.max_visitor_serial_id
-            if total_visitor and total_visitor.serialized_id > max_id:
-                max_id = total_visitor.serialized_id
+        if same_visitor and not identical_object:
+            return 1
 
-            if serial_visitor and serial_visitor.serialized_id > max_id:
-                max_id = serial_visitor.serialized_id
+        if same_serial and not identical_object:
+            return 2
 
-            if visitor_visitor and visitor_visitor.serialized_id > max_id:
-                max_id = visitor_visitor.serialized_id
+        if identical_object:
+            return 3
 
-            if max_id > self.max_visitor_serial_id:
-                self.max_visitor_serial_id = max_id
-                self.put()
-            return "Error - Bad User"
+        if visitor_id == 9999999:
+            return 4
+
+        newvisitor = Visitor()
+        newvisitor.visitor_id = str_visitor_id
+        newvisitor.serialized_id = serialized_id
+        newvisitor.deployment_key = self.key
+        newvisitor.set_qr_code()
+        newvisitor.put()
+        return 0
+
 
     def get_csv_reader(self,csv_file,should_sniff=True):
          file_stream = StringIO.StringIO(csv_file)

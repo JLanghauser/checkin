@@ -18,10 +18,10 @@ import csv
 import StringIO
 import json
 import sys
-# import qrcode
-# import qrcode.image.svg
-# from qrcode.image.pure import PymagingImage
-# from base.qrcodegen import *
+from google.appengine.ext import deferred
+from google.appengine.api import taskqueue
+from google.appengine.runtime import DeadlineExceededError
+from models.map_user_to_visitor import *
 from models.deployment import *
 
 class InstructionsHandler(BaseHandler):
@@ -67,3 +67,35 @@ class UploadHandler(blobstore_handlers.BlobstoreUploadHandler):
             self.response.out.write(json.dumps(obj))
         except:
             self.error(500)
+
+class CreateVisitors(BaseHandler):
+    @classmethod
+    def create_if_does_not_exist(cls,offset):
+        next_offset = offset
+        try:
+            maps = MapUserToVisitor.query().order(MapUserToVisitor.visitor_key).fetch(offset=next_offset)
+            for m in maps:
+                visitor = m.visitor_key.get()
+                if not visitor:
+                    v = Visitor(id = m.visitor_key.id())
+                    if m.deployment_key:
+                        v.deployment_key = m.deployment_key
+                    v.put()
+                next_offset = next_offset + 1
+
+        except DeadlineExceededError:
+            deferred.defer(CreateVisitors.create_if_does_not_exist,next_offset)
+
+    def get(self):
+        deferred.defer(CreateVisitors.create_if_does_not_exist,0)
+        return []
+
+class DebugHandler(BaseHandler):
+    def get(self):
+        maps = MapUserToVisitor.query().order(MapUserToVisitor.deployment_key,MapUserToVisitor.visitor_key)
+
+        csv = "deployment_key_id,visitor_key_id\r"
+        for m in maps:
+            csv = csv + str(m.deployment_key.id()) + ',' + str(m.visitor_key.id()) + '\r'
+
+        self.render_csv(csv,'maps.csv')

@@ -19,6 +19,22 @@ indexes:
   - name: deployment_key
   - name: user_key
 
+- kind: MapUserToVisitor
+  properties:
+  - name: deployment_key
+  - name: visitor_key
+
+- kind: MapUserToVisitor
+  properties:
+  - name: visitor_key
+  - name: deployment_key
+
+- kind: MapUserToVisitor
+  properties:
+  - name: visitor_key
+    direction: desc
+  - name: deployment_key
+
 - kind: Visitor
   properties:
   - name: deployment_key

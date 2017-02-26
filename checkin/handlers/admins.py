@@ -102,7 +102,7 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'qrcodes'
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
-        deferred.defer(existing_deployment.generate_visitors,qr_codes_to_generate)
+        existing_deployment.generate_visitors(int(qr_codes_to_generate),self.user)
         params['success'] = "true"
         params['flash_message'] = "Successfully started generating QRcodes"
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
@@ -207,7 +207,7 @@ class AdminHandler(BaseHandler):
             existing_deployment.set_sample_qr_code()
             existing_deployment.put()
             if update_all_qr_codes == True:
-                deferred.defer(existing_deployment.update_all_qr_codes,0)
+                existing_deployment.update_all_qr_codes(self.user)
 
             sleep(0.5)
             params['success'] = "true"

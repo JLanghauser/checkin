@@ -31,13 +31,6 @@ class VisitorSave(webapp2.RequestHandler):
             v.set_qr_code()
             v.put()
 
-    def get(self):
-        print 'there'
-        #key = self.request.get('visitor_key')
-        #visitor_key = ndb.Key(urlsafe=key)
-        #v = visitor_key.get()
-        #v.put()
-
 class VisitorCSV(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug=None):
@@ -45,17 +38,7 @@ class VisitorCSV(BaseHandler):
         visitors = Visitor.query(Visitor.deployment_key==dep.key).order(Visitor.serialized_id).fetch()
         csv = ""
         for v in visitors:
-            csv = csv + str(v.serialized_id) + ',' + str(v.visitor_id) + '\r'
-        return self.render_csv(csv,"badge-export.csv")
-
-class VisitorCSV(BaseHandler):
-    @deployment_admin_required
-    def get(self,deployment_slug=None):
-        dep = Deployment.get_by_slug(deployment_slug)
-        visitors = Visitor.query(Visitor.deployment_key==dep.key).order(Visitor.serialized_id).fetch()
-        csv = ""
-        for v in visitors:
-            csv = csv + str(v.serialized_id) + ',' + str(v.visitor_id) + '\r'
+            csv = csv + str(v.serialized_id) + ',' + str(v.visitor_id) + ',' + str(v.checkin_url) +  '\r'
         return self.render_csv(csv,"badge-export.csv")
 
 class VisitorDump(BaseHandler):

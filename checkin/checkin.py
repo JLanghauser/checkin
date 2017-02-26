@@ -1,3 +1,5 @@
+
+from globalconstants import *
 from handlers.deployments import *
 from handlers.pages import *
 from handlers.error_page import *
@@ -63,7 +65,13 @@ app = webapp2.WSGIApplication([
                   UserRefreshHack, name='hack_refresh'),
 
     webapp2.Route('/api/tasks/update_map_user_indices/',
-                  TaskHandler, name='cron_tasks')
+                  TaskHandler, name='cron_tasks'),
+
+    webapp2.Route('/map_user_to_visitors/debug',
+                  DebugHandler, name='debugMapUserTovisitors'),
+
+    webapp2.Route('/map_user_to_visitors/edit',
+              CreateVisitors, name='debugMapUserTovisitors')
 
 
 
