@@ -19,33 +19,9 @@ import StringIO
 import json
 import sys
 from google.appengine.api import images
-# import qrcode
-# import qrcode.image.svg
-# from qrcode.image.pure import PymagingImage
-# from base.qrcodegen import *
 from models.deployment import *
 
 class SampleHandler(BaseHandler):
-    def set_sample_qr_code(self,deployment):
-        factory = qrcode.image.svg.SvgPathImage
-        #img = qrcode.make('Some data here', image_factory=factory)
-        #img = qrcode.make(deployment.custom_subdomain
-        #             + "."
-        #             + deployment.custom_dns
-        #             + "/checkin_visitor?visitor_id="
-        #             + "9999999", image_factory=PymagingImage)
-        # factory = PymagingImage
-        # qr = qrcode.QRCode(
-        #     version=None,
-        #     error_correction=qrcode.constants.ERROR_CORRECT_L,
-        #     box_size=100,
-        #     border=4,
-        # )
-        # qr.add_data('Some data')
-        # qr.make(fit=True)
-        # img = qr.make_image(image_factory=factory)
-        #
-        #deployment.upload_qr_code(svg,"image/svg")
 
     def get_deployment_params(self,deployment,**kwargs):
         params = {}

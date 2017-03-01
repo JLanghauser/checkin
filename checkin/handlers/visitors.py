@@ -21,6 +21,27 @@ from pages import *
 from datatables import *
 from requests import *
 from google.appengine.datastore.datastore_query import Cursor
+from contextlib import closing
+from zipfile import ZipFile, ZIP_DEFLATED
+from google.appengine.api import urlfetch
+import zipfile
+import StringIO
+from google.appengine.ext import deferred
+from google.appengine.api import taskqueue
+from google.appengine.runtime import DeadlineExceededError
+
+class VisitorZipDump(BaseHandler,blobstore_handlers.BlobstoreDownloadHandler):
+    def get(self,deployment_slug=None):
+        dep = Deployment.get_by_slug(deployment_slug)
+        if dep.get_qr_codes_url() != "":
+            self.response.headers['Content-Type'] ='application/zip'
+            self.response.headers['Content-Disposition'] = 'attachment; filename="data.txt.zip"'
+            blob_info = blobstore.BlobInfo.get(dep.qr_codes_zip)
+            self.send_blob(blob_info)
+            #self.response.out.write(dep.qr_codes_zip)
+        else:
+            deferred.defer(dep.create_file,None,0)
+            self.render_json(['Generating QR code zip now - check back in 2-15 minutes'])
 
 class VisitorSave(webapp2.RequestHandler):
     def post(self):

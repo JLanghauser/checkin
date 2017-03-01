@@ -33,6 +33,15 @@ from background_job import *
 from google.appengine.ext import deferred
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
+from contextlib import closing
+from zipfile import ZipFile, ZIP_DEFLATED
+from google.appengine.api import urlfetch
+import zipfile
+import StringIO
+from google.appengine.ext import deferred
+from google.appengine.api import taskqueue
+from google.appengine.runtime import DeadlineExceededError
+
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -45,6 +54,8 @@ class Deployment(ndb.Model):
     footer_text = ndb.TextProperty(indexed=True)
     sample_qr_code = ndb.BlobKeyProperty()
     sample_qr_code_url = ndb.ComputedProperty(lambda self: self.get_sample_qr_code_url())
+    qr_codes_zip = ndb.BlobKeyProperty()
+    qr_codes_zip_url = ndb.ComputedProperty(lambda self: self.get_qr_codes_url())
     student_link = ndb.TextProperty(indexed=True)
     student_link_text = ndb.TextProperty(indexed=True)
     user_link = ndb.TextProperty(indexed=True)
@@ -56,6 +67,18 @@ class Deployment(ndb.Model):
             return images.get_serving_url(self.logo, 1600, False, True)
         else:
             return ""
+
+    def get_qr_codes_url(self):
+        if self.qr_codes_zip is None:
+            return ""
+
+        try:
+            if self.qr_codes_zip and blobstore.get(self.qr_codes_zip):
+                return images.get_serving_url(self.qr_codes_zip)
+            else:
+                return ""
+        except:
+            return "/blobstore/images/" + str(self.qr_codes_zip)
 
     def get_sample_qr_code_url(self):
         try:
@@ -118,8 +141,8 @@ class Deployment(ndb.Model):
         qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
         qr.addData(url)
         qr.make()
-        img = qr.make_svg()
-        self.upload_qr_code(img,"image/svg+xml")
+        img = qr.make_image()
+        self.upload_qr_code(img,"image/png")
         sleep(0.5)
 
     def update_all_qr_codes(self,user):
@@ -143,7 +166,7 @@ class Deployment(ndb.Model):
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
-            'file', qrcodeimg, filename='test-qr-code.svg', filetype=image_type)
+            'file', qrcodeimg, filename='test-qr-code.png', filetype=image_type)
         datagen, headers = multipart_encode([multipart_param])
         upload_url = blobstore.create_upload_url('/upload_image')
 
@@ -155,6 +178,48 @@ class Deployment(ndb.Model):
 
         blob = blobstore.get(json.loads(result.content)["key"])
         self.sample_qr_code = blob.key()
+        self.put()
+
+    def create_file(self,starting_file=None,starting_offset=0):
+        file = starting_file
+        zipstream = None
+
+        try:
+            zipstream=StringIO.StringIO()
+            if file is None:
+                file = zipfile.ZipFile(file=zipstream,compression=zipfile.ZIP_DEFLATED,mode="w")
+
+
+            visitors = Visitor.query(Visitor.deployment_key==self.key).order(Visitor.serialized_id).fetch(offset=starting_offset)
+            csv = ""
+            effective_start = starting_offset
+            for v in visitors:
+                raw_img = urlfetch.fetch(v.get_qr_code_url()).content
+                file.writestr(v.visitor_id + ".png",raw_img)
+                effective_start = effective_start +1
+
+            file.close()
+            zipstream.seek(0)
+            self.upload_qr_code_zip(zipstream.getvalue(),'application/zip')
+
+        except DeadlineExceededError:
+            deferred.defer(self.create_file,file,effective_start)
+
+    def upload_qr_code_zip(self,qr_code_zip,file_type):
+        multipart_param = MultipartParam(
+            'file', qr_code_zip, filename='qr_codes.zip', filetype=file_type)
+        datagen, headers = multipart_encode([multipart_param])
+        upload_url = blobstore.create_upload_url('/upload_image')
+
+        result = urlfetch.fetch(
+            url=upload_url,
+            payload="".join(datagen),
+            method=urlfetch.POST,
+            headers=headers)
+
+
+        blob = blobstore.get(json.loads(result.content)["key"])
+        self.qr_codes_zip = blob.key()
         self.put()
 
     def upload_image_data(self,image_file):

@@ -32,7 +32,7 @@ class Visitor(ndb.Model):
             else:
                 return ""
         except:
-            return "/blobstore/images/" + str(self.qr_code)
+            return "http://check-me-in.biz/blobstore/images/" + str(self.qr_code)
 
     def set_qr_code(self,withput=False):
         dep = self.deployment_key.get()
@@ -41,12 +41,12 @@ class Visitor(ndb.Model):
         qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
         qr.addData(url)
         qr.make()
-        img = qr.make_svg()
-        self.upload_qr_code(img,"image/svg+xml",withput=withput)
+        img = qr.make_image()
+        self.upload_qr_code(img,"image/png",withput=withput)
 
     def upload_qr_code(self,qrcodeimg,image_type,withput=False):
         multipart_param = MultipartParam(
-            'file', qrcodeimg, filename='test-qr-code.svg', filetype=image_type)
+            'file', qrcodeimg, filename='test-qr-code.png', filetype=image_type)
         datagen, headers = multipart_encode([multipart_param])
         upload_url = blobstore.create_upload_url('/upload_image')
 
