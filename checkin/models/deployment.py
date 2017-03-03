@@ -78,7 +78,7 @@ class Deployment(ndb.Model):
             else:
                 return ""
         except:
-            return "/blobstore/images/" + str(self.qr_codes_zip)
+            return "http://check-me-in.biz/blobstore/images/" + str(self.qr_codes_zip)
 
     def get_sample_qr_code_url(self):
         try:
@@ -87,7 +87,8 @@ class Deployment(ndb.Model):
             else:
                 return ""
         except:
-            return "/blobstore/images/" + str(self.sample_qr_code)
+            return "http://check-me-in.biz/blobstore/images/" + str(self.sample_qr_code)
+
 
     @classmethod
     def get_by_slug(cls, slug, subject='auth'):
@@ -147,22 +148,24 @@ class Deployment(ndb.Model):
 
     def update_all_qr_codes(self,user):
         total_to_save = visitors = Visitor.query(Visitor.deployment_key == self.key).count()
-        background_job = BackgroundJob.create_new(user.key,self.key,1)
-        num_workers = NUM_BACKGROUND_JOB_WORKERS
-        offset = 0
 
-        for i in range(0,num_workers):
-            if i == num_workers-1:
-                 limit = int(total_to_save/num_workers) + total_to_save % num_workers
-            else:
-                 limit = int(total_to_save/num_workers)
-            child = ChildProcess.create_new(background_job.key)
-            deferred.defer(Visitor.updateqrcodes,self.key,child.key,offset,limit)
-            offset = offset + int(total_to_save/num_workers)
-            sleep(1)
+        if total_to_save > 0:
+            background_job = BackgroundJob.create_new(user.key,self.key,1)
+            num_workers = NUM_BACKGROUND_JOB_WORKERS
+            offset = 0
 
-        background_job.status = 1
-        background_job.put()
+            for i in range(0,num_workers):
+                if i == num_workers-1:
+                     limit = int(total_to_save/num_workers) + total_to_save % num_workers
+                else:
+                     limit = int(total_to_save/num_workers)
+                child = ChildProcess.create_new(background_job.key)
+                deferred.defer(Visitor.updateqrcodes,self.key,child.key,offset,limit)
+                offset = offset + int(total_to_save/num_workers)
+                sleep(1)
+
+            background_job.status = 1
+            background_job.put()
 
     def upload_qr_code(self,qrcodeimg,image_type):
         multipart_param = MultipartParam(
@@ -342,7 +345,7 @@ class Deployment(ndb.Model):
             return "Unknown file error - please use a standard CSV with a header row."
 
     def add_user(self, username, vendorname, password, is_deployment_admin, email):
-        tmp_user = User.get_by_username(username)
+        tmp_user = User.get_by_username(username,deployment_key = self.key)
 
         if tmp_user:
             return "Error - user " + username + " already exists."
@@ -355,6 +358,7 @@ class Deployment(ndb.Model):
             newuser.vendorname = vendorname
             newuser.set_password(password)
             newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
+            newuser.deployment_key = self.key
             newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
             newuser.email = email
             newuser.put()
@@ -368,11 +372,11 @@ class Deployment(ndb.Model):
             return ""
 
     def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email):
-        edit_user = User.get_by_username(old_username)
+        edit_user = User.get_by_username(old_username,deployment_key=self.key)
 
         if edit_user:
             if not (new_username.lower() == old_username.lower()):
-                tmp_user = User.get_by_username(new_username)
+                tmp_user = User.get_by_username(new_username,deployment_key=self.key)
 
                 if tmp_user:
                     return "Error - user " + new_username + " already exists."
@@ -402,7 +406,7 @@ class Deployment(ndb.Model):
         return "Could not find user"
 
     def delete_user(self,username):
-        delete_user = User.get_by_username(username)
+        delete_user = User.get_by_username(username,deployment_key=self.key)
 
         maps = MapUserToDeployment.query(MapUserToDeployment.user_key == delete_user.key)
         for map in maps:

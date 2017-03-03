@@ -211,6 +211,7 @@ class UsersHandler(BaseHandler):
                           'flash_message': "Successfully created User:  " + username}
 
             self.render_template('users_index.html', params)
+
 class SignInHandler(BaseHandler):
     def get_deployment_params(self,deployment):
         params = {}
@@ -223,7 +224,14 @@ class SignInHandler(BaseHandler):
         raw_password = self.request.get('password')
         login = self.request.get('username')
         redirect_to = self.request.get('redirect_to', '')
-        tmp_user = User.get_by_username(login)
+        deployment = None
+        tmp_user = None
+
+        if deployment_slug:
+            deployment = Deployment.get_by_slug(deployment_slug)
+            tmp_user = User.get_by_username(login,deployment_key=deployment.key)
+        else:
+            tmp_user = User.get_by_username(login)
 
         if tmp_user:
             user_id = tmp_user.get_id()

@@ -25,6 +25,9 @@ import StringIO
 import json
 from deployment import *
 
+class Deployment(ndb.Model):
+    name = ndb.TextProperty(indexed=True)
+
 class User(webapp2_extras.appengine.auth.models.User):
     is_super_admin = ndb.BooleanProperty()
     is_deployment_admin = ndb.BooleanProperty()
@@ -33,6 +36,8 @@ class User(webapp2_extras.appengine.auth.models.User):
     vendorname = ndb.StringProperty()
     email = ndb.StringProperty()
     username_lower = ndb.ComputedProperty(lambda self: self.username.lower())
+    deployment_key = ndb.KeyProperty(kind=Deployment,indexed=True)
+
     def set_password(self, raw_password):
         """Sets the password for the current user
 
@@ -100,7 +105,7 @@ class User(webapp2_extras.appengine.auth.models.User):
         return None, None
 
     @classmethod
-    def get_by_username(cls, username, subject='auth'):
+    def get_by_username(cls, username, deployment_key=None, subject='auth'):
         """Returns a user object based on a username.
 
         :param username:
@@ -110,14 +115,25 @@ class User(webapp2_extras.appengine.auth.models.User):
             returns user or none if
         """
         username = username.lower()
+        user = None
 
-        qry = User.query(User.username == username)
-        user = qry.get()
+        if deployment_key:
+            user = User.query(User.username == username, User.deployment_key == deployment_key).get()
+            if user:
+                return user
+            qry = User.query(User.username_lower == username, User.deployment_key == deployment_key)
+            user = qry.get()
+            if user:
+                return user
+
+        if user is None:
+            qry = User.query(User.username == username,User.is_super_admin == True)
+            user = qry.get()
 
         if user:
             return user
 
-        qry = User.query(User.username_lower == username)
+        qry = User.query(User.username_lower == username, User.is_super_admin == True)
         user = qry.get()
 
         if user:

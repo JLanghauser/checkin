@@ -20,10 +20,16 @@ from reports import *
 from sample import *
 from pages import *
 from models.map_user_to_visitor import *
+from models.map_user_to_deployment import *
 from models.deployment import *
-
 from base.basehandler import *
 
 class TaskHandler(BaseHandler):
     def get(self):
-        return []
+        users = User.query().fetch()
+        for user in users:
+            if user.is_super_admin is None or user.is_super_admin == False:
+                if user.deployment_key is None:
+                    first_map = MapUserToDeployment.query(MapUserToDeployment.user_key == user.key).get()
+                    user.deployment_key = first_map.deployment_key
+                    user.put()
