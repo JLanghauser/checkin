@@ -36,13 +36,14 @@ class Visitor(ndb.Model):
 
     def set_qr_code(self,withput=False):
         dep = self.deployment_key.get()
-        url = dep.custom_subdomain + "." + dep.custom_dns + "/checkin_visitor?visitor_id=" +self.visitor_id
-        self.checkin_url = url
-        qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
-        qr.addData(url)
-        qr.make()
-        img = qr.make_image()
-        self.upload_qr_code(img,"image/png",withput=withput)
+        if dep.custom_subdomain and dep.custom_dns:
+            url = dep.custom_subdomain + "." + dep.custom_dns + "/checkin_visitor?visitor_id=" +self.visitor_id
+            self.checkin_url = url
+            qr = QRCode(QRCode.get_type_for_string(url), QRErrorCorrectLevel.L)
+            qr.addData(url)
+            qr.make()
+            img = qr.make_image()
+            self.upload_qr_code(img,"image/png",withput=withput)
 
     def upload_qr_code(self,qrcodeimg,image_type,withput=False):
         multipart_param = MultipartParam(

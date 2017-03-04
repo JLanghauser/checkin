@@ -80,7 +80,9 @@
             <ul class="nav navbar-nav">
               {% if not user %}
                   <li><a href="sign_in">Login</a></li>
-                  <li><a href="sample">Sample Student Checkin</a></li>
+                  {% if deployment %}
+                    <li><a href="sample">Sample Student Checkin</a></li>
+                  {% endif %}
                   <li><a href="/">Home</a></li>
               {% else %}
                 <li><center><h4 style="padding-top:5px;">{{ user.username }}</h4></center></li>

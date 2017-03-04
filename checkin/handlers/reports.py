@@ -18,6 +18,23 @@ import json
 import operator
 
 
+class AsyncReportsHandler(BaseHandler):
+
+    @deployment_admin_required
+    def get(self,deployment_slug):
+        deployment = Deployment.get_by_slug(deployment_slug)
+
+        report_type = self.request.get('report_type')
+        if report_type == 'RAW_CHECKINS':
+            report = deployment.get_checkin_raw_data()
+        elif report_type == 'BOOTH_CHECKIN_REPORT':
+            report  = deployment.get_booth_checkin_report()
+        elif report_type == 'BOOTH_REPORT':
+            report  = deployment.get_booth_report()
+
+        return report
+
+
 class ReportsHandler(BaseHandler):
     def async_generate_report(self,user=None,deployment=None,csv_writer=None,report_type=None):
         new_stored_data = StoredData()
@@ -35,99 +52,6 @@ class ReportsHandler(BaseHandler):
         new_stored_data.data_type = report_type
         new_stored_data.raw_data = report
         new_stored_data.put()
-
-
-    def get_checkin_raw_data(self,deployment=None,csv_writer=None):
-        report = []
-        users = {}
-        visitors = {}
-
-        if deployment:
-            checkins = MapUserToVisitor.query(
-                            MapUserToVisitor.deployment_key == deployment.key)
-
-            if csv_writer:
-                csv_writer.writerow(['booth_user', 'booth_vendor','student_id'])
-
-            for checkin in checkins:
-                report_row = {}
-
-                if checkin.user_key not in users:
-                    user = User.query(User.key == checkin.user_key).fetch(1)
-                    users[checkin.user_key] = user
-                else:
-                    user = users[checkin.user_key]
-
-                if user and len(user) > 0 and user[0]:
-                    user = user[0]
-                else:
-                    user = None
-
-                report_row['booth_user'] = user.username if user else 'ERROR'
-                report_row['booth_vendor'] = user.vendorname if user else 'ERROR'
-
-                if checkin.visitor_key not in visitors:
-                    visitor = Visitor.query(Visitor.key == checkin.visitor_key,
-                                        Visitor.deployment_key == deployment.key).fetch(1)
-                    visitors[checkin.visitor_key] = visitor
-                else:
-                    visitor = visitors[checkin.visitor_key]
-
-                if visitor and len(visitor) > 0 and visitor[0]:
-                    visitor = visitor[0]
-                else:
-                    visitor = None
-
-                report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
-
-                report.append(report_row)
-                if csv_writer:
-                    csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
-
-        return report
-
-    def get_booth_checkin_report(self,deployment=None):
-        report = {}
-        if deployment:
-            map_list = MapUserToDeployment.query(MapUserToDeployment.deployment_key == deployment.key)
-            for map_item in map_list:
-                user = User.query(User.key == map_item.user_key).fetch(1)
-                if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
-                    count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == deployment.key,
-                                                MapUserToVisitor.user_key == user[0].key).count()
-                    report[user[0].vendorname] = count
-            sorted_report_items = sorted(report.iteritems(), key=lambda r: r[1])
-            sorted_report_items.reverse()
-            return sorted_report_items
-        return []
-
-    def get_booth_report(self,deployment=None):
-        report = []
-        edited_count = 0
-        unedited_count = 0
-        if deployment:
-            map_list = MapUserToDeployment.query(MapUserToDeployment.deployment_key == deployment.key)
-            for map_item in map_list:
-                user = User.query(User.key == map_item.user_key).fetch(1)
-                if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
-                    report_row = {}
-                    report_row['username'] = user[0].username
-                    report_row['email'] = user[0].email
-                    if ("<h1>Edit your profile" in user[0].profile
-                        and ">here</a></h1>" in user[0].profile
-                        and len(user[0].profile) < 60):
-                        report_row['hasedited'] = 'NO'
-                        unedited_count = unedited_count + 1
-                    else:
-                        report_row['hasedited'] = 'YES'
-                        edited_count = edited_count + 1
-                    report.append(report_row)
-            report_stats = []
-            report_stats_row = {}
-            report_stats_row['unedited'] = unedited_count
-            report_stats_row['edited'] = edited_count
-            report_stats.append(report_stats_row)
-        return report_stats,report
 
     @deployment_admin_required
     def get(self, deployment_slug=None):

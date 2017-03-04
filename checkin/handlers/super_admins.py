@@ -24,7 +24,7 @@ class SuperAdminHandler(BaseHandler):
     def delete_booth(self):
         name = self.request.get('name')
         slug = self.request.get('slug')
-        
+
     def create_new_deployment(self):
         name = self.request.get('name')
         slug = self.request.get('slug')
@@ -34,7 +34,7 @@ class SuperAdminHandler(BaseHandler):
         if existing_deployment:
             deployments = Deployment.query()
             params = {'error': "true", 'flash_message': "Error - already exists!",'deployments': deployments}
-            self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',existing_deployment,params)
+            return self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',existing_deployment,params)
         else:
             newdeployment = Deployment()
             newdeployment.name = name
@@ -43,7 +43,7 @@ class SuperAdminHandler(BaseHandler):
 
             sleep(0.5)
             deployments = Deployment.query()
-            params = {'error': "true", 'flash_message': "Error - already exists!",'deployments': deployments}
+            params = {'success': "true", 'flash_message': "Successfully created deployment!",'deployments': deployments}
             self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',existing_deployment,params)
 
 
@@ -57,7 +57,7 @@ class SuperAdminHandler(BaseHandler):
         if not existing_deployment:
             params = {'error': "true",
                       'flash_message': "Error - doesn't exist!"}
-            self.render_smart_template('DEPLOYMENT',referring_page,'super_admin.html',existing_deployment, params)
+            self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',existing_deployment, params)
             return
 
         tmp_deployment = None
@@ -69,16 +69,17 @@ class SuperAdminHandler(BaseHandler):
             deployments = self.user.get_deployments()
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
-            self.render_smart_template('DEPLOYMENT',referring_page,'super_admin.html',existing_deployment,params)
+            self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',None,params)
         else:
             existing_deployment.name = name
             existing_deployment.slug = new_slug
             existing_deployment.put()
 
             sleep(0.5)
+            params = {}
             params['success'] = "true"
             params['flash_message'] = "Successfully updated Deployment:  " +existing_deployment.name
-            self.render_smart_template('DEPLOYMENT',referring_page,'super_admin.html',existing_deployment,params)
+            self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',None,params)
 
     @super_admin_required
     def get(self):
