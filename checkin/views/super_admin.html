@@ -1,0 +1,197 @@
+{% extends "main.html" %} {% block maincontent %}
+<div id="backgroundjobs"></div>
+<ul class="nav nav-tabs">
+    <li id="deploymenttab"><a href="#deployment" data-toggle="tab">Deployments/Fairs</a></li>
+</ul>
+
+<!-- <form action="super_admin" method="POST" id = "usrform" enctype="multipart/form-data">
+    <input type="hidden" name="slug" value="{{ deployment.slug }}" />
+    <input type="hidden" name="logo_url" value="{{ deployment.logo_url }}" />
+    <input type="hidden" name="referring_page" value="ADMIN" />
+    <input type="hidden" name="method" value="UPDATE" />
+</form> -->
+
+    <div class="tab-content">
+    <div class="tab-pane container" id="deployment">
+
+      <h3>Each event must have its own deployment.</h3>
+       <h4>The deployment details can be configured on the deployment's admin page.</h4>
+
+      <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addDeploymentModal">Create New Deployment/Fair</button>
+
+      <div class="modal fade" id="addDeploymentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Add Deployment</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" action="super_admin" method="POST">
+              <input type="hidden" name="referring_page" value="SUPERADMIN" />
+              <input type="hidden" name="method" value="CREATE" />
+              <h5>1) Event Name is a simple text field to identify the deployment.</h5>
+              <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Event Name</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="title" name="title" placeholder="Event Name">
+                </div>
+              </div>
+              <h5>Note: deployment admins be able to modify this field.</h5>
+              <BR>
+              <h5>2) Each deployment must have a globally unique url-safe slug.</h5>
+              <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Slug</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="slug" name="slug" placeholder="Slug">
+                </div>
+              </div>
+              <h5>Note: This slug will be used for navigation before the custom DNS is configured.</h5>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Add Deployment</button>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="editDeploymentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit Deployment</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" action="super_admin" method="POST">
+            <input type="hidden" name="referring_page" value="SUPERADMIN" />
+            <input type="hidden" name="method" value="UPDATE" />
+            <input type="hidden" name="old_slug" id="edit-oldslug" />
+            <h5>1) Event Name is a simple text field to identify the deployment.</h5>
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">Event Name</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="edit-name" name="name">
+              </div>
+            </div>
+            <h5>Note: deployment admins be able to modify this field.</h5>
+            <BR>
+            <h5>2) Each deployment must have a globally unique url-safe slug.</h5>
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">Slug</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="edit-slug" name="new_slug">
+              </div>
+            </div>
+            <h5>Note: This slug will be used for navigation before the custom DNS is configured.</h5>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Edit Deployment</button>
+        </div>
+        </form>
+      </div>
+    </div>
+    </div>
+
+
+      <h3>Deployments</h3>
+      <table class="table table-striped">
+          <thead>
+              <tr>
+                  <th>Link</th>
+                  <th>Name</th>
+                  <th>Slug</th>
+                  <th>Actions</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for d in deployments %}
+              <tr>
+                <td><a href="deployments/view/{{ d.slug }}/" target="_blank"> deployment-page-link </a></td>
+                <td>{{ d.name }}</td>
+                <td>{{ d.slug }}</td>
+                  <td>
+                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editDeploymentModal' data-slug="{{d.slug}}" data-name="{{d.name}}" >Edit</button>
+
+                      <!--<form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this deployment?');">
+                        <input type="hidden" name="referring_page" value="ADMIN" />
+                        <input type="hidden" name="method" value="DELETE_BOOTH" />
+                        <input type="hidden" name="edit-username" value="{{u.username}}" />
+                        <button type="submit" class="btn btn-primary">Delete</button>
+                      </form>-->
+                  </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+    </div>
+
+</div>
+
+<script>
+    $(function() {
+        $('#cp2').colorpicker();
+    });
+
+    $('#cp2').colorpicker().on('changeColor', function(e) {
+        $('#header-background-color')[0].value = e.color.toString('hex');
+    });
+
+    $("#{{ activetab }}").addClass('active');
+    $("#{{ activetab }}tab").addClass('active');
+
+    $("#custom_subdomain_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
+
+    $("#custom_dns_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
+
+    $('#editDeploymentModal').on('show.bs.modal', function (event) {
+
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var name = button.data('name')
+      var oldslug = button.data('slug')
+
+      var modal = $(this)
+
+      // //modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body #edit-name').val(name)
+      modal.find('.modal-body #edit-oldslug').val(oldslug)
+      modal.find('.modal-body #edit-slug').val(oldslug)
+    });
+
+
+    // job_listener = setInterval(function () {
+    //   $.ajax({
+    //     url: "backgroundjobs",
+    //     type: "get",
+    //     data:'id=test',
+    //     success: function(result){
+    //       $("#backgroundjobs").html(result);
+    //       // if (result.includes("FINISHED") === true){
+    //       //   $('#deployment-save').dsiabled = 'true';
+    //       //   $('#deployment-save').value = 'save';
+    //       // }
+    //
+    //     },
+    //     error:function(){}
+    //   });
+    // }, 1000);
+
+
+</script>
+
+
+{% endblock %}

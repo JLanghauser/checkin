@@ -13,6 +13,7 @@ from handlers.admins import *
 from handlers.tasks import *
 from handlers.background_jobs import *
 from handlers.blob_store import *
+from handlers.super_admins import *
 
 config = {
     'webapp2_extras.auth': {
@@ -58,6 +59,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/blobstore/images/<photo_key>',ViewPhotoHandler, name='blob_server'),
 
     webapp2.Route('/upload_image', UploadHandler, name='upload'),
+    webapp2.Route('/super_admin',SuperAdminHandler, name='super_admin'),
+
     webapp2.Route('/error', ErrorPage, name='error'),
     webapp2.Route('/deployments', DeploymentsHandler, name='deployments'),
     webapp2.Route('/users', UsersHandler, name='users'),

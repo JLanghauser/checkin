@@ -121,11 +121,16 @@ class BaseHandler(webapp2.RequestHandler):
     self.response.out.write(template.render(path, params))
 
   def render_smart_template(self, target, source, view_filename, deployment=None, params={}):
-    params = self.add_deployment_params(params,deployment)
     if target == 'DEPLOYMENT' and source == 'ADMIN':
+        params = self.add_deployment_params(params,deployment)
         if 'activetab' not in params:
             params['activetab'] = 'domain'
         view_filename = 'admin.html'
+    elif target == 'DEPLOYMENT' and source == 'SUPERADMIN':
+        if 'activetab' not in params:
+            params['activetab'] = 'deployment'
+            params['deployments'] = self.user.get_deployments()
+        view_filename = 'super_admin.html'
 
     user = self.user_info
     params['user'] = user

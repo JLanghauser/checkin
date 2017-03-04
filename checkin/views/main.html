@@ -83,8 +83,9 @@
                   <li><a href="sample">Sample Student Checkin</a></li>
                   <li><a href="/">Home</a></li>
               {% else %}
-                  <li><center><h4 style="padding-top:5px;">{{ user.username }}</h4></center></li>
-                  <li><a href="sign_out">Logout</a></li>
+                <li><center><h4 style="padding-top:5px;">{{ user.username }}</h4></center></li>
+                <li><a href="sign_out">Logout</a></li>
+                {% if deployment  %}
                   <li><a href="checkin_visitor">Checkin Student</a></li>
                   <li><a href="edit">Edit Profile</a></li>
                   <li><a href="home">Home</a></li>
@@ -94,18 +95,20 @@
                       <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
                     {% endif %}
                   </li>
+                {% endif %}
               {% endif %}
-              {% if user and user.is_super_admin %}
-                <li class="dropdown">
+              {% if user and user.is_super_admin and not deployment%}
+              <li><a href="super_admin">SuperAdmin</a></li>
+                <!--<li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super Admin<span class="caret"></span></a>
                     <ul class="dropdown-menu">
                       <li><a href="deployments">Manage Deployments</a></li>
                       <li><a href="users">Manage Users</a></li>
                       <li><a href="reports">View Reports</a></li>
                     </ul>
-                </li>
+                </li>-->
               {% endif %}
-              {% if user and user.is_deployment_admin %}
+              {% if user and user.is_deployment_admin and deployment %}
               <li><a href="admin">Admin</a></li>
               <!--<li class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
