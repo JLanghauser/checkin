@@ -16,6 +16,7 @@ import csv
 import StringIO
 import json
 import operator
+from models.deployment import *
 
 
 class AsyncReportsHandler(BaseHandler):
@@ -30,9 +31,16 @@ class AsyncReportsHandler(BaseHandler):
         elif report_type == 'BOOTH_CHECKIN_REPORT':
             report  = deployment.get_booth_checkin_report()
         elif report_type == 'BOOTH_REPORT':
-            report  = deployment.get_booth_report()
+            report_stats,report  = deployment.get_booth_report()
 
-        return report
+            # 'recordsTotal': total,
+            # 'recordsFiltered':total,
+        obj = {
+            'success': 'true',
+            'data': report,
+            'data-stats': report_stats,
+        }
+        return self.render_json(obj)
 
 
 class ReportsHandler(BaseHandler):

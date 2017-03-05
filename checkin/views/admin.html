@@ -133,7 +133,13 @@ badge.</h3>
 
     <div class="row">
       <div class="col-xs-4">
-        <button type="button" class="btn btn-primary navbar-btn">QR Codes from CSV</button>
+        <form enctype="multipart/form-data" action="admin" method="POST">
+            <label for="filename">Filename</label>
+            <input id="bulkfile" type="file" name="bulkfile" />
+            <input type='hidden' name='method' value='UPLOAD_QR_CODES'>
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="submit" class="btn btn-primary navbar-btn btn-lg" value="QR Codes from CSV" />
+        </form>
       </div>
     </div>
     <h3>(use this feature if you want to manually define the serial numbers and Visitor ID numbers for each QR code. Your CSV file should contain a sequence number and Visitor ID in each row.)</h3>
@@ -165,7 +171,7 @@ badge.</h3>
                   <th>QR Code Link</th>
                 </tr>
             </tfoot>
-        </table>
+    </table>
 </div>
 <div class="tab-pane container" id="booths">
     <h3>Each booth should have a single booth account shared between all of the exhibitors
@@ -350,6 +356,22 @@ badge.</h3>
             Pre-Event Booth Profile Update Report
           </a>
         </h4>
+        <table id="qrcodestable" class="display" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>Sequence</th>
+                        <th>Visitor ID</th>
+                        <th>QR Code Link</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                      <th>Sequence</th>
+                      <th>Visitor ID</th>
+                      <th>QR Code Link</th>
+                    </tr>
+                </tfoot>
+        </table>
       </div>
       <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
         <div class="panel-body">

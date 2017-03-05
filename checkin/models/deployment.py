@@ -271,34 +271,29 @@ class Deployment(ndb.Model):
         background_job.status = 1
         background_job.put()
 
-    def add_bulk_visitors(self,user,bulk_file):
-        bgjob = BackgroundJob()
-        bgjob.user_key = user.key
-        bgjob.deployment_key = deployment.key
-        bgjob.job_type = "BULK_VISITOR_ADD"
-        bgjob.status = "STARTED"
-        bgjob.put()
-
+    def add_bulk_visitors(self,bulk_file):
         reader = None
         try:
             reader = self.get_csv_reader(bulk_file,False)
             count = 0
             for row in reader:
-                retval = self.add_visitor(row[0],deployment)
-                if retval is not "":
-                    return
+                retval = self.add_visitor(int(row[0]),int(row[1]))
+                if retval == 1:
+                    return 'Visitor ID already exists'
+                elif retval == 2:
+                    return 'Serial number already exists'
+                elif retval == 3:
+                    return 'Visitor already exists'
+                elif retval == 4:
+                    return 'Visitor cannot have the sample id of 9999999'
                 else:
                     count = count + 1
-            self.render_template('visitors_index.html', params)
-            return
+            return ""
         except csv.Error as e:
             if reader:
-                params = {'users': users, 'error': "true",
-                          'flash_message': "File Error - line %d: %s" % (reader.line_num, e)}
+                return "File Error - line %d: %s" % (reader.line_num, e)
             else:
-                params = {'users': users, 'error': "true",
-                          'flash_message': "Please verify file format - standard CSV with a header row."}
-            self.render_template('visitors_index.html', params)
+                return "Please verify file format - standard CSV with a header row."
 
     def add_visitor(self, serialized_id, visitor_id):
         str_visitor_id = str(visitor_id)
@@ -480,46 +475,45 @@ class Deployment(ndb.Model):
         users = {}
         visitors = {}
 
-        if deployment:
-            checkins = MapUserToVisitor.query(MapUserToVisitor.deployment_key == self.key)
+        checkins = MapUserToVisitor.query(MapUserToVisitor.deployment_key == self.key)
 
+        if csv_writer:
+            csv_writer.writerow(['booth_user', 'booth_vendor','student_id'])
+
+        for checkin in checkins:
+            report_row = {}
+
+            if checkin.user_key not in users:
+                user = User.query(User.key == checkin.user_key).fetch(1)
+                users[checkin.user_key] = user
+            else:
+                user = users[checkin.user_key]
+
+            if user and len(user) > 0 and user[0]:
+                user = user[0]
+            else:
+                user = None
+
+            report_row['booth_user'] = user.username if user else 'ERROR'
+            report_row['booth_vendor'] = user.vendorname if user else 'ERROR'
+
+            if checkin.visitor_key not in visitors:
+                visitor = Visitor.query(Visitor.key == checkin.visitor_key,
+                                    Visitor.deployment_key == deployment.key).fetch(1)
+                visitors[checkin.visitor_key] = visitor
+            else:
+                visitor = visitors[checkin.visitor_key]
+
+            if visitor and len(visitor) > 0 and visitor[0]:
+                visitor = visitor[0]
+            else:
+                visitor = None
+
+            report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
+
+            report.append(report_row)
             if csv_writer:
-                csv_writer.writerow(['booth_user', 'booth_vendor','student_id'])
-
-            for checkin in checkins:
-                report_row = {}
-
-                if checkin.user_key not in users:
-                    user = User.query(User.key == checkin.user_key).fetch(1)
-                    users[checkin.user_key] = user
-                else:
-                    user = users[checkin.user_key]
-
-                if user and len(user) > 0 and user[0]:
-                    user = user[0]
-                else:
-                    user = None
-
-                report_row['booth_user'] = user.username if user else 'ERROR'
-                report_row['booth_vendor'] = user.vendorname if user else 'ERROR'
-
-                if checkin.visitor_key not in visitors:
-                    visitor = Visitor.query(Visitor.key == checkin.visitor_key,
-                                        Visitor.deployment_key == deployment.key).fetch(1)
-                    visitors[checkin.visitor_key] = visitor
-                else:
-                    visitor = visitors[checkin.visitor_key]
-
-                if visitor and len(visitor) > 0 and visitor[0]:
-                    visitor = visitor[0]
-                else:
-                    visitor = None
-
-                report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
-
-                report.append(report_row)
-                if csv_writer:
-                    csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
+                csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
 
         return report
 

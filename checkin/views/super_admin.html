@@ -4,13 +4,6 @@
     <li id="deploymenttab"><a href="#deployment" data-toggle="tab">Deployments/Fairs</a></li>
 </ul>
 
-<!-- <form action="super_admin" method="POST" id = "usrform" enctype="multipart/form-data">
-    <input type="hidden" name="slug" value="{{ deployment.slug }}" />
-    <input type="hidden" name="logo_url" value="{{ deployment.logo_url }}" />
-    <input type="hidden" name="referring_page" value="ADMIN" />
-    <input type="hidden" name="method" value="UPDATE" />
-</form> -->
-
     <div class="tab-content">
     <div class="tab-pane container" id="deployment">
 
@@ -147,16 +140,6 @@
 
     $("#{{ activetab }}").addClass('active');
     $("#{{ activetab }}tab").addClass('active');
-
-    $("#custom_subdomain_input").change(function() {
-      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
-      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
-    });
-
-    $("#custom_dns_input").change(function() {
-      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
-      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
-    });
 
     $('#editDeploymentModal').on('show.bs.modal', function (event) {
 

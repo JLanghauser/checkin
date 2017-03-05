@@ -23,6 +23,19 @@ from google.appengine.ext import deferred
 class AdminHandler(BaseHandler):
     def upload_qr_codes(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'qrcodes'
+        bulkfile = self.request.get('bulkfile')
+        retval = existing_deployment.add_bulk_visitors(bulkfile)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Created QRCodes"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
     def upload_booths(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
