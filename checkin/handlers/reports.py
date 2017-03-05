@@ -24,6 +24,7 @@ class AsyncReportsHandler(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug):
         deployment = Deployment.get_by_slug(deployment_slug)
+        report_stats = None
 
         report_type = self.request.get('report_type')
         if report_type == 'RAW_CHECKINS':
@@ -33,12 +34,12 @@ class AsyncReportsHandler(BaseHandler):
         elif report_type == 'BOOTH_REPORT':
             report_stats,report  = deployment.get_booth_report()
 
-            # 'recordsTotal': total,
-            # 'recordsFiltered':total,
+        #            'data-stats': report_stats,
         obj = {
             'success': 'true',
             'data': report,
-            'data-stats': report_stats,
+            'recordsTotal': len(report),
+            'recordsFiltered':len(report),
         }
         return self.render_json(obj)
 

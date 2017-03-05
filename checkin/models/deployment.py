@@ -41,7 +41,7 @@ import StringIO
 from google.appengine.ext import deferred
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
-
+from operator import itemgetter
 
 class Deployment(ndb.Model):
     name = ndb.TextProperty(indexed=True)
@@ -511,14 +511,13 @@ class Deployment(ndb.Model):
 
             report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
 
-            report.append(report_row)
             if csv_writer:
                 csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
 
         return report
 
     def get_booth_checkin_report(self):
-        report = {}
+        report = []
 
         map_list = MapUserToDeployment.query(MapUserToDeployment.deployment_key == self.key)
         for map_item in map_list:
@@ -526,8 +525,9 @@ class Deployment(ndb.Model):
             if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
                 count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == self.key,
                                             MapUserToVisitor.user_key == user[0].key).count()
-                report[user[0].vendorname] = count
-        sorted_report_items = sorted(report.iteritems(), key=lambda r: r[1])
+                report.append([user[0].vendorname, count])
+
+        sorted_report_items = sorted(report, key=itemgetter(1))
         sorted_report_items.reverse()
         return sorted_report_items
 
@@ -540,18 +540,18 @@ class Deployment(ndb.Model):
         for map_item in map_list:
             user = User.query(User.key == map_item.user_key).fetch(1)
             if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
-                report_row = {}
-                report_row['username'] = user[0].username
-                report_row['email'] = user[0].email
+                report_row_username = user[0].username
+                report_row_email = user[0].email
+                report_row_hasedited = None
                 if ("<h1>Edit your profile" in user[0].profile
                     and ">here</a></h1>" in user[0].profile
                     and len(user[0].profile) < 60):
-                    report_row['hasedited'] = 'NO'
+                    report_row_hasedited = 'NO'
                     unedited_count = unedited_count + 1
                 else:
-                    report_row['hasedited'] = 'YES'
+                    report_row_hasedited = 'YES'
                     edited_count = edited_count + 1
-                report.append(report_row)
+                report.append([report_row_username, report_row_email, report_row_hasedited])
         report_stats = []
         report_stats_row = {}
         report_stats_row['unedited'] = unedited_count

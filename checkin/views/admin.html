@@ -356,26 +356,25 @@ badge.</h3>
             Pre-Event Booth Profile Update Report
           </a>
         </h4>
-        <table id="qrcodestable" class="display" cellspacing="0" width="100%">
-                <thead>
-                    <tr>
-                        <th>Sequence</th>
-                        <th>Visitor ID</th>
-                        <th>QR Code Link</th>
-                    </tr>
-                </thead>
-                <tfoot>
-                    <tr>
-                      <th>Sequence</th>
-                      <th>Visitor ID</th>
-                      <th>QR Code Link</th>
-                    </tr>
-                </tfoot>
-        </table>
       </div>
       <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
         <div class="panel-body">
-          TBD
+          <table id="preeventtable" class="display" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email address</th>
+                        <th>HasEdited</th>
+                      </tr>
+                  </thead>
+                  <tfoot>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email address</th>
+                        <th>HasEdited</th>
+                      </tr>
+                  </tfoot>
+          </table>
         </div>
       </div>
     </div>
@@ -389,7 +388,20 @@ badge.</h3>
       </div>
       <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
         <div class="panel-body">
-          TBD
+          <table id="boothcheckintable" class="display" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                          <th>Booth</th>
+                          <th>Number of Checkins</th>
+                      </tr>
+                  </thead>
+                  <tfoot>
+                      <tr>
+                        <th>Booth</th>
+                        <th>Number of Checkins</th>
+                      </tr>
+                  </tfoot>
+          </table>
         </div>
       </div>
     </div>
@@ -444,7 +456,6 @@ badge.</h3>
 
     });
 
-
     $(document).ready(function() {
         var table = $('#qrcodestable').DataTable( {
             "processing": true,
@@ -465,6 +476,36 @@ badge.</h3>
           table.ajax.reload();
         }, 30000 );
 
+    } );
+
+    $(document).ready(function() {
+        var table = $('#preeventtable').DataTable( {
+            "processing": false,
+            "serverSide": false,
+            "ordering": false,
+            "searching":false,
+            "ajax": {
+                "url": "reportsasync",
+                "data": function ( d ) {
+                    d.report_type = "BOOTH_REPORT";
+                }
+            },
+        } );
+    } );
+
+    $(document).ready(function() {
+        var table = $('#boothcheckintable').DataTable( {
+            "processing": true,
+            "serverSide": false,
+            "ordering": false,
+            "searching":false,
+            "ajax": {
+                "url": "reportsasync",
+                "data": function ( d ) {
+                    d.report_type = "BOOTH_CHECKIN_REPORT";
+                }
+            },
+        } );
     } );
 
     job_listener = setInterval(function () {
