@@ -53,6 +53,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/deployments/view/<deployment_slug>/dump_qr_codes_zip',VisitorZipDump, name='visitor_export'),
     webapp2.Route('/deployments/view/<deployment_slug>/dump_badges_csv',VisitorCSV, name='visitor_csv'),
     webapp2.Route('/deployments/view/<deployment_slug>/reportsasync',AsyncReportsHandler, name='reports_async'),
+    webapp2.Route('/deployments/view/<deployment_slug>/dump_checkins_csv',ReportsCSV, name='reports_csv'),
 
     webapp2.Route('/deployments/view/<deployment_slug>/visitors',VisitorsHandler, name='visitors_deployments'),
     webapp2.Route('/deployments/view/<deployment_slug>/get_random_visitor',RandomVisitorHandler, name='random_visitor'),

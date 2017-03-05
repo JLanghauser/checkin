@@ -18,9 +18,17 @@ import json
 import operator
 from models.deployment import *
 
+class ReportsCSV(BaseHandler):
+    @deployment_admin_required
+    def get(self,deployment_slug=None):
+        dep = Deployment.get_by_slug(deployment_slug)
+        visitors = Visitor.query(Visitor.deployment_key==dep.key).order(Visitor.serialized_id).fetch()
+        csv = ""
+        for v in visitors:
+            csv = csv + str(v.serialized_id) + ',' + str(v.visitor_id) + ',' + str(v.checkin_url) +  '\r'
+        return self.render_csv(csv,"checkins-export.csv")
 
 class AsyncReportsHandler(BaseHandler):
-
     @deployment_admin_required
     def get(self,deployment_slug):
         deployment = Deployment.get_by_slug(deployment_slug)

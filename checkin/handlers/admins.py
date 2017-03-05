@@ -258,5 +258,3 @@ class AdminHandler(BaseHandler):
             self.delete_booth(deployment_slug)
         elif method == 'RANDOM_VISITOR':
             self.random_visitor(deployment_slug)
-        elif method == 'DOWNLOAD_RAW_CHECKINS':
-            self.download_raw_checkins(self.request,deployment_slug)
