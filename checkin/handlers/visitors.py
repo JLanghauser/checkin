@@ -33,13 +33,15 @@ from google.appengine.runtime import DeadlineExceededError
 class VisitorZipDump(BaseHandler,blobstore_handlers.BlobstoreDownloadHandler):
     def get(self,deployment_slug=None):
         dep = Deployment.get_by_slug(deployment_slug)
-        if dep.get_qr_codes_url() != "":
+        if dep.get_qr_codes_url() != "" and (dep.blocking_task_status is None or dep.blocking_task_status == 0):
             self.response.headers['Content-Type'] ='application/zip'
             self.response.headers['Content-Disposition'] = 'attachment; filename="data.txt.zip"'
             blob_info = blobstore.BlobInfo.get(dep.qr_codes_zip)
             self.send_blob(blob_info)
             #self.response.out.write(dep.qr_codes_zip)
         else:
+            dep.blocking_task_status = 1
+            dep.put()
             deferred.defer(dep.create_file,None,0)
             self.render_json(['Generating QR code zip now - check back in 2-15 minutes'])
 

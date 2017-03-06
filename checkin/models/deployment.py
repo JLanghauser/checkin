@@ -61,6 +61,7 @@ class Deployment(ndb.Model):
     user_link = ndb.TextProperty(indexed=True)
     user_link_text = ndb.TextProperty(indexed=True)
     max_visitor_serial_id = ndb.IntegerProperty(indexed=True)
+    blocking_task_status = ndb.IntegerProperty()
 
     def get_logo_url(self):
         if self.logo:
@@ -203,6 +204,8 @@ class Deployment(ndb.Model):
 
             file.close()
             zipstream.seek(0)
+            self.blocking_task_status = 0
+            self.put()
             self.upload_qr_code_zip(zipstream.getvalue(),'application/zip')
 
         except DeadlineExceededError:
@@ -470,8 +473,9 @@ class Deployment(ndb.Model):
         self.logo = blob.key()
         self.put()
 
-    def get_checkin_raw_data(self,csv_writer=None):
+    def get_checkin_raw_data(self,csv_writer=None,csv_output=None):
         report = []
+        report_csv = "BoothUser,BoothVendor,Student_ID\r"
         users = {}
         visitors = {}
 
@@ -481,25 +485,20 @@ class Deployment(ndb.Model):
             csv_writer.writerow(['booth_user', 'booth_vendor','student_id'])
 
         for checkin in checkins:
-            report_row = {}
+            user = None
 
             if checkin.user_key not in users:
-                user = User.query(User.key == checkin.user_key).fetch(1)
+                user = checkin.user_key.get()
                 users[checkin.user_key] = user
             else:
                 user = users[checkin.user_key]
 
-            if user and len(user) > 0 and user[0]:
-                user = user[0]
-            else:
-                user = None
-
-            report_row['booth_user'] = user.username if user else 'ERROR'
-            report_row['booth_vendor'] = user.vendorname if user else 'ERROR'
+            report_row_user = user.username if user else 'ERROR'
+            report_row_vendor = user.vendorname if user else 'ERROR'
 
             if checkin.visitor_key not in visitors:
                 visitor = Visitor.query(Visitor.key == checkin.visitor_key,
-                                    Visitor.deployment_key == deployment.key).fetch(1)
+                                    Visitor.deployment_key == self.key).fetch(1)
                 visitors[checkin.visitor_key] = visitor
             else:
                 visitor = visitors[checkin.visitor_key]
@@ -509,11 +508,15 @@ class Deployment(ndb.Model):
             else:
                 visitor = None
 
-            report_row['student_id'] = visitor.visitor_id if visitor else 'ERROR'
+            report_row_student_id = visitor.visitor_id if visitor else 'ERROR'
 
             if csv_writer:
                 csv_writer.writerow([report_row['booth_user'],report_row['booth_vendor'],report_row['student_id']])
-
+            if csv_output:
+                report_csv = report_csv + str(report_row_user) + "," + str(report_row_vendor)\
+                             + "," + str(report_row_student_id) + "\r"
+        if csv_output:
+            return report_csv
         return report
 
     def get_booth_checkin_report(self):
