@@ -6,6 +6,7 @@ appcfg.py -A tough-variety-126419 -V v9 update checkin/
 appcfg.py -A tough-variety-126419 -V v10 update checkin/
 
 
+admin?method=GENERATE_QR_CODES&start_at_one=true&qr_codes_to_generate=2000
 pip install -t lib -r requirements.txt
 
 pip install -t lib datatables

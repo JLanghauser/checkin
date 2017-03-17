@@ -248,13 +248,16 @@ class Deployment(ndb.Model):
         self.put()
 
 
-    def generate_visitors(self,num_to_generate,user):
+    def generate_visitors(self,num_to_generate,user,start_at_one=None):
         background_job = BackgroundJob.create_new(user.key,self.key,0)
         num_workers = NUM_BACKGROUND_JOB_WORKERS
         start = self.max_visitor_serial_id
         if start:
             start = start + 1
         else:
+            start = 1
+
+        if start_at_one:
             start = 1
 
         i = 0

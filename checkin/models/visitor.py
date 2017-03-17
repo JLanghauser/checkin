@@ -107,7 +107,7 @@ class Visitor(ndb.Model):
                 child.key.delete()
                 child = None
         except DeadlineExceededError:
-            deferred.defer(Visitor.generate,dep_key,child_key,start,end_id,should_update_deployment)
+            deferred.defer(cls.generate,dep_key,child_key,start,end_id,should_update_deployment)
 
     # @classmethod
     # def generate_serial_id(cls,seed):

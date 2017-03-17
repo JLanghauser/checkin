@@ -114,8 +114,9 @@ class AdminHandler(BaseHandler):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
         params['activetab'] = 'qrcodes'
+        start_at_one = self.request.get('start_at_one')
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
-        existing_deployment.generate_visitors(int(qr_codes_to_generate),self.user)
+        existing_deployment.generate_visitors(int(qr_codes_to_generate),self.user,start_at_one)
         existing_deployment.qr_codes_zip = None
         existing_deployment.put()
         params['success'] = "true"
@@ -234,8 +235,15 @@ class AdminHandler(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug):
         dep = Deployment.get_by_slug(deployment_slug)
+        method = self.request.get('method')
+        if method and method == 'GENERATE_QR_CODES':
+            self.generate_qr_codes(deployment_slug)
+
         params = self.add_deployment_params({},dep)
         self.render_smart_template('DEPLOYMENT','ADMIN','admin.html',dep,params)
+
+
+
 
     @deployment_admin_required
     def post(self, deployment_slug):
