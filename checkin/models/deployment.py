@@ -114,12 +114,11 @@ class Deployment(ndb.Model):
 
     def get_users(self):
         qry2 = MapUserToDeployment.query(MapUserToDeployment.deployment_key == self.key)
-        map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key])
+        map_users_keys = qry2.fetch(projection=[MapUserToDeployment.user_key],limit=1000)
         users = []
         for mp in map_users_keys:
             u = mp.user_key.get()
             users.append(u)
-        #users = ndb.get_multi(map_users_keys)
         return users
 
     def get_random_visitor(self):
@@ -246,7 +245,6 @@ class Deployment(ndb.Model):
 
         self.logo = blob.key()
         self.put()
-
 
     def generate_visitors(self,num_to_generate,user,start_at_one=None):
         background_job = BackgroundJob.create_new(user.key,self.key,0)
