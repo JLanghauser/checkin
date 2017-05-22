@@ -1,0 +1,5 @@
+cron:
+# - description: Map Index Update
+#   url: /api/tasks/update_map_user_indices/
+#   schedule: every sunday 09:00
+#   timezone: America/New_York

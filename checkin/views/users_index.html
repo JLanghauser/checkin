@@ -1,0 +1,129 @@
+{% extends "main.html" %} {% block maincontent %}
+
+{% if not logo_url and deployments and deployment_len > 0 %}
+  <h1>Deployments</h1>
+  <h4>If you manage several events you can select one from the dropdown </h4>
+  <form action="/users" method="POST">
+    <select name="selected_deployment_slug">
+      {% for dep in deployments %}
+        {% if dep.slug == selected_deployment_slug %}
+          <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+        {% else %}
+          <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+
+    <input type="submit" value="switch" />
+  </form>
+{% endif %}
+
+{% if user and user.is_super_admin %}
+<h2> Add New User: </h2>
+<h4>You can add users - they will be mapped to your current event</h4>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>Vendor Name</th>
+           <th>Password</th>
+           <th>Admin</th>
+           <th>Submit</th>
+         </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="/users" method="POST">
+        <td><input type="text" name="username" /></td>
+        <td><input type="text" name="email" /></td>
+        <td><input type="text" name="vendorname" /></td>
+        <td><input type="password" name="password" /></td>
+        <td><input type="checkbox" name="is_deployment_admin" /></td>
+        <input type="hidden" name="deployment_slug" value="{{ selected_deployment_slug }}" />
+        <td><input type="submit" value="Create" /></td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+<h2> Add Bulk Users </h2>
+<h4>You can upload users in bulk using a file upload</h4>
+<h4>Note: Upload files should be CSV formatted with a header row</h4>
+<h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin,Deployment_Slug </h4>
+<form enctype="multipart/form-data" action="/users" method="post">
+    <label for="filename">Filename</label>
+    <input id="bulkfile" type="file" name="bulkfile" />
+    <input type="submit" value="Upload" />
+</form>
+
+<h2> Current Users: </h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>Vendor Name</th>
+           <th>Password</th>
+           <th>Admin</th>
+           <th>Edit</th>
+           <th>Login As This User</th>
+         </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        {% if user.username == editing_username %}
+      <tr>
+          <form action="/users" method="POST">
+          <td><input type="text" name="username" value="{{ user.username }}" /></td>
+          <td><input type="text" name="email" value="{{ user.email }}" /></td>
+          <td><input type="text" name="vendorname" value="{{ user.vendorname }}" /></td>
+          <td><input type="text" name="password" value="....." /></td>
+          {% if user.is_deployment_admin %}
+            <td><input type="checkbox" name="is_deployment_admin" checked="checked" /></td>
+          {% else %}
+            <td><input type="checkbox" name="is_deployment_admin"/></td>
+          {% endif %}
+          <td>
+                  <input type="hidden" name="deployment_slug" value="{{ selected_deployment_slug }}" />
+                  <input type="hidden" name="old_username" value="{{ user.username }}" />
+                  <input type="hidden" name="command" value="edit" />
+                  <input type="submit" value="Save" />
+          </td>
+          </form>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
+          </td>
+      </tr>
+      {% else %}
+      <tr>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.vendorname }}</td>
+          <td>...</td>
+          <td>{{ user.is_deployment_admin }}</td>
+          <td>
+              <form action="/users" method="GET">
+                  <input type="hidden" name="editing_username" value="{{user.username}}">
+                  <input type="submit" value="Edit" />
+              </form>
+          </td>
+          <td>
+            <form action="/users" method="GET">
+                <input type="hidden" name="editing_username" value="{{user.username}}">
+                <input type="submit" value="Login As" />
+            </form>
+          </td>
+      </tr>
+      {% endif %}
+  {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

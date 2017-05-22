@@ -1,0 +1,532 @@
+{% extends "main.html" %} {% block maincontent %}
+<div id="backgroundjobs"></div>
+<ul class="nav nav-tabs">
+    <li id="domaintab"><a href="#domain" data-toggle="tab">Custom Domain</a></li>
+    <li id="looktab"><a href="#look" data-toggle="tab">Look and Feel</a></li>
+    <li id="surveystab"><a href="#surveys" data-toggle="tab">Surveys</a></li>
+    <li id="qrcodestab"><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
+    <li id="boothstab"><a href="#booths" data-toggle="tab">Manage Booths</a></li>
+    <li id="raffletab"><a href="#raffle" data-toggle="tab">Run Raffle</a></li>
+    <li id="analyticstab"><a href="#analytics" data-toggle="tab">Analytics</a></li>
+</ul>
+
+<form action="admin" method="POST" id = "usrform" enctype="multipart/form-data">
+    <input type="hidden" name="slug" value="{{ deployment.slug }}" />
+    <input type="hidden" name="logo_url" value="{{ deployment.logo_url }}" />
+    <input type="hidden" name="referring_page" value="ADMIN" />
+    <input type="hidden" name="method" value="UPDATE" />
+
+    <div class="tab-content">
+    <div class="tab-pane container" id="domain">
+        <h2>Set up the custom subdomain for your app.</h2>
+        <h3>1) Begin with a domain that you control.</h3>
+        <label>Domain</label>
+        <div class="input-group col-xs-3">
+            <span class="input-group-addon" id="basic-addon3">http://www.</span>
+            <input type="text" id="custom_dns_input" class="form-control input-lg" name="custom_dns" aria-describedby="basic-addon3" value="{{ deployment.custom_dns }}"/>
+        </div>
+        <h3>(ex: if your website is <a href="http://www.csfair.nyc/">http://www.csfair.nyc/</a>, the domain is csfair.nyc.)</h3>
+
+        <h3>2) Choose a subdomain to use for the checkin app. "Checkin" is a popular choice of subdomain (ex: <a href="http://checkin.csfair.nyc/">http://checkin.csfair.nyc</a>)</h3>
+        <label>Subdomain</label>
+        <div class="input-group col-xs-3">
+            <span class="input-group-addon" id="basic-addon3">http://</span>
+            <input type="text" class="form-control input-lg" id="custom_subdomain_input" name="custom_subdomain" aria-describedby="basic-addon3" value="{{ deployment.custom_subdomain }}"/>
+            <span class="input-group-addon" id="custom_dns_addon">.{{ deployment.custom_dns }}</span>
+        </div>
+        <h3>3) To connect the app to your website, you need to add the following DNS record to your domain. This can typically be done by logging into your domain name provider's online control panel:</h3>
+        <h4>A. Create an A record pointing <span id="domainbadge" class="badge badge-success">{{deployment.custom_subdomain}}.{{deployment.custom_dns}}</span> to the ip address 107.178.223.42</h4>
+        <h4>B. Send an email to support@check-me-in.biz. Make sure to include your deployment Name, your custom-dns and your subdomain in your email. Your custom domain will be setup with 48 hours.</h4>
+        <!--onClick="this.disabled=true; this.value='Working...'"; -->
+        <button id="deployment-save" type="submit" class="btn btn-primary navbar-btn btn-lg" >Save</button>
+    </div>
+
+    <div class="tab-pane container" id="look">
+      <BR><BR>
+      <label class="col-2 col-form-label">Event Name:</label>
+      <div class="input-group">
+        <input class="form-control" type="text" value="{{ deployment.name }}" name="name">
+      </div>
+      <BR><BR>
+      <label for="cp2" class="col-2 col-form-label">Header Background Color:</label>
+      <div id="cp2" class="input-group colorpicker-component col-xs-2">
+        <input type="text" name = "header_background_color" id = "header-background-color" value="{{ deployment.header_background_color }}" class="form-control" />
+        <span class="input-group-addon"><i></i></span>
+      </div>
+
+        <h3>Header Logo</h3>
+        <h3>(recommended size 150x150 px)</h3>
+        <img src = "{{deployment.logo_url}}"/>
+
+
+        <label for="filename">Filename</label>
+        <input id="image_file"  type="file" name="image_file" />
+        <button type="submit" class="btn btn-primary navbar-btn">Upload New...</button>
+
+        <h3>Footer Content</h3>
+        <h3>Use the rich text editor below to design the contents of the footer, which will appear on each page of the app:</h3>
+
+        <div>
+          <textarea rows="10" cols="50" name="footer_text" id="footer_text" form="usrform">
+            {% autoescape off %} {{ deployment.footer_text }} {% endautoescape %}
+          </textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary navbar-btn btn-lg">Save</button>
+    </div>
+
+    <div class="tab-pane container" id="surveys">
+        <h3>You can embed a survey link for students and one for exhibitors. These links will appear for them when they log into the app.</h3>
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Student survey URL:</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="{{ deployment.student_link }}" name="student_link">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Student survey text:</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="{{ deployment.student_link_text }}" name="student_link_text">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey URL:</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="{{deployment.user_link}}" name="user_link">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="example-text-input" class="col-2 col-form-label">Exhibitor survey text:</label>
+            <div class="col-10">
+                <input class="form-control" type="text" value="{{deployment.user_link_text}}" name="user_link_text">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary navbar-btn">Save</button>
+      </div>
+  </form>
+
+<div class="tab-pane container" id="qrcodes">
+    <h3>Each QR code has a sequence number (generally a serial number contiguous with
+the other QR codes) and a Visitor ID (a randomly generated 6-digit number). Each
+QR code corresponds to a single attendee at your event and should be printed on a
+badge.</h3>
+    <!--<h3>Download Previously Generated QR Code Batches:</h3>
+    <h3>0000-2200.zip</h3>-->
+
+    <form action="admin" method="POST">
+      <input type="hidden" name="referring_page" value="ADMIN" />
+      <input type="hidden" name="method" value="GENERATE_QR_CODES" />
+      <div class="row">
+        <div class="col-xs-4">
+            <div class="input-group">
+              <span class="input-group-addon">Generate</span>
+              <input type="text" maxlength="5" name="qr_codes_to_generate" class="form-control input-lg" aria-label="Number of QR Codes">
+              <span class="input-group-addon">New QR Codes</span>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary navbar-btn">Go!</button>
+      </div>
+    </form>
+
+    <h3>(New codes will have contiguous serial numbers starting after the highest existing serial number)</h3>
+
+    <div class="row">
+      <div class="col-xs-4">
+        <form enctype="multipart/form-data" action="admin" method="POST">
+            <label for="filename">Filename</label>
+            <input id="bulkfile" type="file" name="bulkfile" />
+            <input type='hidden' name='method' value='UPLOAD_QR_CODES'>
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="submit" class="btn btn-primary navbar-btn btn-lg" value="QR Codes from CSV" />
+        </form>
+      </div>
+    </div>
+    <h3>(use this feature if you want to manually define the serial numbers and Visitor ID numbers for each QR code. Your CSV file should contain a sequence number and Visitor ID in each row.)</h3>
+
+    <div class="row">
+      <div class="col-xs-4">
+        <h3>QR Code Information</h3>
+      </div>
+    </div>
+    <a class="btn btn-primary navbar-btn" href="dump_badges" target="_blank">Export All as PDF</a>
+
+    <a class="btn btn-primary navbar-btn" href="dump_qr_codes_zip" target="_blank">Export all QR codes as ZIP</a>
+
+    <a class="btn btn-primary navbar-btn" href="dump_badges_csv" >Export All as .CSV</a>
+
+    <br><br>
+    <table id="qrcodestable" class="display" cellspacing="0" width="100%">
+            <thead>
+                <tr>
+                    <th>Sequence</th>
+                    <th>Visitor ID</th>
+                    <th>QR Code Link</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                  <th>Sequence</th>
+                  <th>Visitor ID</th>
+                  <th>QR Code Link</th>
+                </tr>
+            </tfoot>
+    </table>
+</div>
+<div class="tab-pane container" id="booths">
+    <h3>Each booth should have a single booth account shared between all of the exhibitors
+     working at that booth.</h3>
+     <h4>Note: Upload files should be CSV formatted with a header row</h4>
+     <h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin </h4>
+
+    <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addBoothModal">Create New Booth</button>
+
+    <form enctype="multipart/form-data" action="admin" method="POST">
+        <label for="filename">Filename</label>
+        <input id="bulkfile" type="file" name="bulkfile" />
+        <input type='hidden' name='method' value='UPLOAD_BOOTHS'>
+        <input type="hidden" name="referring_page" value="ADMIN" />
+        <input type="submit" class="btn btn-primary navbar-btn btn-lg" value="Bulk Import from CSV" />
+    </form>
+
+    <div class="modal fade" id="addBoothModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Booth</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" action="admin" method="POST">
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="hidden" name="method" value="CREATE_NEW_BOOTH" />
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">Display Name</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="vendorname" name="vendorname" placeholder="Display Name">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Username</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="password" id="password" placeholder="Password">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="email" name="email" placeholder="Email">
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <div class="checkbox">
+                  <label>
+                    <input name="admin" type="checkbox"> Admin
+                  </label>
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Booth</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="editBoothModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Booth</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal" action="admin" method="POST">
+          <input type="hidden" name="old-username" id="edit-old-username" />
+          <input type="hidden" name="referring_page" value="ADMIN" />
+          <input type="hidden" name="method" value="EDIT_BOOTH" />
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label">Display Name</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-vendorname" name="edit-vendorname" placeholder="Display Name" >
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Username</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-username" name="edit-username" placeholder="Username">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
+            <div class="col-sm-10">
+              <input type="password" class="form-control" name="edit-password" id="edit-password" placeholder="Password">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
+            <div class="col-sm-10">
+              <input type="text" class="form-control" id="edit-email" name="edit-email" placeholder="Email">
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <div class="checkbox">
+                <label>
+                  <input name="admin" id="edit-admin" type="checkbox"> Admin
+                </label>
+              </div>
+            </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary" >Edit Booth</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+      </form>
+    </div>
+  </div>
+  </div>
+
+
+    <h3>Booths</h3>
+    <table class="table table-striped">
+        <caption>Booths</caption>
+        <thead>
+            <tr>
+                <th>Display Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Admin?</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr>
+                <td>{{u.vendorname}}</td>
+                <td>{{u.username}}</td>
+                <td>{{u.email}}</td>
+                <td>{{u.is_deployment_admin}}</td>
+                <td>
+                    <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editBoothModal' data-vendorname="{{u.vendorname}}" data-username="{{u.username}}" data-email="{{u.email}}" data-admin="{{u.is_deployment_admin}}" data-password="{{u.password}}" >Edit</button>
+
+                    <form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this booth?');">
+                      <input type="hidden" name="referring_page" value="ADMIN" />
+                      <input type="hidden" name="method" value="DELETE_BOOTH" />
+                      <input type="hidden" name="edit-username" value="{{u.username}}" />
+                      <button type="submit" class="btn btn-primary">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<div class="tab-pane container" id="raffle">
+    <h3>And the winner is...</h3>
+    <h1>{{random_visitor}}</h1>
+    <form action="admin" method="POST">
+        <input type='hidden' name='method' value='RANDOM_VISITOR'>
+        <button type="submit" class="btn btn-primary btn-lg">Draw Another Winner</button>
+    </form>
+</div>
+<div class="tab-pane container" id="analytics">
+  <a class="btn btn-primary navbar-btn" href="dump_checkins_csv" target="_blank">Download Raw Checkin Data</a>
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+            Pre-Event Booth Profile Update Report
+          </a>
+        </h4>
+      </div>
+      <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+          <table id="preeventtable" class="display" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email address</th>
+                        <th>HasEdited</th>
+                      </tr>
+                  </thead>
+                  <tfoot>
+                      <tr>
+                        <th>Username</th>
+                        <th>Email address</th>
+                        <th>HasEdited</th>
+                      </tr>
+                  </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingTwo">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+            Booth Checkin Report
+          </a>
+        </h4>
+      </div>
+      <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+        <div class="panel-body">
+          <table id="boothcheckintable" class="display" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                          <th>Booth</th>
+                          <th>Number of Checkins</th>
+                      </tr>
+                  </thead>
+                  <tfoot>
+                      <tr>
+                        <th>Booth</th>
+                        <th>Number of Checkins</th>
+                      </tr>
+                  </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+    $(function() {
+        $('#cp2').colorpicker();
+    });
+
+    $('#cp2').colorpicker().on('changeColor', function(e) {
+        $('#header-background-color')[0].value = e.color.toString('hex');
+    });
+
+    $("#{{ activetab }}").addClass('active');
+    $("#{{ activetab }}tab").addClass('active');
+
+    $("#custom_subdomain_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
+
+    $("#custom_dns_input").change(function() {
+      $("#domainbadge").html($("#custom_subdomain_input").val() + "." +$("#custom_dns_input").val())
+      $("#custom_dns_addon").html("." + $("#custom_dns_input").val())
+    });
+
+    $('#editBoothModal').on('show.bs.modal', function (event) {
+
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var vendorname = button.data('vendorname')
+      var username = button.data('username')
+      var email = button.data('email')
+      var admin = button.data('admin')
+      var password = button.data('password')
+      var old_username = username
+
+      var modal = $(this)
+
+      // //modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body #edit-vendorname').val(vendorname)
+      modal.find('.modal-body #edit-username').val(username)
+      modal.find('.modal-body #edit-email').val(email)
+      modal.find('.modal-body #edit-password').val(password)
+      modal.find('.modal-body #edit-old-username').val(username)
+
+      if (admin === "True" || admin === "true" || admin === "1") {
+        modal.find('.modal-body #edit-admin').prop('checked', true);
+      }
+
+    });
+
+    $(document).ready(function() {
+        var table = $('#qrcodestable').DataTable( {
+            "processing": true,
+            "serverSide": true,
+            "ordering": false,
+            "searching":false,
+            "ajax": 'visitorsasync',
+            "columnDefs": [ {
+                "targets": 2,
+                "data": 2,
+                "render": function ( data, type, full, meta ) {
+                  return '<a target="_blank" href="'+data+'">QR Code</a>';
+                }
+              } ]
+        } );
+
+        setInterval( function () {
+          table.ajax.reload();
+        }, 30000 );
+
+    } );
+
+    $(document).ready(function() {
+        var table = $('#preeventtable').DataTable( {
+            "processing": false,
+            "serverSide": false,
+            "ordering": false,
+            "searching":false,
+            "ajax": {
+                "url": "reportsasync",
+                "data": function ( d ) {
+                    d.report_type = "BOOTH_REPORT";
+                }
+            },
+        } );
+    } );
+
+    $(document).ready(function() {
+        var table = $('#boothcheckintable').DataTable( {
+            "processing": true,
+            "serverSide": false,
+            "ordering": false,
+            "searching":false,
+            "ajax": {
+                "url": "reportsasync",
+                "data": function ( d ) {
+                    d.report_type = "BOOTH_CHECKIN_REPORT";
+                }
+            },
+        } );
+    } );
+
+    job_listener = setInterval(function () {
+      $.ajax({
+        url: "backgroundjobs",
+        type: "get",
+        data:'id=test',
+        success: function(result){
+          $("#backgroundjobs").html(result);
+          // if (result.includes("FINISHED") === true){
+          //   $('#deployment-save').dsiabled = 'true';
+          //   $('#deployment-save').value = 'save';
+          // }
+
+        },
+        error:function(){}
+      });
+    }, 1000);
+
+
+</script>
+
+
+{% endblock %}

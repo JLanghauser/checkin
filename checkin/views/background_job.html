@@ -1,0 +1,11 @@
+{% for j in jobs %}
+{% if j.status == 'INPROGRESS' %}
+<div class="alert alert-info" role="alert">
+  {{ j.status_message }}
+</div>
+{% else %}
+<div class="alert alert-success" role="alert">
+  {{ j.status_message }}
+</div>
+{% endif %}
+{% endfor %}

@@ -1,0 +1,111 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Reports</h1>
+<h4>View several reports on deployment statistics</h4>
+
+<h1>Deployments</h1>
+<h4>If you manage several events you can select one from the dropdown </h4>
+<form action="reports" method="POST">
+  <select name="selected_deployment_slug">
+    {% for dep in deployments %}
+      {% if dep.slug == selected_deployment_slug %}
+        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+      {% else %}
+        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+
+  <input type="submit" value="generate" />
+</form>
+
+<h2>Pre-Event Booth Information Report</h2>
+<h4>list of user accounts that have modified their profile</h4>
+{% if boothreport_stats %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Total Edited</th>
+           <th>Total Unedited</th>
+         </tr>
+    </thead>
+    <tbody>
+    <tr>
+      {% for row in boothreport_stats %}
+        {% if row and 'edited' in row %}
+          <td>{{ row.edited }}</td>
+          <td>{{ row.unedited }}</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    </tbody>
+  </table>
+  </div>
+{% endif %}
+{% if boothreport %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Username</th>
+           <th>Email address</th>
+           <th>HasEdited</th>
+         </tr>
+    </thead>
+    <tbody>
+  {% for row in boothreport %}
+    {% if row and 'username' in row %}
+    <tr>
+      <td>{{ row.username }}</td>
+      <td>{{ row.email }}</td>
+      <td>{{ row.hasedited }}</td>
+    </tr>
+    {% endif %}
+  {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<h2>Event Booth Information Report</h2>
+<h4>See the count of checkins per booth</h4>
+{% if boothcheckinreport %}
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Booth</th>
+           <th>Number of Checkins</th>
+         </tr>
+    </thead>
+    <tbody>
+  {% for row in boothcheckinreport %}
+    <tr>
+      <td>{{ row.0 }}</td>
+      <td>{{ row.1 }}</td>
+    </tr>
+  {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+<h2>CSV Export Deployment Raw Info</h2>
+<h4>Get the raw checkin info for a deployment</h4>
+<form action="reports" method="POST">
+  <select name="selected_deployment_slug">
+    {% for dep in deployments %}
+      {% if dep.slug == selected_deployment_slug %}
+        <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+      {% else %}
+        <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  <input type="hidden" name="export" value = "raw" />
+  <input type="submit" value="export" />
+</form>
+{% endblock %}

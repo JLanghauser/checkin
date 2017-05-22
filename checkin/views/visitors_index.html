@@ -1,0 +1,69 @@
+{% extends "main.html" %} {% block maincontent %}
+
+{% if not logo_url and deployments and deployment_len > 0 %}
+  <h2>Deployments</h2>
+  <h4>If you manage several events you can select one from the dropdown </h4>
+  <form action="/users" method="POST">
+    <select name="selected_deployment_slug">
+      {% for dep in deployments %}
+        {% if dep.slug == selected_deployment_slug %}
+          <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+        {% else %}
+          <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+
+    <input type="submit" value="switch" />
+  </form>
+{% endif %}
+
+<h2> Current Visitors: </h2>
+<h4> Export all of your visitor IDs </h4>
+<form action="/visitors" method="POST">
+<input type="submit" value="Export" />
+<input type="hidden" name="command" value="export" />
+</form>
+
+<h2> Generate Bulk Visitors </h2>
+<h4> Automatically add X number of new visitors with unique IDs </h4>
+<form action="/users" method="post">
+    <label for="num_visitors">Number of Visitors</label>
+    <input type="text" name="num_visitors" />
+    <input type="hidden" name="command" value="generate" />
+    <input type="submit" value="Generate" />
+</form>
+
+<h2> Add Bulk Visitors </h2>
+<h4> Note: bulk upload file should be a list of visitor IDs, one per line</h4>
+<form enctype="multipart/form-data" action="visitors" method="post">
+    <label for="filename">Filename</label>
+    <input id="bulkfile" type="file" name="bulkfile" />
+    <input type="submit" value="Upload" />
+</form>
+
+{% if user and user.is_deployment_admin %}
+<h2> Add New Single Visitor: </h2>
+<div class="table-responsive">
+  <table class="table table-striped table-sm">
+    <thead>
+         <tr>
+           <th>Visitor_id</th>
+           <th>Create</th>
+         </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <form action="visitors" method="POST">
+        <td><input type="text" name="visitor_id" /></td>
+        <td><input type="submit" value="Create" /></td>
+        </form>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+{% endif %}
+
+
+{% endblock %}

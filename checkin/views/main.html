@@ -8,8 +8,19 @@
     <title>{% block title %}Checkin{% endblock %}</title>
     <!-- Bootstrap -->
     <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-colorpicker.min.css" rel="stylesheet">
     <!-- Custom Stylesheet -->
     <link href="/css/checkin.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.13/datatables.min.css"/>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="/js/jquery-3.1.1.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/checkin.js"></script>
+    <script src="/js/bootstrap-colorpicker.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.13/datatables.min.js"></script>
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -51,11 +62,88 @@
 
   <body>
   <div class="content">
-    <div class="row orangebg">
+    <div class="row orangebg" style="background-color:#{{header_color}};">
+      <nav class="navbar navbar-default orangebg" style="background-color:#{{header_color}};">
+        <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+          </div>
+
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1" style="background-color:white;color:black;">
+            <ul class="nav navbar-nav">
+              {% if not user %}
+                  <li><a href="sign_in">Login</a></li>
+                  {% if deployment %}
+                    <li><a href="sample">Sample Student Checkin</a></li>
+                  {% endif %}
+                  <li><a href="/">Home</a></li>
+              {% else %}
+                <li><center><h4 style="padding-top:5px;">{{ user.username }}</h4></center></li>
+                <li><a href="sign_out">Logout</a></li>
+                {% if deployment  %}
+                  <li><a href="checkin_visitor">Checkin Student</a></li>
+                  <li><a href="edit">Edit Profile</a></li>
+                  <li><a href="home">Home</a></li>
+                  <li><a href="sample">Sample Student Checkin</a></li>
+                  <li>
+                    {% if user_link != None and user_link != 'None' and user_link_text != None %}
+                      <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
+                    {% endif %}
+                  </li>
+                {% endif %}
+              {% endif %}
+              {% if user and user.is_super_admin and not deployment%}
+              <li><a href="super_admin">SuperAdmin</a></li>
+                <!--<li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super Admin<span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                      <li><a href="deployments">Manage Deployments</a></li>
+                      <li><a href="users">Manage Users</a></li>
+                      <li><a href="reports">View Reports</a></li>
+                    </ul>
+                </li>-->
+              {% endif %}
+              {% if user and user.is_deployment_admin and deployment %}
+              <li><a href="admin">Admin</a></li>
+              <!--<li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    {% if logo_url %}
+                    <li><a href="deployments">Manage Deployments</a></li>
+                    {% else %}
+                    <li><a href="/deployments">Manage Deployments</a></li>
+                    {% endif %}
+                    <li><a href="/users">Manage Users</a></li>
+                    <li><a href="/visitors">Manage Visitors</a></li>
+                    <li><a href="/custom-domains">Custom Domain Names</a></li>
+                    <li><a href="get_random_visitor">Run Raffle</a></li>
+                  </ul>
+              </li>-->
+              {% endif %}
+            </ul>
+          </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+      </nav>
 		<div>
-			<img class="center-block logo" src="/img/logo.png">
+      {% if logo_url %}
+			   <img class="center-block logo" src="{{ logo_url }}">
+      {% else %}
+        <img class="center-block logo" src="/img/generic_logo.png">
+      {% endif %}
 		</div>
 	</div>
+  {% if user and sudoer %}
+  <div class="alert alert-warning" role="alert">
+    You are currently logged in as someone else.
+  <div>
+  {% endif %}
   {% if flash_message and success %}
     <div class="alert alert-success" role="alert">
       {{ flash_message }}
@@ -82,36 +170,10 @@
   <div>
     <footer>
       <hr/>
-      <p>
-        {% if not user %}
-          <a href="/sign_in">Login</a>
-        |
-        {% else %}
-          Logged in as <span style="background-color: OldLace">{{ user.username }}</span> | <a href="/sign_out">Logout</a>        |
-          <a href="/checkin_visitor">Checkin Student</a> |
-          <a href="/edit">Edit Profile</a> |
-          <a href="/">Home</a>
-          |
-        {% endif %}
-        {% if user and user.is_admin%}
-          <a href="/admin_panel/user">New user</a>
-        |
-          <a href="/admin_panel/visitor">New visitor</a>
-        |
-          <a href="/admin_panel/get_random_visitor">Run Raffle</a>
-        |
-          <a href="/student">Student View</a>
-        {% endif %}
-
-      </p>
-      <p>Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.</p>
+      <!--Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.-->
+      <p>{% autoescape off %}{{footer_text}}{% endautoescape %}</p>
     </footer>
   </div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/checkin.js"></script>
   </body>
 </html>

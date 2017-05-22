@@ -1,0 +1,120 @@
+{% extends "main.html" %}
+
+{% block maincontent %}
+
+<h1>Deployments</h1>
+
+
+<h2> Current Deployments: </h2>
+<div class="table-responsive">
+  <table class="table table-striped">
+    <thead>
+         <tr>
+           <th>Link</th>
+           <th>Name</th>
+           <th>Slug</th>
+           <th>Custom Hostname</th>
+           <th>Subdomain</th>
+           <th>Background Color</th>
+           <th>Footer Text</th>
+           <th>Logo URL</th>
+           <th>Student Link</th>
+           <th>Student Link Text</th>
+           <th>User Link</th>
+           <th>User Link Text</th>
+           <th>Update</th>
+         </tr>
+    </thead>
+    <tbody>
+{% for deployment in deployments %}
+  {% if deployment.slug == editing_slug  %}
+          <form action="/deployments/{{ deployment.slug }}" method="POST">
+          <tr>
+            <td><a href="deployments/view/{{ deployment.slug }}/" target="_blank"> deployment-page-link </a></td>
+            <td><input type="text" name="name" value = "{{ deployment.name }}" /></td>
+            <td><input type="text" name="slug" value = "{{ deployment.slug }}" /></td>
+            <td><input type="text" name="custom_dns" value = "{{ deployment.custom_dns }}" /></td>
+            <td><input type="text" name="custom_subdomain" value = "{{ deployment.custom_subdomain }}" /></td>
+            <td><input type="text" name="header_background_color" value = "{{ deployment.header_background_color }}" /></td>
+            <td><input type="text" name="footer_text" value = "{{ deployment.footer_text }}" /></td>
+            <td><input type="text" name="logo_url" value = "{{ deployment.logo_url }}" /></td>
+            <td><input type="text" name="student_link" value = "{{ deployment.student_link }}" /></td>
+            <td><input type="text" name="student_link_text" value = "{{ deployment.student_link_text }}" /></td>
+            <td><input type="text" name="user_link" value = "{{ deployment.user_link }}" /></td>
+            <td><input type="text" name="user_link_text" value = "{{ deployment.user_link_text }}" /></td>
+            <td>
+                <input type="hidden" name="deployment_id" value = "{{ deployment.key.id }}" />
+                <input type="submit" value="Update" />
+            </td>
+          </tr>
+          </form>
+  {% else %}
+        <tr>
+          <td><a href="deployments/view/{{ deployment.slug }}/" target="_blank"> deployment-page-link </a></td>
+          <td>{{ deployment.name }}</td>
+          <td>{{ deployment.slug }}</td>
+          <td>{{ deployment.custom_dns }}</td>
+          <td>{{ deployment.custom_subdomain }}</td>
+          <td>{{ deployment.header_background_color }}</td>
+          <td>{{ deployment.footer_text }}</td>
+          <td>{{ deployment.logo_url }}</td>
+          <td>{{ deployment.student_link }}</td>
+          <td>{{ deployment.student_link_text }}</td>
+          <td>{{ deployment.user_link }}</td>
+          <td>{{ deployment.user_link_text }}</td>
+          <td>
+            <form action="/deployments" method="GET">
+              <input type="hidden" name="editing_slug" value="{{deployment.slug}}">
+              <input type="submit" value="Edit" />
+            </form>
+          </td>
+        </tr>
+  {% endif %}
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if user and user.is_super_admin %}
+  <h2> Add New Deployment: </h2>
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+           <tr>
+             <th>Name</th>
+             <th>Slug</th>
+             <th>Custom Hostname</th>
+             <th>Subdomain</th>
+             <th>Background Color</th>
+             <th>Footer Text</th>
+             <th>Logo URL</th>
+             <th>Student Link</th>
+             <th>Student Link Text</th>
+             <th>User Link</th>
+             <th>User Link Text</th>
+             <th>Submit</th>
+           </tr>
+      </thead>
+      <tbody>
+      <tr>
+          <form action="/deployments" method="POST">
+          <td><input type="text" name="name" /></td>
+          <td><input type="text" name="slug" /></td>
+          <td><input type="text" name="custom_dns" /></td>
+          <td><input type="text" name="custom_subdomain" /></td>
+          <td><input type="text" name="header_background_color" /></td>
+          <td><input type="text" name="footer_text" /></td>
+          <td><input type="text" name="logo_url" /></td>
+          <td><input type="text" name="student_link" /></td>
+          <td><input type="text" name="student_link_text" /></td>
+          <td><input type="text" name="user_link" /></td>
+          <td><input type="text" name="user_link_text" /></td>
+          <td><input type="submit" value="Create" /></td>
+          </form>
+      </tr>
+      </tbody>
+    </table>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -4,10 +4,29 @@
 
 <h1>Checkin Visitor</h1>
 
-<form class="form" action= "/checkin_visitor" method="POST">
-	<label for="visitor_id">Visitor_ID</label>
+{% if not logo_url and deployments and deployment_len > 0 %}
+  <h1>Deployments</h1>
+  <h4>If you manage several events you can select one from the dropdown </h4>
+  <form action="/checkin_visitor" method="POST">
+    <select name="selected_deployment_slug">
+      {% for dep in deployments %}
+        {% if dep.slug == selected_deployment_slug %}
+          <option value="{{ dep.slug }}" selected>{{ dep.name }}</option>
+        {% else %}
+          <option value="{{ dep.slug }}" >{{ dep.name }}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+
+    <input type="submit" value="switch" />
+  </form>
+{% endif %}
+
+<form class="form" action= "checkin_visitor" method="POST">
+	<label for="visitor_id">Badge Code</label>
 	<input type="text" value="{{ visitor_id }}" name="visitor_id"/>
-	<button type="submit" class="btn">Checkin</button>
+	<input type="hidden" value="{{ deployment_slug }}" name="deployment_slug"/>
+	<input type="submit" class="btn" value = "Checkin">
 </form>
 
 

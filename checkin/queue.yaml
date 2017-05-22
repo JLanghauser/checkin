@@ -1,0 +1,10 @@
+queue:
+- name: default
+  rate: 1/s
+  bucket_size: 1
+  max_concurrent_requests: 20
+
+- name: backgroundqueue
+  rate: 200/s
+  bucket_size: 100
+  max_concurrent_requests: 200
