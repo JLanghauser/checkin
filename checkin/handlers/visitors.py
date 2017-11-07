@@ -78,8 +78,8 @@ class VisitorsAsyncHandler(BaseHandler):
         start = self.request.get('start')
         length = self.request.get('length')
         order = self.request.get('order')
-        #order_column = 0
-        #order_dir = 'asc'
+        order_column = 0
+        order_dir = 'asc'
 
         if order and order[0] and order[0][column]:
             order_column = int(order[0][column])
