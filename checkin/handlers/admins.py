@@ -17,7 +17,9 @@ import csv
 import StringIO
 import json
 import sys
-from models.deployment import *
+from services.deployment_service import *
+from services.map_user_to_visitor_service import *
+from services.map_user_to_deployment_service import *
 from google.appengine.ext import deferred
 
 class AdminHandler(BaseHandler):
@@ -42,7 +44,7 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'booths'
         bulkfile = self.request.get('bulkfile')
-        retval = existing_deployment.add_users_in_bulk(bulkfile)
+        retval = MapUserToDeploymentService.add_users_in_bulk(existing_deployment, bulkfile)
 
         if retval is not "":
             params['error'] = "true"
@@ -99,7 +101,7 @@ class AdminHandler(BaseHandler):
         password = self.request.get('password')
         email = self.request.get('email')
         admin = self.request.get('admin')
-        retval = existing_deployment.add_user(username,vendorname,password,admin,email)
+        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin,email)
 
         if retval is not "":
             params['error'] = "true"
@@ -116,7 +118,7 @@ class AdminHandler(BaseHandler):
         params['activetab'] = 'qrcodes'
         start_at_one = self.request.get('start_at_one')
         qr_codes_to_generate = self.request.get('qr_codes_to_generate')
-        existing_deployment.generate_visitors(int(qr_codes_to_generate),self.user,start_at_one)
+        VisitorService.generate_visitors(existing_deployment, int(qr_codes_to_generate),self.user,start_at_one)
         existing_deployment.qr_codes_zip = None
         existing_deployment.put()
         params['success'] = "true"
@@ -126,7 +128,7 @@ class AdminHandler(BaseHandler):
     def random_visitor(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
-        params['random_visitor'] =  existing_deployment.get_random_visitor()
+        params['random_visitor'] =  MapUserToVisitorService.get_random_visitor(existing_deployment)
         params['activetab'] = 'raffle'
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
@@ -181,7 +183,7 @@ class AdminHandler(BaseHandler):
 
         if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
                 (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
-            deployments = self.user.get_deployments()
+            deployments = get_deployments(self.user)
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
@@ -220,7 +222,7 @@ class AdminHandler(BaseHandler):
                 existing_deployment.upload_image_data(image_file)
                 params['activetab'] = 'look'
 
-            existing_deployment.set_sample_qr_code()
+            DeploymentService.set_sample_qr_code(existing_deployment)
             existing_deployment.put()
             if update_all_qr_codes == True:
                 existing_deployment.qr_codes_zip = None

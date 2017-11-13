@@ -19,7 +19,8 @@ import StringIO
 import json
 import sys
 from google.appengine.api import images
-from models.deployment import *
+from services.deployment_service import *
+from services.visitor_service import *
 
 class SampleHandler(BaseHandler):
 
@@ -50,7 +51,7 @@ class SampleHandler(BaseHandler):
                 visitor = Visitor()
                 visitor.visitor_id = "9999999"
                 visitor.deployment_key = dep.key
-                visitor.set_qr_code()
+                VisitorService.set_qr_code(visitor)
                 visitor.put()
             else:
                 visitor = visitor[0]
@@ -85,7 +86,7 @@ class SampleHandler(BaseHandler):
                 visitor = Visitor()
                 visitor.visitor_id = "9999999"
                 visitor.deployment_key = dep.key
-                visitor.set_qr_code()
+                VisitorService.set_qr_code(visitor)
                 visitor.put()
             else:
                 visitor = visitor[0]

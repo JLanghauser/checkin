@@ -13,8 +13,9 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
-from models.deployment import *
+from services.deployment_service import *
+from services.user_service import *
+from services.visitor_service import *
 from reports import *
 from sample import *
 from pages import *
@@ -29,6 +30,7 @@ import StringIO
 from google.appengine.ext import deferred
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
+from services.visitor_service import *
 
 class VisitorZipDump(BaseHandler,blobstore_handlers.BlobstoreDownloadHandler):
     def get(self,deployment_slug=None):
@@ -42,7 +44,7 @@ class VisitorZipDump(BaseHandler,blobstore_handlers.BlobstoreDownloadHandler):
         else:
             dep.blocking_task_status = 1
             dep.put()
-            deferred.defer(dep.create_file,None,0)
+            deferred.defer(DeploymentService.create_file,dep,None,0)
             self.render_json(['Generating QR code zip now - check back in 2-15 minutes'])
 
 class VisitorSave(webapp2.RequestHandler):
@@ -51,7 +53,7 @@ class VisitorSave(webapp2.RequestHandler):
         if key:
             visitor_key = ndb.Key(urlsafe=key)
             v = visitor_key.get()
-            v.set_qr_code()
+            VisitorService.set_qr_code(v)
             v.put()
 
 class VisitorCSV(BaseHandler):

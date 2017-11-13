@@ -21,8 +21,8 @@ import sys
 from google.appengine.ext import deferred
 from google.appengine.api import taskqueue
 from google.appengine.runtime import DeadlineExceededError
-from models.map_user_to_visitor import *
-from models.deployment import *
+from services.map_user_to_visitor_service import *
+from services.deployment_service import *
 
 class InstructionsHandler(BaseHandler):
     @deployment_admin_required

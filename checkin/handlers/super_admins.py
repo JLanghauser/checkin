@@ -17,7 +17,7 @@ import csv
 import StringIO
 import json
 import sys
-from models.deployment import *
+from services.deployment_service import *
 from google.appengine.ext import deferred
 
 class SuperAdminHandler(BaseHandler):
@@ -66,7 +66,7 @@ class SuperAdminHandler(BaseHandler):
             tmp_deployment = Deployment.get_by_slug(new_slug)
 
         if (tmp_deployment):
-            deployments = self.user.get_deployments()
+            deployments = get_deployments(self.user)
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',None,params)

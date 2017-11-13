@@ -13,15 +13,14 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
-from models.deployment import *
-from models.visitor import *
+from services.user_service import *
+from services.visitor_service import *
 from reports import *
 from sample import *
 from pages import *
-from models.map_user_to_visitor import *
-from models.map_user_to_deployment import *
-from models.deployment import *
+from services.map_user_to_visitor_service import *
+from services.map_user_to_deployment_service import *
+from services.deployment_service import *
 from base.basehandler import *
 
 class TaskHandler(BaseHandler):

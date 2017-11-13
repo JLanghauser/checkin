@@ -16,13 +16,13 @@ import csv
 import StringIO
 import json
 import operator
-from models.deployment import *
+from services.deployment_service import *
 
 class ReportsCSV(BaseHandler):
     @deployment_admin_required
     def get(self,deployment_slug=None):
         dep = Deployment.get_by_slug(deployment_slug)
-        csv = dep.get_checkin_raw_data(None,True)
+        csv = DeploymentService.get_checkin_raw_data(dep, None,True)
         return self.render_csv(csv,"checkins-export.csv")
 
 class AsyncReportsHandler(BaseHandler):
@@ -33,11 +33,11 @@ class AsyncReportsHandler(BaseHandler):
 
         report_type = self.request.get('report_type')
         if report_type == 'RAW_CHECKINS':
-            report = deployment.get_checkin_raw_data()
+            report = DeploymentService.get_checkin_raw_data(deployment)
         elif report_type == 'BOOTH_CHECKIN_REPORT':
-            report  = deployment.get_booth_checkin_report()
+            report  = DeploymentService.get_booth_checkin_report(deployment)
         elif report_type == 'BOOTH_REPORT':
-            report_stats,report  = deployment.get_booth_report()
+            report_stats,report  = DeploymentService.get_booth_report(deployment)
 
         #            'data-stats': report_stats,
         obj = {

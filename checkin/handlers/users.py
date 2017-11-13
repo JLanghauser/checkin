@@ -13,8 +13,8 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
-from models.deployment import *
+from services.user_service import *
+from services.deployment_service import *
 from reports import *
 from sample import *
 from pages import *
@@ -30,13 +30,13 @@ class UsersHandler(BaseHandler):
 
     def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email,deployment_slug):
         calling_user = self.user
-        users = calling_user.get_users()
+        users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
 
-        edit_user = User.get_by_username(old_username)
+        edit_user = UserService.get_by_username(old_username)
 
         if edit_user:
             if not (new_username.lower() == old_username.lower()):
-                tmp_user = User.get_by_username(new_username)
+                tmp_user = UserService.get_by_username(new_username)
 
                 if tmp_user:
                     params = {'users': users, 'error': "true",
@@ -81,7 +81,7 @@ class UsersHandler(BaseHandler):
         return
 
     def add_user(self, username, vendorname, password, is_deployment_admin, email,deployment_slug):
-        tmp_user = User.get_by_username(username)
+        tmp_user = UserService.get_by_username(username)
 
         if tmp_user:
             return "Error - user " + username + " already exists."
@@ -112,17 +112,17 @@ class UsersHandler(BaseHandler):
     @deployment_admin_required
     def get(self):
         editing_username = self.request.get('editing_username', '')
-        deployments = self.user.get_deployments()
+        deployments = get_deployments(self.user)
         params = {'deployments': deployments,
                    'deployment_len': len(deployments),
                   'editing_username': editing_username}
 
         if len(deployments) > 0:
             params["selected_deployment_slug"] = deployments[0].slug
-            params['users'] = self.user.get_users(deployments[0])
+            params['users'] = MapUserToDeploymentService.get_users_by_user_deployment(self.user, deployments[0])
         else:
             params["selected_deployment_slug"] = ""
-            params['users'] = self.user.get_users()
+            params['users'] = MapUserToDeploymentService.get_users_by_user_deployment(self.user)
 
         self.render_template('users_index.html', params)
 
@@ -144,8 +144,8 @@ class UsersHandler(BaseHandler):
 
         if selected_deployment_slug:
             editing_username = self.request.get('editing_username', '')
-            users = self.user.get_users()
-            deployments = self.user.get_deployments()
+            users = MapUserToDeploymentService.get_users_by_user_deployment(self.user)
+            deployments = get_deployments(self.user)
             params = {'users': users, 'deployments': deployments,
                       'editing_username': editing_username,
                       'selected_deployment_slug' : selected_deployment_slug}
@@ -169,12 +169,12 @@ class UsersHandler(BaseHandler):
                                                3], is_deployment_admin=row[4], email=row[1],deployment_slug=row[5])
                         count = count + 1
                         if retval is not "":
-                            users = calling_user.get_users()
+                            users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
                             params = {'users': users, 'error': "true",
                                       'flash_message': retval}
                             self.render_template('users_index.html', params)
                             return
-                users = calling_user.get_users()
+                users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
                 params = {'users': users, 'success': "true",
                           'flash_message': "Successfully added " + str(count) + " users."}
                 self.render_template('users_index.html', params)
@@ -190,7 +190,7 @@ class UsersHandler(BaseHandler):
                 self.render_template('users_index.html', params)
                 return
             except:
-                users = calling_user.get_users()
+                users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
                 params = {'users': users, 'error': "true",
                           'flash_message': "Unknown file error - please use a standard CSV with a header row."}
                 self.render_template('users_index.html', params)
@@ -201,7 +201,7 @@ class UsersHandler(BaseHandler):
             retval = self.add_user(username=username, vendorname=vendorname,
                                    password=password, is_deployment_admin=is_deployment_admin, email=email,
                                    deployment_slug=deployment_slug)
-            users = calling_user.get_users()
+            users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
 
             if retval is not "":
                 params = {'users': users, 'error': "true",
@@ -229,9 +229,9 @@ class SignInHandler(BaseHandler):
 
         if deployment_slug:
             deployment = Deployment.get_by_slug(deployment_slug)
-            tmp_user = User.get_by_username(login,deployment_key=deployment.key)
+            tmp_user = UserService.get_by_username(login,deployment_key=deployment.key)
         else:
-            tmp_user = User.get_by_username(login)
+            tmp_user = UserService.get_by_username(login)
 
         if tmp_user:
             user_id = tmp_user.get_id()

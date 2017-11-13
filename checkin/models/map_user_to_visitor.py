@@ -1,6 +1,7 @@
 from google.appengine.ext import ndb
 from user import *
 from deployment import *
+from visitor import *
 
 class MapUserToVisitor (ndb.Model):
     serialized_id = ndb.IntegerProperty(indexed=True)
