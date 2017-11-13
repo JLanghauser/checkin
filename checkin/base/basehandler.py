@@ -15,6 +15,7 @@ import StringIO
 import urllib
 from google.appengine.ext.webapp import template
 import json
+from services.map_user_to_deployment_service import *
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -71,7 +72,7 @@ class BaseHandler(webapp2.RequestHandler):
         params['student_link_text'] =  deployment.student_link_text
         params['user_link'] =  deployment.user_link
         params['user_link_text'] =  deployment.user_link_text
-        params['users'] =  deployment.get_users()
+        params['users'] =  MapUserToDeploymentService.get_users(deployment)
 
     for key, value in kwargs.items():
         params[key] = value
@@ -129,7 +130,7 @@ class BaseHandler(webapp2.RequestHandler):
     elif target == 'DEPLOYMENT' and source == 'SUPERADMIN':
         if 'activetab' not in params:
             params['activetab'] = 'deployment'
-            params['deployments'] = self.user.get_deployments()
+            params['deployments'] = MapUserToDeploymentService.get_deployments(self.user)
         view_filename = 'super_admin.html'
 
     user = self.user_info

@@ -8,8 +8,9 @@ from google.appengine.api import images
 from google.appengine.ext import db, ndb, blobstore
 from google.appengine.api import urlfetch
 from time import sleep
-from models.deployment import *
-from models.user import *
+from services.user_service import *
+from services.deployment_service import *
+from services.map_user_to_deployment_service import *
 import json
 
 def deployment_admin_required(handler):
@@ -31,7 +32,7 @@ def deployment_admin_required(handler):
             elif (self.user.is_deployment_admin):
                 if 'deployment_key' in kwargs:
                     keyobj = ndb.Key(urlsafe=kwargs['deployment_key'])
-                    mapped_users = MapUserToDeployment .query(MapUserToDeployment.deployment_key == keyobj,
+                    mapped_users = MapUserToDeployment.query(MapUserToDeployment.deployment_key == keyobj,
                                                               MapUserToDeployment.user_key == self.user.key).fetch()
                     if count(mapped_users) > 0:
                         return handler(self, *args, **kwargs)

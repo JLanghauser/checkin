@@ -14,13 +14,13 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
+from services.user_service import *
 from reports import *
 from sample import *
 from pages import *
 from base.basehandler import *
-from models.background_job import *
-from models.deployment import *
+from services.background_job_service import *
+from services.deployment_service import *
 
 class BackgroundJobs(BaseHandler):
     @deployment_admin_required

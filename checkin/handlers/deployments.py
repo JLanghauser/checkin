@@ -13,11 +13,11 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
+from services.user_service import *
 from reports import *
 from sample import *
 from pages import *
-from models.deployment import *
+from services.deployment_service import *
 
 class DeploymentHandler(BaseHandler):
     @deployment_admin_required
@@ -66,7 +66,7 @@ class DeploymentHandler(BaseHandler):
 
         if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
                 (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
-            deployments = self.user.get_deployments()
+            deployments = get_deployments(self.user)
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
@@ -87,7 +87,7 @@ class DeploymentHandler(BaseHandler):
                 existing_deployment.upload_img(logo_url)
 
             sleep(0.5)
-            deployments = self.user.get_deployments()
+            deployments = get_deployments(self.user)
             params = {'success': "true", 'flash_message': "Successfully update Deployment:  " +
                       existing_deployment.name, 'deployments': deployments}
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)

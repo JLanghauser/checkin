@@ -13,8 +13,8 @@ from time import sleep
 import csv
 import StringIO
 import json
-from models.user import *
-from models.deployment import *
+from services.user_service import *
+from services.deployment_service import *
 from reports import *
 from sample import *
 from pages import *
