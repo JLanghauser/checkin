@@ -21,6 +21,7 @@ from services.deployment_service import *
 from services.map_user_to_visitor_service import *
 from services.map_user_to_deployment_service import *
 from google.appengine.ext import deferred
+from services.child_process_service import *
 
 class AdminHandler(BaseHandler):
     def upload_qr_codes(self,deployment_slug):
@@ -60,7 +61,7 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'booths'
         username = self.request.get('edit-username')
-        retval = existing_deployment.delete_user(username)
+        retval = MapUserToDeploymentService.delete_user(existing_deployment,username)
 
         if retval is not "":
             params['error'] = "true"
@@ -183,7 +184,7 @@ class AdminHandler(BaseHandler):
 
         if ((tmp_deployment_slug and len(tmp_deployment_slug)) or
                 (tmp_deployment_custom_dns and len(tmp_deployment_custom_dns))):
-            deployments = get_deployments(self.user)
+            deployments = MapUserToDeploymentService.get_deployments(self.user)
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT',referring_page,'deployments_index.html',existing_deployment,params)
@@ -227,7 +228,7 @@ class AdminHandler(BaseHandler):
             if update_all_qr_codes == True:
                 existing_deployment.qr_codes_zip = None
                 existing_deployment.put()
-                existing_deployment.update_all_qr_codes(self.user)
+                ChildProcessService.update_all_qr_codes(existing_deployment, self.user)
 
             sleep(0.5)
             params['success'] = "true"

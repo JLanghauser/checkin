@@ -18,6 +18,7 @@ from services.deployment_service import *
 from reports import *
 from sample import *
 from pages import *
+from services.map_user_to_deployment_service import *
 
 class UsersHandler(BaseHandler):
 
@@ -112,7 +113,7 @@ class UsersHandler(BaseHandler):
     @deployment_admin_required
     def get(self):
         editing_username = self.request.get('editing_username', '')
-        deployments = get_deployments(self.user)
+        deployments = MapUserToDeploymentService.get_deployments(self.user)
         params = {'deployments': deployments,
                    'deployment_len': len(deployments),
                   'editing_username': editing_username}
@@ -145,7 +146,7 @@ class UsersHandler(BaseHandler):
         if selected_deployment_slug:
             editing_username = self.request.get('editing_username', '')
             users = MapUserToDeploymentService.get_users_by_user_deployment(self.user)
-            deployments = get_deployments(self.user)
+            deployments = MapUserToDeploymentService.get_deployments(self.user)
             params = {'users': users, 'deployments': deployments,
                       'editing_username': editing_username,
                       'selected_deployment_slug' : selected_deployment_slug}

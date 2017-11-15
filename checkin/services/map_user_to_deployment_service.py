@@ -107,11 +107,11 @@ class MapUserToDeploymentService:
 
     @staticmethod
     def edit_user(deployment, old_username, new_username, vendorname, password, is_deployment_admin, email):
-        edit_user = User.get_by_username(old_username,deployment_key=deployment.key)
+        edit_user = UserService.get_by_username(old_username,deployment_key=deployment.key)
 
         if edit_user:
             if not (new_username.lower() == old_username.lower()):
-                tmp_user = User.get_by_username(new_username,deployment_key=deployment.key)
+                tmp_user = UserService.get_by_username(new_username,deployment_key=deployment.key)
 
                 if tmp_user:
                     return "Error - user " + new_username + " already exists."
@@ -142,7 +142,7 @@ class MapUserToDeploymentService:
 
     @staticmethod
     def delete_user(deployment,username):
-        delete_user = User.get_by_username(username,deployment_key=deployment.key)
+        delete_user = UserService.get_by_username(username,deployment_key=deployment.key)
 
         maps = MapUserToDeployment.query(MapUserToDeployment.user_key == delete_user.key)
         for map in maps:

@@ -19,6 +19,7 @@ import json
 import sys
 from services.deployment_service import *
 from google.appengine.ext import deferred
+from services.map_user_to_deployment_service import *
 
 class SuperAdminHandler(BaseHandler):
     def delete_booth(self):
@@ -66,7 +67,7 @@ class SuperAdminHandler(BaseHandler):
             tmp_deployment = Deployment.get_by_slug(new_slug)
 
         if (tmp_deployment):
-            deployments = get_deployments(self.user)
+            deployments = MapUserToDeploymentService.get_deployments(self.user)
             params = {'error': "true", 'flash_message': "Error - already exists!",
                       'deployments': deployments}
             self.render_smart_template('DEPLOYMENT','SUPERADMIN','super_admin.html',None,params)

@@ -37,8 +37,8 @@ class VisitorService:
         if withput:
             visitor.put()
 
-    @staticmethod
-    def updateqrcodes(dep_key,child_key,offset,limit):
+    @classmethod
+    def updateqrcodes(cls, dep_key,child_key,offset,limit):
         current_offset = offset
         current_limit = limit
         child = None
@@ -52,7 +52,7 @@ class VisitorService:
                                     .fetch(offset=offset,limit=limit)
 
                 for visitor in visitors:
-                    visitor.set_qr_code(withput=True)
+                    VisitorService.set_qr_code(visitor,withput=True)
                     current_offset = current_offset + 1
                     current_limit = current_limit - 1
 
@@ -60,7 +60,7 @@ class VisitorService:
                 child.key.delete()
                 child = None
         except DeadlineExceededError:
-            deferred.defer(Visitor.updateqrcodes,dep_key,child_key,current_offset,current_limit)
+            deferred.defer(VisitorService.updateqrcodes,dep_key,child_key,current_offset,current_limit)
 
     @classmethod
     def generate(cls,dep_key,child_key,start_id,end_id,should_update_deployment):
