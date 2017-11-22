@@ -48,7 +48,7 @@ class DeploymentService:
             reader = deployment.get_csv_reader(bulk_file,False)
             count = 0
             for row in reader:
-                retval = deployment.add_visitor(int(row[0]),int(row[1]))
+                retval = VisitorService.add_visitor(deployment, int(row[0]),int(row[1]))
                 if retval == 1:
                     return 'Visitor ID already exists'
                 elif retval == 2:

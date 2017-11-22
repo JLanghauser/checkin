@@ -22,6 +22,7 @@ from services.map_user_to_visitor_service import *
 from services.map_user_to_deployment_service import *
 from google.appengine.ext import deferred
 from services.child_process_service import *
+from services.generator_service import *
 
 class AdminHandler(BaseHandler):
     def upload_qr_codes(self,deployment_slug):
@@ -29,7 +30,7 @@ class AdminHandler(BaseHandler):
         params = {}
         params['activetab'] = 'qrcodes'
         bulkfile = self.request.get('bulkfile')
-        retval = existing_deployment.add_bulk_visitors(bulkfile)
+        retval = DeploymentService.add_bulk_visitors(existing_deployment, bulkfile)
 
         if retval is not "":
             params['error'] = "true"
@@ -228,7 +229,7 @@ class AdminHandler(BaseHandler):
             if update_all_qr_codes == True:
                 existing_deployment.qr_codes_zip = None
                 existing_deployment.put()
-                ChildProcessService.update_all_qr_codes(existing_deployment, self.user)
+                GeneratorService.update_all_qr_codes(existing_deployment, self.user)
 
             sleep(0.5)
             params['success'] = "true"
