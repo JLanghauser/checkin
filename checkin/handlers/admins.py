@@ -83,7 +83,7 @@ class AdminHandler(BaseHandler):
         password = self.request.get('edit-password')
         email = self.request.get('edit-email')
         admin = self.request.get('edit-admin')
-        retval = existing_deployment.edit_user(old_username, username, vendorname, password, admin, email)
+        retval = MapUserToDeploymentService.edit_user(existing_deployment, old_username, username, vendorname, password, admin, email)
 
         if retval is not "":
             params['error'] = "true"
