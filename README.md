@@ -32,3 +32,10 @@ https://github.com/bernii/PyQRNativeGAE/
 
 
 pip install pyqrnative
+
+
+# Bootstrapping users
+from models.user import User
+user = User(is_super_admin=True, username='John', email='john.langhauser@gmail.com')
+user.set_password('tester')
+user.put()
