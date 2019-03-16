@@ -26,7 +26,6 @@
     <thead>
          <tr>
            <th>Username</th>
-           <th>Email address</th>
            <th>Vendor Name</th>
            <th>Password</th>
            <th>Admin</th>
@@ -37,7 +36,6 @@
       <tr>
         <form action="/users" method="POST">
         <td><input type="text" name="username" /></td>
-        <td><input type="text" name="email" /></td>
         <td><input type="text" name="vendorname" /></td>
         <td><input type="password" name="password" /></td>
         <td><input type="checkbox" name="is_deployment_admin" /></td>
@@ -52,7 +50,7 @@
 <h2> Add Bulk Users </h2>
 <h4>You can upload users in bulk using a file upload</h4>
 <h4>Note: Upload files should be CSV formatted with a header row</h4>
-<h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin,Deployment_Slug </h4>
+<h4>Header Row Example: Username,VendorName,Password,Admin,Deployment_Slug </h4>
 <form enctype="multipart/form-data" action="/users" method="post">
     <label for="filename">Filename</label>
     <input id="bulkfile" type="file" name="bulkfile" />
@@ -65,7 +63,6 @@
     <thead>
          <tr>
            <th>Username</th>
-           <th>Email address</th>
            <th>Vendor Name</th>
            <th>Password</th>
            <th>Admin</th>
@@ -79,7 +76,6 @@
       <tr>
           <form action="/users" method="POST">
           <td><input type="text" name="username" value="{{ user.username }}" /></td>
-          <td><input type="text" name="email" value="{{ user.email }}" /></td>
           <td><input type="text" name="vendorname" value="{{ user.vendorname }}" /></td>
           <td><input type="text" name="password" value="....." /></td>
           {% if user.is_deployment_admin %}
@@ -104,7 +100,6 @@
       {% else %}
       <tr>
           <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
           <td>{{ user.vendorname }}</td>
           <td>...</td>
           <td>{{ user.is_deployment_admin }}</td>

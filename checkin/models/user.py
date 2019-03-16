@@ -30,7 +30,8 @@ class User(webapp2_extras.appengine.auth.models.User):
     username = ndb.StringProperty()
     profile = ndb.TextProperty()
     vendorname = ndb.StringProperty()
-    email = ndb.StringProperty()
+    category = ndb.StringProperty()
+    category_lower = ndb.ComputedProperty(lambda self: self.category.lower() if self.category else None )
     username_lower = ndb.ComputedProperty(lambda self: self.username.lower())
     deployment_key = ndb.KeyProperty(kind=Deployment,indexed=True)
 

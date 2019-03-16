@@ -15,6 +15,15 @@ indexes:
   properties:
   - name: "deployment_key"
   - name: "user_key"
+- kind: "Visitor"
+  properties:
+  - name: "deployment_key"
+  - name: "serialized_id"
+- kind: "User"
+  properties:
+  - name: "deployment_key"
+  - name: "category"
+  - name: "category_lower"
 - kind: "MapUserToVisitor"
   properties:
   - name: "deployment_key"
@@ -28,10 +37,6 @@ indexes:
   - name: "visitor_key"
     direction: desc
   - name: "deployment_key"
-- kind: "Visitor"
-  properties:
-  - name: "deployment_key"
-  - name: "serialized_id"
 - kind: "Visitor"
   properties:
   - name: "deployment_key"

@@ -140,7 +140,6 @@ class DeploymentService:
             user = User.query(User.key == map_item.user_key).fetch(1)
             if user and len(user) > 0 and user[0] and not user[0].is_super_admin:
                 report_row_username = user[0].username
-                report_row_email = user[0].email
                 report_row_hasedited = None
                 if ("<h1>Edit your profile" in user[0].profile
                     and ">here</a></h1>" in user[0].profile
@@ -150,7 +149,7 @@ class DeploymentService:
                 else:
                     report_row_hasedited = 'YES'
                     edited_count = edited_count + 1
-                report.append([report_row_username, report_row_email, report_row_hasedited])
+                report.append([report_row_username, report_row_hasedited])
         report_stats = []
         report_stats_row = {}
         report_stats_row['unedited'] = unedited_count

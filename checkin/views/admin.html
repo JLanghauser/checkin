@@ -6,7 +6,7 @@
     <li id="surveystab"><a href="#surveys" data-toggle="tab">Surveys</a></li>
     <li id="qrcodestab"><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
     <li id="boothstab"><a href="#booths" data-toggle="tab">Manage Booths</a></li>
-    <li id="raffletab"><a href="#raffle" data-toggle="tab">Run Raffle</a></li>
+    <li id="raffletab"><a href="#raffle" data-toggle="tab">Manage Raffle</a></li>
     <li id="analyticstab"><a href="#analytics" data-toggle="tab">Analytics</a></li>
 </ul>
 
@@ -177,7 +177,7 @@ badge.</h3>
     <h3>Each booth should have a single booth account shared between all of the exhibitors
      working at that booth.</h3>
      <h4>Note: Upload files should be CSV formatted with a header row</h4>
-     <h4>Header Row Example: Username,EmailAddress,VendorName,Password,Admin </h4>
+     <h4>Header Row Example: Username,VendorName,Password,Admin </h4>
 
     <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addBoothModal">Create New Booth</button>
 
@@ -214,16 +214,25 @@ badge.</h3>
                 <input type="text" class="form-control" id="username" name="username" placeholder="Username">
               </div>
             </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" id="category" name="category" placeholder="Category">
+              </div>
+              <div class="col-sm-5">
+                <select>
+                  {% for g in groups %}
+                    <option>{{ g.category }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+
             <div class="form-group">
               <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
               <div class="col-sm-10">
                 <input type="text" class="form-control" name="password" id="password" placeholder="Password">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="email" name="email" placeholder="Email">
               </div>
             </div>
             <div class="form-group">
@@ -278,12 +287,21 @@ badge.</h3>
               <input type="password" class="form-control" name="edit-password" id="edit-password" placeholder="Password">
             </div>
           </div>
+
           <div class="form-group">
-            <label for="inputPassword3" class="col-sm-2 control-label">Email</label>
-            <div class="col-sm-10">
-              <input type="text" class="form-control" id="edit-email" name="edit-email" placeholder="Email">
+            <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
+            <div class="col-sm-5">
+              <input type="text" class="form-control" name="edit-category" id="edit-category" placeholder="Category">
+            </div>
+            <div class="col-sm-5">
+              <select>
+                {% for g in groups %}
+                  <option>{{ g.category }}</option>
+                {% endfor %}
+              </select>
             </div>
           </div>
+
           <div class="form-group">
             <div class="col-sm-offset-2 col-sm-10">
               <div class="checkbox">
@@ -311,7 +329,7 @@ badge.</h3>
             <tr>
                 <th>Display Name</th>
                 <th>Username</th>
-                <th>Email</th>
+                <th>Category</th>
                 <th>Admin?</th>
                 <th>Actions</th>
             </tr>
@@ -321,10 +339,10 @@ badge.</h3>
             <tr>
                 <td>{{u.vendorname}}</td>
                 <td>{{u.username}}</td>
-                <td>{{u.email}}</td>
+                <td>{{u.category}}</td>
                 <td>{{u.is_deployment_admin}}</td>
                 <td>
-                    <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editBoothModal' data-vendorname="{{u.vendorname}}" data-username="{{u.username}}" data-email="{{u.email}}" data-admin="{{u.is_deployment_admin}}" data-password="{{u.password}}" >Edit</button>
+                    <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editBoothModal' data-vendorname="{{u.vendorname}}" data-username="{{u.username}}" data-admin="{{u.is_deployment_admin}}" data-password="{{u.password}}" data-category="{{u.category}}" >Edit</button>
 
                     <form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this booth?');">
                       <input type="hidden" name="referring_page" value="ADMIN" />
@@ -363,14 +381,12 @@ badge.</h3>
                   <thead>
                       <tr>
                         <th>Username</th>
-                        <th>Email address</th>
                         <th>HasEdited</th>
                       </tr>
                   </thead>
                   <tfoot>
                       <tr>
                         <th>Username</th>
-                        <th>Email address</th>
                         <th>HasEdited</th>
                       </tr>
                   </tfoot>
@@ -436,9 +452,9 @@ badge.</h3>
       var button = $(event.relatedTarget) // Button that triggered the modal
       var vendorname = button.data('vendorname')
       var username = button.data('username')
-      var email = button.data('email')
       var admin = button.data('admin')
       var password = button.data('password')
+      var category = button.data('category')
       var old_username = username
 
       var modal = $(this)
@@ -446,9 +462,9 @@ badge.</h3>
       // //modal.find('.modal-title').text('New message to ' + recipient)
       modal.find('.modal-body #edit-vendorname').val(vendorname)
       modal.find('.modal-body #edit-username').val(username)
-      modal.find('.modal-body #edit-email').val(email)
       modal.find('.modal-body #edit-password').val(password)
       modal.find('.modal-body #edit-old-username').val(username)
+      modal.find('.modal-body #edit-category').val(category)
 
       if (admin === "True" || admin === "true" || admin === "1") {
         modal.find('.modal-body #edit-admin').prop('checked', true);

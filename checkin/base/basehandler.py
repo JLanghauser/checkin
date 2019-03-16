@@ -16,6 +16,7 @@ import urllib
 from google.appengine.ext.webapp import template
 import json
 from services.map_user_to_deployment_service import *
+from services.user_service import *
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -73,6 +74,7 @@ class BaseHandler(webapp2.RequestHandler):
         params['user_link'] =  deployment.user_link
         params['user_link_text'] =  deployment.user_link_text
         params['users'] =  MapUserToDeploymentService.get_users(deployment)
+        params['groups'] =  UserService.get_groups(deployment)
 
     for key, value in kwargs.items():
         params[key] = value

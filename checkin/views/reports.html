@@ -51,7 +51,6 @@
     <thead>
          <tr>
            <th>Username</th>
-           <th>Email address</th>
            <th>HasEdited</th>
          </tr>
     </thead>
@@ -60,7 +59,6 @@
     {% if row and 'username' in row %}
     <tr>
       <td>{{ row.username }}</td>
-      <td>{{ row.email }}</td>
       <td>{{ row.hasedited }}</td>
     </tr>
     {% endif %}

@@ -37,8 +37,8 @@ class CheckInHandler(BaseHandler):
 
         if (visitor_id == -1):
             self.render_template('checkin_visitor.html',params)
+            return
         else:
-
             if not deployment:
                 params['error'] = "true"
                 params['flash_message'] = "Invalid or No Deployment Passed"
@@ -50,14 +50,17 @@ class CheckInHandler(BaseHandler):
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
                                 Visitor.deployment_key == deployment.key)
             visitor = qry.get()
-            if (visitor or visitor_id == 9999999):
-                maps = MapUserToVisitor.query(ndb.AND(
+            if visitor or visitor_id == '9999999':
+                map = MapUserToVisitor.query(ndb.AND(
                     MapUserToVisitor.visitor_key == visitor.key,
                     MapUserToVisitor.user_key == self.user.key,
                     MapUserToVisitor.deployment_key == deployment.key)
-                ).count(1)
+                ).get()
 
-                if (maps == 0):
+                if map == None or visitor_id == '9999999':
+                    if map:
+                        map.key.delete()
+
                     new_map.visitor_key = visitor.key
                     new_map.deployment_key = visitor.deployment_key
                     new_map.date_created = datetime.datetime.utcnow()

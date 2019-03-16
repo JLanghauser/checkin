@@ -81,9 +81,9 @@ class AdminHandler(BaseHandler):
         username = self.request.get('edit-username')
         vendorname = self.request.get('edit-vendorname')
         password = self.request.get('edit-password')
-        email = self.request.get('edit-email')
+        category = self.request.get('edit-category')
         admin = self.request.get('edit-admin')
-        retval = MapUserToDeploymentService.edit_user(existing_deployment, old_username, username, vendorname, password, admin, email)
+        retval = MapUserToDeploymentService.edit_user(existing_deployment, old_username, username, vendorname, password, admin, category)
 
         if retval is not "":
             params['error'] = "true"
@@ -101,9 +101,8 @@ class AdminHandler(BaseHandler):
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
-        email = self.request.get('email')
         admin = self.request.get('admin')
-        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin,email)
+        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin)
 
         if retval is not "":
             params['error'] = "true"
