@@ -109,6 +109,29 @@ class AdminHandler(BaseHandler):
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
+    def update_max_raffle_entries(self, deployment_slug):
+            existing_deployment = Deployment.get_by_slug(deployment_slug)
+            params = {}
+            params['activetab'] = 'raffle'
+            max_raffle_entries = int(self.request.get('max_raffle_entries'))
+
+            retval = ""
+            try:
+                existing_deployment.max_raffle_entries = max_raffle_entries
+                existing_deployment.put()
+            except Exception as e:
+                print str(e)
+                retval = "Error updating settings."
+
+            if retval is not "":
+                params['error'] = "true"
+                params['flash_message'] = retval
+            else:
+                params['success'] = "true"
+                params['flash_message'] = "Successfully Edited settings."
+
+            self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def edit_booth(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
@@ -325,6 +348,8 @@ class AdminHandler(BaseHandler):
             self.edit_booth(deployment_slug)
         elif method == 'EDIT_RULE':
             self.edit_rule(deployment_slug)
+        elif method == 'UPDATE_MAX_RAFFLE_ENTRIES':
+            self.update_max_raffle_entries(deployment_slug)
         elif method == 'DELETE_BOOTH':
             self.delete_booth(deployment_slug)
         elif method == 'DELETE_RULE':

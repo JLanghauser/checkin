@@ -468,17 +468,16 @@ badge.</h3>
 
     <h1>Raffle Settings</h1>
     <div class="form-group margin-top">
+      <form action="admin" method="POST">
       <label for="inputPassword3" class="col-sm-5 control-label">Max number of raffle entries per badge (0 for unlimited)</label>
       <div class="col-sm-4">
         <div class="col-sm-3">
-          <input type="text" class="form-control" name="edit-max-raffle-entries" id="edit-max-raffle-entries" placeholder="" maxlength="2">
+          <input type="text" class="form-control" name="max_raffle_entries" id="max_raffle_entries" placeholder="" maxlength="2" value="{{max_raffle_entries}}">
         </div>
         <!-- max_raffle_entries -->
         <div class="col-sm-1">
-          <form action="admin" method="POST">
             <input type="hidden" name="referring_page" value="ADMIN" />
             <input type="hidden" name="method" value="UPDATE_MAX_RAFFLE_ENTRIES" />
-            <input type="hidden" name="edit-username" value="{{u.username}}" />
             <button type="submit" class="btn btn-primary">Update</button>
           </form>
         </div>

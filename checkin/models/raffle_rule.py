@@ -19,6 +19,17 @@ class RaffleRule(ndb.Model):
     def set_url_safe_key(self):
         self.put()
 
+    def get_rule_results(visitor):
+        checkins_query = MapUserToVisitor.query(MapUserToVisitor.visitor_key == visitor.key)
+        if self.category != 'ANY':
+            checkins_query.filter(MapUserToVisitor.category == self.category)
+
+        count = checkins_query.count()
+        if count >= self.num_checkins:
+            return int(count / self.num_checkins) 
+        else:
+            return 0
+
     @classmethod
     def get_rules_for_deployment(cls, deployment):
         rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key).fetch()
@@ -41,7 +52,7 @@ class RaffleRule(ndb.Model):
     def process_and_rules(cls, and_rules, visitor):
         retval = None
         for and_rule in and_rules:
-            res = and_rule.check_rule(visitor)
+            res = and_rule.get_rule_results(visitor)
             if retval == None:
                 retval = res
 
@@ -63,13 +74,14 @@ class RaffleRule(ndb.Model):
                                  RaffleRule.operator == 'OR').fetch()
 
         for or_rule in or_rules:
-            retval = max(or_rule.check_rule(visitor), retval)
+            retval = max(or_rule.get_rule_results(visitor), retval)
 
         and_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
                                  RaffleRule.operator == 'AND').fetch()
 
         and_result = RaffleRule.process_and_rules(and_rules=and_rules, visitor=visitor)
-        return max(and_result, retval)
+        total = max(and_result, retval)
+        return total - current_count
 
     @classmethod
     def edit_rule(cls, key, operator, num_checkins, category):
