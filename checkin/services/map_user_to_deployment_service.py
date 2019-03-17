@@ -63,7 +63,7 @@ class MapUserToDeploymentService:
                 if not skipped_header_row:
                     skipped_header_row = True
                 else:
-                    retval = MapUserToDeploymentService.add_user(deployment,username=row[0], vendorname=row[1], password=row[2], is_deployment_admin=row[3])
+                    retval = MapUserToDeploymentService.add_user(deployment,username=row[0], vendorname=row[1], password=row[2], is_deployment_admin=row[3], category=row[4])
                     count = count + 1
                     if retval is not "":
                         return retval
@@ -78,7 +78,7 @@ class MapUserToDeploymentService:
             return "Unknown file error - please use a standard CSV with a header row. "  + str(e)
 
     @staticmethod
-    def add_user(deployment, username, vendorname, password, is_deployment_admin):
+    def add_user(deployment, username, vendorname, password, is_deployment_admin, category):
         tmp_user = UserService.get_by_username(username,deployment_key = deployment.key)
 
         if tmp_user:
@@ -93,6 +93,7 @@ class MapUserToDeploymentService:
             newuser.set_password(password)
             newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
             newuser.deployment_key = deployment.key
+            newuser.category = category.strip() if category else None
             newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
             newuser.put()
             sleep(0.5)
@@ -123,8 +124,8 @@ class MapUserToDeploymentService:
                 edit_user.set_password(password)
 
             if category != edit_user.category:
-                edit_user.category = category
-                
+                edit_user.category = category.strip() if category else None
+
             edit_user.is_deployment_admin = is_deployment_admin in [
                 'true', 'True', '1', 'on']
             edit_user.put()

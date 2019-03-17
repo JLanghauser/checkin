@@ -101,8 +101,9 @@ class AdminHandler(BaseHandler):
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
+        category = self.request.get('category')
         admin = self.request.get('admin')
-        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin)
+        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin,category)
 
         if retval is not "":
             params['error'] = "true"
@@ -110,6 +111,25 @@ class AdminHandler(BaseHandler):
         else:
             params['success'] = "true"
             params['flash_message'] = "Successfully created User:  " + username
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def create_new_rule(self,deployment_slug):
+        deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        operator = self.request.get('operator')
+        num_checkins = int(self.request.get('num_checkins'))
+        category = self.request.get('category')
+        retval = RaffleRule.add_raffle_rule(deployment_key=deployment.key, operator=operator,
+                                num_checkins=num_checkins, category=category)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully created Rule! "
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
@@ -261,6 +281,8 @@ class AdminHandler(BaseHandler):
             self.export_qr_codes(self.request,deployment_slug)
         elif method == 'CREATE_NEW_BOOTH':
             self.create_new_booth(deployment_slug)
+        elif method == 'CREATE_NEW_RULE':
+            self.create_new_rule(deployment_slug)
         elif method == 'UPLOAD_BOOTHS':
             self.upload_booths(deployment_slug)
         elif method == 'EDIT_BOOTH':

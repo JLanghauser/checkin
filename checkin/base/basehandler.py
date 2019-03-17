@@ -17,6 +17,7 @@ from google.appengine.ext.webapp import template
 import json
 from services.map_user_to_deployment_service import *
 from services.user_service import *
+from models.raffle_rule import RaffleRule
 
 class BaseHandler(webapp2.RequestHandler):
   @webapp2.cached_property
@@ -75,6 +76,7 @@ class BaseHandler(webapp2.RequestHandler):
         params['user_link_text'] =  deployment.user_link_text
         params['users'] =  MapUserToDeploymentService.get_users(deployment)
         params['groups'] =  UserService.get_groups(deployment)
+        params['rules'] =  RaffleRule.get_rules_for_deployment(deployment)
 
     for key, value in kwargs.items():
         params[key] = value

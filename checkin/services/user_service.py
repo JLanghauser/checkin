@@ -4,10 +4,8 @@ class UserService:
 
     @staticmethod
     def get_groups(deployment):
-        query = User.query(User.deployment_key == deployment.key)
-        query.distinct_on = ['category']
-        query.order = ['category']
-        groups = query.fetch(projection=[User.category, User.category_lower])
+        query = User.query(User.deployment_key == deployment.key, projection=[User.category, User.category_lower],distinct=True)
+        groups = query.fetch()
         return groups
 
     @classmethod

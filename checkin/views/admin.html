@@ -221,7 +221,8 @@ badge.</h3>
                 <input type="text" class="form-control" id="category" name="category" placeholder="Category">
               </div>
               <div class="col-sm-5">
-                <select>
+                <select onchange="onCategorySelect('CREATE',event)">
+                    <option selected></option>
                   {% for g in groups %}
                     <option>{{ g.category }}</option>
                   {% endfor %}
@@ -294,7 +295,8 @@ badge.</h3>
               <input type="text" class="form-control" name="edit-category" id="edit-category" placeholder="Category">
             </div>
             <div class="col-sm-5">
-              <select>
+              <select onchange="onCategorySelect('EDIT', event)">
+                  <option selected></option>
                 {% for g in groups %}
                   <option>{{ g.category }}</option>
                 {% endfor %}
@@ -357,12 +359,172 @@ badge.</h3>
     </table>
 </div>
 <div class="tab-pane container" id="raffle">
-    <h3>And the winner is...</h3>
-    <h1>{{random_visitor}}</h1>
-    <form action="admin" method="POST">
-        <input type='hidden' name='method' value='RANDOM_VISITOR'>
-        <button type="submit" class="btn btn-primary btn-lg">Draw Another Winner</button>
-    </form>
+
+      <div class="modal fade" id="addRuleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Add Rule</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal" action="admin" method="POST">
+              <input type="hidden" name="referring_page" value="ADMIN" />
+              <input type="hidden" name="method" value="CREATE_NEW_RULE" />
+              <div class="form-group">
+                <label for="inputEmail3" class="col-sm-2 control-label">Operator</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="vendorname" name="vendorname" placeholder="Display Name">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="inputPassword3" class="col-sm-2 control-label">Number of Checkins</label>
+                <div class="col-sm-10">
+                  <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
+                <div class="col-sm-5">
+                  <input type="text" class="form-control" id="category" name="category" placeholder="Category">
+                </div>
+                <div class="col-sm-5">
+                  <select onchange="onCategorySelect('CREATE',event)">
+                      <option selected>ANY</option>
+                    {% for g in groups %}
+                      <option>{{ g.category }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Add Booth</button>
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="modal fade" id="editRuleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit Rule</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" action="admin" method="POST">
+            <input type="hidden" name="old-username" id="edit-old-username" />
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="hidden" name="method" value="EDIT_BOOTH" />
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">Operator</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="edit-vendorname" name="edit-vendorname" placeholder="Display Name" >
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Number of Checkins</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="edit-username" name="edit-username" placeholder="Username">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
+              <div class="col-sm-5">
+                <input type="text" class="form-control" name="edit-category" id="edit-category" placeholder="Category">
+              </div>
+              <div class="col-sm-5">
+                <select onchange="onCategorySelect('EDIT', event)">
+                    <option selected></option>
+                  {% for g in groups %}
+                    <option>{{ g.category }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" >Edit Rule</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+        </form>
+      </div>
+    </div>
+    </div>
+
+    <h1>Raffle Settings</h1>
+    <div class="form-group margin-top">
+      <label for="inputPassword3" class="col-sm-5 control-label">Max number of raffle entries per badge (0 for unlimited)</label>
+      <div class="col-sm-4">
+        <div class="col-sm-3">
+          <input type="text" class="form-control" name="edit-max-raffle-entries" id="edit-max-raffle-entries" placeholder="" maxlength="2">
+        </div>
+        <!-- max_raffle_entries -->
+        <div class="col-sm-1">
+          <form action="admin" method="POST">
+            <input type="hidden" name="referring_page" value="ADMIN" />
+            <input type="hidden" name="method" value="UPDATE_MAX_RAFFLE_ENTRIES" />
+            <input type="hidden" name="edit-username" value="{{u.username}}" />
+            <button type="submit" class="btn btn-primary">Update</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <BR>
+    <h2>Rules</h2>
+    <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addRuleModal">Create New Rule</button>
+      <table class="table table-striped">
+          <caption>Set custom rules or thresholds for raffle entries (the default behavior without custom rules is 1 entry per checkin)</caption>
+          <thead>
+              <tr>
+                  <th>Operator</th>
+                  <th>Number of Checkins</th>
+                  <th>Category</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for r in rules %}
+              <tr>
+                  <td>{{r.operator}}</td>
+                  <td>{{r.num_checkins}}</td>
+                  <td>{{r.category}}</td>
+                  <td>
+                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editRuleModal' data-key="{{r.key}}" data-operator="{{r.operator}}" data-num_checkins="{{r.num_checkins}}" data-category="{{r.category}}" >Edit</button>
+
+                      <form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this rule?');">
+                        <input type="hidden" name="referring_page" value="ADMIN" />
+                        <input type="hidden" name="method" value="DELETE_RULE" />
+                        <input type="hidden" name="edit-key" value="{{r.key}}" />
+                        <button type="submit" class="btn btn-primary">Delete</button>
+                      </form>
+                  </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+
+
+
+    <BR>
+    <div class="col-sm-10">
+      <h3>And the winner is...</h3>
+      <h1>{{random_visitor}}</h1>
+      <form action="admin" method="POST">
+          <input type='hidden' name='method' value='RANDOM_VISITOR'>
+          <button type="submit" class="btn btn-primary btn-lg">Draw Another Winner</button>
+      </form>
+    </div>
 </div>
 <div class="tab-pane container" id="analytics">
   <a class="btn btn-primary navbar-btn" href="dump_checkins_csv" target="_blank">Download Raw Checkin Data</a>
@@ -426,6 +588,14 @@ badge.</h3>
 </div>
 
 <script>
+    function onCategorySelect(mode, event){
+      if (mode == 'EDIT'){
+        $("#edit-category").val(event.target.value)
+      }else {
+        $("#category").val(event.target.value)
+      }
+    }
+
     $(function() {
         $('#cp2').colorpicker();
     });

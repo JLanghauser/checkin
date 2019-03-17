@@ -32,3 +32,7 @@ class TaskHandler(BaseHandler):
                     first_map = MapUserToDeployment.query(MapUserToDeployment.user_key == user.key).get()
                     user.deployment_key = first_map.deployment_key
                     user.put()
+
+class SaveAllMaps(BaseHandler):
+    def get(self):
+        return []

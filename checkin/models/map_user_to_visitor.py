@@ -9,3 +9,10 @@ class MapUserToVisitor (ndb.Model):
     user_key = ndb.KeyProperty(kind=User)
     visitor_key = ndb.KeyProperty(kind=Visitor)
     date_created = ndb.DateTimeProperty()
+    category = ndb.ComputedProperty(lambda self: self.get_category())
+
+    def get_category(self):
+        user = self.user_key.get(projection=[User.category])
+        if user:
+            return user.category
+        return None

@@ -18,6 +18,7 @@ from services.deployment_service import *
 from reports import *
 from sample import *
 from pages import *
+from models.raffle_entry import RaffleEntry
 
 class CheckInHandler(BaseHandler):
     def handlerequest(self, deployment_slug=None):
@@ -66,6 +67,7 @@ class CheckInHandler(BaseHandler):
                     new_map.date_created = datetime.datetime.utcnow()
                     new_map.put()
                     params['visitor_id'] = visitor_id
+                    RaffleEntry.update_raffle_entries(visitor)
                     self.render_template('successful_checkin.html', params)
                 else:
                     params['error'] = 'true'
