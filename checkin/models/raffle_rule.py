@@ -8,27 +8,37 @@ class RaffleRule(ndb.Model):
     operator = ndb.StringProperty()
     num_checkins = ndb.IntegerProperty()
     category = ndb.StringProperty()
+    url_safe_key = ndb.ComputedProperty(lambda self: self.get_url_safe_key())
 
-    def check_rule(self, visitor):
-        pass
+    def get_url_safe_key(self):
+        print 'here'
+        if self.key:
+            return self.key.urlsafe()
+        return None
 
-    @staticmethod
-    def get_rules_for_deployment(deployment):
+    def set_url_safe_key(self):
+        self.put()
+
+    @classmethod
+    def get_rules_for_deployment(cls, deployment):
         rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key).fetch()
         return rules
 
-    @staticmethod
-    def add_raffle_rule(deployment_key, operator, num_checkins, category):
+    @classmethod
+    def add_raffle_rule(cls, deployment_key, operator, num_checkins, category):
         try:
             new_rule = RaffleRule(deployment_key=deployment_key, operator=operator,
                         num_checkins=num_checkins, category=category)
             new_rule.put()
-            return new_rule
-        except:
-            return ""
+            new_rule.set_url_safe_key()
 
-    @staticmethod
-    def process_and_rules(and_rules, visitor):
+            return ""
+        except Exception as e:
+            print e
+            return "Error adding raffle rule."
+
+    @classmethod
+    def process_and_rules(cls, and_rules, visitor):
         retval = None
         for and_rule in and_rules:
             res = and_rule.check_rule(visitor)
@@ -41,8 +51,8 @@ class RaffleRule(ndb.Model):
                 retval = min(res, retval)
         return retval
 
-    @staticmethod
-    def get_raffle_entries_to_add(visitor, current_count):
+    @classmethod
+    def get_raffle_entries_to_add(cls, visitor, current_count):
         deployment = visitor.deployment_key.get()
         retval = 0
 
@@ -60,3 +70,28 @@ class RaffleRule(ndb.Model):
 
         and_result = RaffleRule.process_and_rules(and_rules=and_rules, visitor=visitor)
         return max(and_result, retval)
+
+    @classmethod
+    def edit_rule(cls, key, operator, num_checkins, category):
+        rule_to_edit = ndb.Key(urlsafe=key).get()
+        if rule_to_edit:
+            rule_to_edit.operator = operator
+            rule_to_edit.num_checkins = int(num_checkins)
+            rule_to_edit.category = category
+            rule_to_edit.put()
+            return ""
+        else:
+            return 'Cannot find request rule.'
+
+    @classmethod
+    def delete_rule(cls, key):
+        try:
+            rule_to_delete = ndb.Key(urlsafe=key).get()
+            if rule_to_delete:
+                rule_to_delete.key.delete()
+                return ""
+            else:
+                return 'Cannot find request rule.'
+        except Exception as e:
+            print str(e)
+            return 'Error deleting rule.'

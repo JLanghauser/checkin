@@ -374,24 +374,25 @@ badge.</h3>
               <input type="hidden" name="referring_page" value="ADMIN" />
               <input type="hidden" name="method" value="CREATE_NEW_RULE" />
               <div class="form-group">
-                <label for="inputEmail3" class="col-sm-2 control-label">Operator</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="vendorname" name="vendorname" placeholder="Display Name">
+                <label for="inputEmail3" class="col-sm-4 control-label">Operator</label>
+                <div class="col-sm-3">
+                  <select id="operator" name="operator">
+                    <option>AND</option>
+                    <option>OR</option>
+                  </select>
                 </div>
               </div>
               <div class="form-group">
-                <label for="inputPassword3" class="col-sm-2 control-label">Number of Checkins</label>
-                <div class="col-sm-10">
-                  <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+                <label for="inputPassword3" class="col-sm-4 control-label">Number of Checkins</label>
+                <div class="col-sm-3">
+                  <input type="text" class="form-control" id="num_checkins" name="num_checkins" placeholder="Threshold" maxlength="2">
                 </div>
               </div>
 
               <div class="form-group">
-                <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
-                <div class="col-sm-5">
-                  <input type="text" class="form-control" id="category" name="category" placeholder="Category">
-                </div>
-                <div class="col-sm-5">
+                <label for="inputPassword3" class="col-sm-4 control-label">Category</label>
+                <input type="hidden" class="form-control" id="category" name="category" value="ANY">
+                <div class="col-sm-4">
                   <select onchange="onCategorySelect('CREATE',event)">
                       <option selected>ANY</option>
                     {% for g in groups %}
@@ -404,7 +405,7 @@ badge.</h3>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Add Booth</button>
+            <button type="submit" class="btn btn-primary">Add Rule</button>
           </div>
           </form>
         </div>
@@ -423,30 +424,32 @@ badge.</h3>
         </div>
         <div class="modal-body">
           <form class="form-horizontal" action="admin" method="POST">
-            <input type="hidden" name="old-username" id="edit-old-username" />
+            <input type="hidden" name="edit-key" id="edit-key" />
             <input type="hidden" name="referring_page" value="ADMIN" />
-            <input type="hidden" name="method" value="EDIT_BOOTH" />
+            <input type="hidden" name="method" value="EDIT_RULE" />
+
             <div class="form-group">
-              <label for="inputEmail3" class="col-sm-2 control-label">Operator</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="edit-vendorname" name="edit-vendorname" placeholder="Display Name" >
+              <label for="inputEmail3" class="col-sm-4 control-label">Operator</label>
+              <div class="col-sm-3">
+                <select id="edit-operator" name="edit-operator">
+                  <option>AND</option>
+                  <option>OR</option>
+                </select>
               </div>
             </div>
             <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">Number of Checkins</label>
-              <div class="col-sm-10">
-                <input type="text" class="form-control" id="edit-username" name="edit-username" placeholder="Username">
+              <label for="inputPassword3" class="col-sm-4 control-label">Number of Checkins</label>
+              <div class="col-sm-3">
+                <input type="text" class="form-control" id="edit-num_checkins" name="edit-num_checkins" placeholder="Threshold" maxlength="2">
               </div>
             </div>
 
             <div class="form-group">
-              <label for="inputPassword3" class="col-sm-2 control-label">Category</label>
-              <div class="col-sm-5">
-                <input type="text" class="form-control" name="edit-category" id="edit-category" placeholder="Category">
-              </div>
-              <div class="col-sm-5">
-                <select onchange="onCategorySelect('EDIT', event)">
-                    <option selected></option>
+              <label for="inputPassword3" class="col-sm-4 control-label">Category</label>
+              <input type="hidden" class="form-control" id="edit-category" name="edit-category" value="ANY">
+              <div class="col-sm-4">
+                <select onchange="onCategorySelect('EDIT',event)">
+                    <option selected>ANY</option>
                   {% for g in groups %}
                     <option>{{ g.category }}</option>
                   {% endfor %}
@@ -500,12 +503,12 @@ badge.</h3>
                   <td>{{r.num_checkins}}</td>
                   <td>{{r.category}}</td>
                   <td>
-                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editRuleModal' data-key="{{r.key}}" data-operator="{{r.operator}}" data-num_checkins="{{r.num_checkins}}" data-category="{{r.category}}" >Edit</button>
+                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editRuleModal' data-key="{{r.url_safe_key}}" data-operator="{{r.operator}}" data-num_checkins="{{r.num_checkins}}" data-category="{{r.category}}" >Edit</button>
 
                       <form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this rule?');">
                         <input type="hidden" name="referring_page" value="ADMIN" />
                         <input type="hidden" name="method" value="DELETE_RULE" />
-                        <input type="hidden" name="edit-key" value="{{r.key}}" />
+                        <input type="hidden" name="edit-key" value="{{r.url_safe_key}}" />
                         <button type="submit" class="btn btn-primary">Delete</button>
                       </form>
                   </td>
@@ -640,6 +643,23 @@ badge.</h3>
         modal.find('.modal-body #edit-admin').prop('checked', true);
       }
 
+    });
+
+    $('#editRuleModal').on('show.bs.modal', function (event) {
+
+      var button = $(event.relatedTarget) // Button that triggered the modal
+      var url_safe_key = button.data('key')
+      var operator = button.data('operator')
+      var num_checkins = button.data('num_checkins')
+      var category = button.data('category')
+
+      var modal = $(this)
+
+      // //modal.find('.modal-title').text('New message to ' + recipient)
+      modal.find('.modal-body #edit-key').val(url_safe_key)
+      modal.find('.modal-body #edit-operator').val(operator)
+      modal.find('.modal-body #edit-num_checkins').val(num_checkins)
+      modal.find('.modal-body #edit-category').val(category)
     });
 
     $(document).ready(function() {

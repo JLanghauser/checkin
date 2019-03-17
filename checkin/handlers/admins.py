@@ -73,6 +73,42 @@ class AdminHandler(BaseHandler):
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
+    def delete_rule(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        key = self.request.get('edit-key')
+        retval = RaffleRule.delete_rule(key)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Deleted Rule"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def edit_rule(self, deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        edit_key = self.request.get('edit-key')
+        operator = self.request.get('edit-operator')
+        num_checkins = self.request.get('edit-num_checkins')
+        category = self.request.get('edit-category')
+
+        retval = RaffleRule.edit_rule(key=edit_key, operator=operator, num_checkins=num_checkins, category=category)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Edited Rule"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def edit_booth(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
@@ -131,7 +167,7 @@ class AdminHandler(BaseHandler):
             params['success'] = "true"
             params['flash_message'] = "Successfully created Rule! "
 
-        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',deployment,params)
 
     def generate_qr_codes(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
@@ -287,7 +323,11 @@ class AdminHandler(BaseHandler):
             self.upload_booths(deployment_slug)
         elif method == 'EDIT_BOOTH':
             self.edit_booth(deployment_slug)
+        elif method == 'EDIT_RULE':
+            self.edit_rule(deployment_slug)
         elif method == 'DELETE_BOOTH':
             self.delete_booth(deployment_slug)
+        elif method == 'DELETE_RULE':
+            self.delete_rule(deployment_slug)
         elif method == 'RANDOM_VISITOR':
             self.random_visitor(deployment_slug)
