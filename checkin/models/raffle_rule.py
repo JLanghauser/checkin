@@ -2,6 +2,7 @@ from google.appengine.ext import ndb
 from user import *
 from deployment import *
 from visitor import *
+from map_user_to_visitor import MapUserToVisitor
 
 class RaffleRule(ndb.Model):
     deployment_key = ndb.KeyProperty()
@@ -11,7 +12,6 @@ class RaffleRule(ndb.Model):
     url_safe_key = ndb.ComputedProperty(lambda self: self.get_url_safe_key())
 
     def get_url_safe_key(self):
-        print 'here'
         if self.key:
             return self.key.urlsafe()
         return None
@@ -19,14 +19,17 @@ class RaffleRule(ndb.Model):
     def set_url_safe_key(self):
         self.put()
 
-    def get_rule_results(visitor):
+    def get_rule_results(self, visitor):
         checkins_query = MapUserToVisitor.query(MapUserToVisitor.visitor_key == visitor.key)
         if self.category != 'ANY':
             checkins_query.filter(MapUserToVisitor.category == self.category)
 
         count = checkins_query.count()
+        print '----'
+        print count
+        print '----'
         if count >= self.num_checkins:
-            return int(count / self.num_checkins) 
+            return int(count / self.num_checkins)
         else:
             return 0
 
@@ -45,7 +48,7 @@ class RaffleRule(ndb.Model):
 
             return ""
         except Exception as e:
-            print e
+            print str(e)
             return "Error adding raffle rule."
 
     @classmethod
@@ -65,7 +68,7 @@ class RaffleRule(ndb.Model):
     @classmethod
     def get_raffle_entries_to_add(cls, visitor, current_count):
         deployment = visitor.deployment_key.get()
-        retval = 0
+        retval = None
 
         if deployment.max_raffle_entries != 0 and current_count >= deployment.max_raffle_entries:
             return (deployment.max_raffle_entries - current_count)
@@ -74,14 +77,24 @@ class RaffleRule(ndb.Model):
                                  RaffleRule.operator == 'OR').fetch()
 
         for or_rule in or_rules:
-            retval = max(or_rule.get_rule_results(visitor), retval)
+            or_result = or_rule.get_rule_results(visitor)
+            if retval == None:
+                retval = or_result
+            else:
+                retval = max(or_result, retval)
 
         and_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
                                  RaffleRule.operator == 'AND').fetch()
 
         and_result = RaffleRule.process_and_rules(and_rules=and_rules, visitor=visitor)
+        if retval == None:
+            retval = and_result
         total = max(and_result, retval)
-        return total - current_count
+
+        if retval == None:
+            return 1 # this means there are no rules, like 'Nam
+        else:
+            return total - current_count
 
     @classmethod
     def edit_rule(cls, key, operator, num_checkins, category):
