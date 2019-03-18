@@ -46,7 +46,7 @@ class StudentHandler(BaseHandler):
             for map in maps:
                 ukey = map.user_key
                 u = ukey.get()
-                toc += "<h4>" + u.vendorname + "</h4>"
+                toc += "<a href='#" + u.vendorname + "'><h4>" + u.vendorname + "</h4></a>"
         return toc
 
     def handlerequest(self, deployment_slug=None):
@@ -81,11 +81,11 @@ class StudentHandler(BaseHandler):
                          or ("<h1>Edit your profile" in u.profile
                          and ">here</a></h1>" in u.profile
                          and len(u.profile) < 60)):
-                        profiles.append("<h2>" + u.vendorname + "</h2>" +
+                        profiles.append("<h2 id='" + u.vendorname + "'>" + u.vendorname + "</h2>" +
                                         "<h3>This organization hasn't included any information)</h3>")
                     else:
                         profiles.append(
-                            "<h2>" + u.vendorname + "</h2>" + u.profile)
+                            "<h2 id='" + u.vendorname + "'>" + u.vendorname + "</h2>" + u.profile)
                 params['profiles'] = profiles
 
                 entries = RaffleEntry.query(RaffleEntry.visitor_key == visitor.key).count()
