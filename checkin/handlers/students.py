@@ -18,6 +18,7 @@ from reports import *
 from sample import *
 from pages import *
 from services.deployment_service import *
+from models.raffle_entry import *
 
 class StudentHandler(BaseHandler):
     def get_deployment_params(self,deployment):
@@ -27,7 +28,26 @@ class StudentHandler(BaseHandler):
         params['footer_text'] =  deployment.footer_text
         params['student_link'] =  deployment.student_link
         params['student_link_text'] =  deployment.student_link_text
+        params['max_raffle_entries'] =  deployment.max_raffle_entries
+
         return params
+
+    def get_table_of_contents(self, deployment, visitor):
+        toc = ""
+        categories = UserService.get_groups(deployment=deployment)
+        for category in categories:
+            toc += "<h3>" + category.category + "</h3>"
+
+            maps = MapUserToVisitor.query(
+                MapUserToVisitor.visitor_key == visitor.key,
+                MapUserToVisitor.deployment_key == deployment.key,
+                MapUserToVisitor.category == category.category).fetch()
+
+            for map in maps:
+                ukey = map.user_key
+                u = ukey.get()
+                toc += "<h4>" + u.vendorname + "</h4>"
+        return toc
 
     def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', '').strip()
@@ -46,12 +66,13 @@ class StudentHandler(BaseHandler):
                                 Visitor.deployment_key == deployment.key)
             visitor = qry.get()
 
-            if (visitor):
+            if visitor:
                 vkey = visitor.key
                 maps = MapUserToVisitor.query(
                     MapUserToVisitor.visitor_key == vkey,
                     MapUserToVisitor.deployment_key == deployment.key).fetch()
                 profiles = []
+
                 for map_item in maps:
                     ukey = map_item.user_key
                     u = ukey.get()
@@ -65,8 +86,12 @@ class StudentHandler(BaseHandler):
                     else:
                         profiles.append(
                             "<h2>" + u.vendorname + "</h2>" + u.profile)
-
                 params['profiles'] = profiles
+
+                entries = RaffleEntry.query(RaffleEntry.visitor_key == visitor.key).count()
+                params['raffle_entries'] = entries
+                params['table_of_contents'] = self.get_table_of_contents(deployment=deployment, visitor=visitor)
+
                 self.render_template('student.html', params)
             else:
                 params['error'] = "true"

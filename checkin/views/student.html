@@ -6,6 +6,15 @@
 {% if student_link and student_link_text %}
 <h3><a href="{{ student_link }}" target="_blank">{{ student_link_text }}</a></h3>
 {% endif %}
+
+{% if raffle_entries >= max_raffle_entries %}
+<h2>Congratulations! You have received the maximum raffle entries allowed for this event. Good Luck!</h2>
+{% else %}
+<h2>You still have some checkins before you receive the maximum raffle entries allowed for this event.</h2>
+{% endif %}
+
+{% autoescape off %}{{ table_of_contents }}{% endautoescape %}
+
 {% for profile in profiles %}
 <div class="row">
   <div class="col-sm-6 col-md-4">

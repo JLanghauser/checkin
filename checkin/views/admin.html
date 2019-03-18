@@ -391,9 +391,8 @@ badge.</h3>
 
               <div class="form-group">
                 <label for="inputPassword3" class="col-sm-4 control-label">Category</label>
-                <input type="hidden" class="form-control" id="category" name="category" value="ANY">
                 <div class="col-sm-4">
-                  <select onchange="onCategorySelect('CREATE',event)">
+                  <select id="category" name="category">
                       <option selected>ANY</option>
                     {% for g in groups %}
                       <option>{{ g.category }}</option>
@@ -446,9 +445,8 @@ badge.</h3>
 
             <div class="form-group">
               <label for="inputPassword3" class="col-sm-4 control-label">Category</label>
-              <input type="hidden" class="form-control" id="edit-category" name="edit-category" value="ANY">
               <div class="col-sm-4">
-                <select onchange="onCategorySelect('EDIT',event)">
+                <select id="edit-category" name="edit-category">
                     <option selected>ANY</option>
                   {% for g in groups %}
                     <option>{{ g.category }}</option>

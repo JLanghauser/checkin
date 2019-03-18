@@ -177,9 +177,11 @@ class AdminHandler(BaseHandler):
         deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
         params['activetab'] = 'raffle'
+
         operator = self.request.get('operator')
         num_checkins = int(self.request.get('num_checkins'))
         category = self.request.get('category')
+        
         retval = RaffleRule.add_raffle_rule(deployment_key=deployment.key, operator=operator,
                                 num_checkins=num_checkins, category=category)
 
