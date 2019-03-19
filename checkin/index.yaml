@@ -15,15 +15,15 @@ indexes:
   properties:
   - name: "deployment_key"
   - name: "serialized_id"
-- kind: "MapUserToDeployment"
-  properties:
-  - name: "deployment_key"
-  - name: "user_key"
 - kind: "User"
   properties:
   - name: "deployment_key"
   - name: "category"
   - name: "category_lower"
+- kind: "MapUserToDeployment"
+  properties:
+  - name: "deployment_key"
+  - name: "user_key"
 - kind: "RaffleEntry"
   properties:
   - name: "deployment_key"

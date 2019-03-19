@@ -16,9 +16,9 @@
 <h2>Here's the progress towards your next raffle entry!</h2>
 {% for or_rule in or_rules %}
   {% if forloop.counter == 1 %}
-    <h1> {{ or_rule.num_checkins }} </h1>
+    <h1> {{ or_rule.num_checkins }} from {{ or_rule.category}} category </h1>
   {% else %}
-    <h1> {{ or_rule.num_checkins }} </h1>
+    <h1> OR {{ or_rule.num_checkins }} from {{ or_rule.category}} category </h1>
   {% endif %}
   <div class="progress width-page">
     <div class="progress-bar" role="progressbar" style="width: {{ or_progress }}%" aria-valuenow="{{ or_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
@@ -26,16 +26,16 @@
 {% endfor %}
 
 {% for and_rule in and_rules %}
+
   {% if forloop.counter0 == 0 %}
-    <h1>{{forloop.counter0}}</h1>
-    <h1> {{ and_rule.num_checkins }} </h1>
+    <h1> {{ and_rule.num_checkins }} from {{ and_rule.category}} category </h1>
   {% else %}
-    <h1> {{ and_rule.num_checkins }} </h1>
+    <h1> AND {{ and_rule.num_checkins }} from {{ and_rule.category}} category </h1>
   {% endif %}
 
-      <div class="progress width-page">
-        <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-      </div>
+  <div class="progress width-page">
+    <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
 
 {% endfor %}
 
