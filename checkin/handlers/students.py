@@ -19,9 +19,10 @@ from sample import *
 from pages import *
 from services.deployment_service import *
 from models.raffle_entry import *
+from models.raffle_rule import *
 
 class StudentHandler(BaseHandler):
-    def get_deployment_params(self,deployment):
+    def get_deployment_params(self,deployment,visitor=None):
         params = {}
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
@@ -30,6 +31,21 @@ class StudentHandler(BaseHandler):
         params['student_link_text'] =  deployment.student_link_text
         params['max_raffle_entries'] =  deployment.max_raffle_entries
 
+        or_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
+                                         RaffleRule.operator == 'OR').order(RaffleRule.key).fetch()
+
+        and_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
+                                 RaffleRule.operator == 'AND').order(RaffleRule.key).fetch()
+
+        if visitor != None:
+            for indx, or_rule in enumerate(or_rules):
+                or_rule.progress = visitor.or_progress[indx]
+
+            for indx, and_rule in enumerate(and_rules):
+                and_rule.progress = visitor.and_progress[indx]
+
+        params['or_rules'] = or_rules
+        params['and_rules'] = and_rules
         return params
 
     def get_table_of_contents(self, deployment, visitor):
@@ -60,13 +76,12 @@ class StudentHandler(BaseHandler):
             if not deployment:
                 self.render_template('error_page.html')
 
-            params = self.get_deployment_params(deployment)
-
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
                                 Visitor.deployment_key == deployment.key)
             visitor = qry.get()
-
+            params = []
             if visitor:
+                params = self.get_deployment_params(deployment,visitor)
                 vkey = visitor.key
                 maps = MapUserToVisitor.query(
                     MapUserToVisitor.visitor_key == vkey,

@@ -3,22 +3,51 @@
 {% block maincontent %}
 
 <h1>Student Page</h1>
-{% if student_link and student_link_text %}
+
+{% if student_link_text != "None" %}
 <h3><a href="{{ student_link }}" target="_blank">{{ student_link_text }}</a></h3>
 {% endif %}
 
+<h2>You have {{ raffle_entries }} raffle entries so far</h2>
+
 {% if raffle_entries >= max_raffle_entries and max_raffle_entries != 0 %}
-<h2>Congratulations! You have received the maximum raffle entries allowed for this event. Good Luck!</h2>
+<h2>Congratulations! You've scored all available raffle tickets! Good luck!</h2>
 {% else %}
-<h2>You still have some checkins before you receive the maximum raffle entries allowed for this event.</h2>
+<h2>Here's the progress towards your next raffle entry!</h2>
+{% for or_rule in or_rules %}
+  {% if forloop.counter == 1 %}
+    <h1> {{ or_rule.num_checkins }} </h1>
+  {% else %}
+    <h1> {{ or_rule.num_checkins }} </h1>
+  {% endif %}
+  <div class="progress width-page">
+    <div class="progress-bar" role="progressbar" style="width: {{ or_progress }}%" aria-valuenow="{{ or_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+  </div>
+{% endfor %}
+
+{% for and_rule in and_rules %}
+  {% if forloop.counter0 == 0 %}
+    <h1>{{forloop.counter0}}</h1>
+    <h1> {{ and_rule.num_checkins }} </h1>
+  {% else %}
+    <h1> {{ and_rule.num_checkins }} </h1>
+  {% endif %}
+
+      <div class="progress width-page">
+        <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+
+{% endfor %}
+
 {% endif %}
+
+
 
 {% autoescape off %}{{ table_of_contents }}{% endautoescape %}
 
 {% for profile in profiles %}
 <div class="row">
   <div class="col-sm-6 col-md-4">
-    <h1> {{ index }} </h1>
     <div class="thumbnail">
       {% autoescape off %}{{ profile }}{% endautoescape %}
     </div>

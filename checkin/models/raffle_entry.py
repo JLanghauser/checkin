@@ -34,7 +34,7 @@ class RaffleEntry(ndb.Model):
         to_add = RaffleRule.get_raffle_entries_to_add(visitor, current_entry_count)
 
         if to_add < 0:
-            reval = RaffleEntry.remove_raffle_entries(visitor, to_add)
+            retval = RaffleEntry.remove_raffle_entries(visitor, to_add)
             if retval == "":
                 raise 'ERROR Updating raffle entries for visitor ' + str(visitor.key.id())
         else:

@@ -152,7 +152,10 @@
     <footer>
       <hr/>
       <!--Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.-->
-      <a href="https://go.microsoft.com/fwlink/?linkid=206977" target="_blank">Terms of Use</a> | <a href="https://go.microsoft.com/fwlink/?linkid=521839" target="_blank">Privacy Statement</a>{% autoescape off %}{{footer_text}}{% endautoescape %}
+      <a href="https://go.microsoft.com/fwlink/?linkid=206977" target="_blank">Terms of Use</a> | <a href="https://go.microsoft.com/fwlink/?linkid=521839" target="_blank">Privacy Statement</a>
+      {% if footer_text %}
+        {% autoescape off %}{{footer_text}}{% endautoescape %}
+      {% endif %}
     </footer>
   </div>
 

@@ -25,13 +25,13 @@ class RaffleRule(ndb.Model):
             checkins_query.filter(MapUserToVisitor.category == self.category)
 
         count = checkins_query.count()
-        print '----'
-        print count
-        print '----'
         if count >= self.num_checkins:
-            return int(count / self.num_checkins)
+            remainder = count % self.num_checkins
+            progress = int(float(remainder) / float(self.num_checkins) * 100.0)
+            return int(count / self.num_checkins),progress
         else:
-            return 0
+            progress = int(float(count) / float(self.num_checkins) * 100.0)
+            return 0,progress
 
     @classmethod
     def get_rules_for_deployment(cls, deployment):
@@ -54,15 +54,21 @@ class RaffleRule(ndb.Model):
     @classmethod
     def process_and_rules(cls, and_rules, visitor):
         retval = None
+        visitor.and_progress = []
+        visitor.put()
         for and_rule in and_rules:
-            res = and_rule.get_rule_results(visitor)
+            res,progress = and_rule.get_rule_results(visitor)
             if retval == None:
                 retval = res
+
+            visitor.and_progress.append(progress)
+            visitor.put()
 
             if res == 0:
                 return 0
             else:
                 retval = min(res, retval)
+
         return retval
 
     @classmethod
@@ -74,17 +80,23 @@ class RaffleRule(ndb.Model):
             return (deployment.max_raffle_entries - current_count)
 
         or_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
-                                 RaffleRule.operator == 'OR').fetch()
+                                 RaffleRule.operator == 'OR').order(RaffleRule.key).fetch()
 
+        visitor.or_progress = []
+        visitor.put()
         for or_rule in or_rules:
-            or_result = or_rule.get_rule_results(visitor)
+            or_result,progress = or_rule.get_rule_results(visitor)
+
+            visitor.or_progress.append(progress)
+            visitor.put()
+
             if retval == None:
                 retval = or_result
             else:
                 retval = max(or_result, retval)
 
         and_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
-                                 RaffleRule.operator == 'AND').fetch()
+                                 RaffleRule.operator == 'AND').order(RaffleRule.key).fetch()
 
         and_result = RaffleRule.process_and_rules(and_rules=and_rules, visitor=visitor)
         if retval == None:

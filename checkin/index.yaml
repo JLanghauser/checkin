@@ -15,10 +15,6 @@ indexes:
   properties:
   - name: "deployment_key"
   - name: "serialized_id"
-- kind: "RaffleEntry"
-  properties:
-  - name: "deployment_key"
-  - name: "visitor_key"
 - kind: "MapUserToDeployment"
   properties:
   - name: "deployment_key"
@@ -28,6 +24,10 @@ indexes:
   - name: "deployment_key"
   - name: "category"
   - name: "category_lower"
+- kind: "RaffleEntry"
+  properties:
+  - name: "deployment_key"
+  - name: "visitor_key"
 - kind: "MapUserToVisitor"
   properties:
   - name: "deployment_key"
