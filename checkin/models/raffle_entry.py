@@ -24,9 +24,10 @@ class RaffleEntry(ndb.Model):
             items_to_delete = RaffleEntry.query(RaffleEntry.visitor_key == visitor.key).fetch(limit=count)
             for to_delete in items_to_delete:
                 to_delete.key.delete()
-            return 'DELETED'
-        except:
-            return ""
+            return ''
+        except Exception as e:
+            print str(e)
+            return 'Error deleting raffle entries for ' + str(visitor.key.id())+ ':' + str(e)
 
     @staticmethod
     def update_raffle_entries(visitor):
@@ -34,9 +35,9 @@ class RaffleEntry(ndb.Model):
         to_add = RaffleRule.get_raffle_entries_to_add(visitor, current_entry_count)
 
         if to_add < 0:
-            retval = RaffleEntry.remove_raffle_entries(visitor, to_add)
-            if retval == "":
-                raise 'ERROR Updating raffle entries for visitor ' + str(visitor.key.id())
+            retval = RaffleEntry.remove_raffle_entries(visitor, abs(to_add))
+            if retval != '':
+                raise Exception(retval)
         else:
             for i in range(to_add):
                 retval = RaffleEntry.add_raffle_entry(visitor)

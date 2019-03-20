@@ -22,7 +22,7 @@ class RaffleRule(ndb.Model):
     def get_rule_results(self, visitor):
         checkins_query = MapUserToVisitor.query(MapUserToVisitor.visitor_key == visitor.key)
         if self.category != 'ANY':
-            checkins_query.filter(MapUserToVisitor.category == self.category)
+            checkins_query = checkins_query.filter(MapUserToVisitor.category == self.category)
 
         count = checkins_query.count()
         if count >= self.num_checkins:
@@ -75,10 +75,6 @@ class RaffleRule(ndb.Model):
     def get_raffle_entries_to_add(cls, visitor, current_count):
         deployment = visitor.deployment_key.get()
         retval = None
-
-        if deployment.max_raffle_entries != 0 and current_count >= deployment.max_raffle_entries:
-            return (deployment.max_raffle_entries - current_count)
-
         or_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
                                  RaffleRule.operator == 'OR').order(RaffleRule.key).fetch()
 
@@ -99,9 +95,13 @@ class RaffleRule(ndb.Model):
                                  RaffleRule.operator == 'AND').order(RaffleRule.key).fetch()
 
         and_result = RaffleRule.process_and_rules(and_rules=and_rules, visitor=visitor)
+
         if retval == None:
             retval = and_result
         total = max(and_result, retval)
+
+        # if deployment.max_raffle_entries != 0 and current_count > deployment.max_raffle_entries:
+        #     return (deployment.max_raffle_entries - current_count)
 
         if retval == None:
             return 1 # this means there are no rules, like 'Nam
