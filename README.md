@@ -10,7 +10,8 @@ appcfg.py -A tough-variety-126419 -V v9 update checkin/
 appcfg.py -A tough-variety-126419 -V v10 update checkin/
 appcfg.py -A tough-variety-126419 -V v11 update checkin/
 
-gcloud app deploy --project tough-variety-126419 --version v11 checkin/app.y
+gcloud app deploy --project tough-variety-126419 --version v11 checkin/app.yaml
+gcloud app deploy --project tough-variety-126419 checkin/index.yaml
 
 admin?method=GENERATE_QR_CODES&start_at_one=true&qr_codes_to_generate=2000
 pip install -t lib -r requirements.txt
