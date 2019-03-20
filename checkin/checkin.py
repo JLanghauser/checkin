@@ -72,9 +72,8 @@ app = webapp2.WSGIApplication([
     webapp2.Route('/api/tasks/update_map_user_indices/',
                   TaskHandler, name='cron_tasks'),
 
-    webapp2.Route('/api/tasks/save_all_maps/',
+    webapp2.Route('/api/tasks/save_all_maps/<deployment_slug>/',
                   SaveAllMaps, name='map_sve'),
-
 
     webapp2.Route('/map_user_to_visitors/debug',
                   DebugHandler, name='debugMapUserTovisitors'),

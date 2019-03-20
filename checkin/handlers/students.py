@@ -52,7 +52,7 @@ class StudentHandler(BaseHandler):
         toc = ""
         categories = UserService.get_groups(deployment=deployment)
         for category in categories:
-            toc += "<h3>" + category.category + "</h3>"
+            toc += "<h5><B>" + category.category + "...</B></h5>"
 
             maps = MapUserToVisitor.query(
                 MapUserToVisitor.visitor_key == visitor.key,
@@ -62,7 +62,7 @@ class StudentHandler(BaseHandler):
             for map in maps:
                 ukey = map.user_key
                 u = ukey.get()
-                toc += "<a href='#" + u.vendorname + "'><h4>" + u.vendorname + "</h4></a>"
+                toc += "<a href='#" + u.vendorname + "'><h6>" + u.vendorname + "</h6></a>"
         return toc
 
     def handlerequest(self, deployment_slug=None):

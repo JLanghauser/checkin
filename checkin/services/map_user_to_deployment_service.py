@@ -63,7 +63,7 @@ class MapUserToDeploymentService:
                 if not skipped_header_row:
                     skipped_header_row = True
                 else:
-                    retval = MapUserToDeploymentService.add_user(deployment,username=row[0], vendorname=row[1], password=row[2], is_deployment_admin=row[3], category=row[4])
+                    retval = MapUserToDeploymentService.add_user(deployment,vendorname=row[0],username=row[1],category=row[2],password=row[3],is_deployment_admin=row[4])
                     count = count + 1
                     if retval is not "":
                         return retval
