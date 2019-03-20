@@ -31,7 +31,7 @@
       <h2> OR {{ or_rule.num_checkins }} from {{ or_rule.category}} category </h2>
     {% endif %}
     <div class="progress width-page">
-      <div class="progress-bar" role="progressbar" style="width: {{ or_progress }}%" aria-valuenow="{{ or_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+      <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
   {% endfor %}
 

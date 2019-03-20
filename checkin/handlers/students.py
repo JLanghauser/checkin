@@ -39,10 +39,12 @@ class StudentHandler(BaseHandler):
 
         if visitor != None:
             for indx, or_rule in enumerate(or_rules):
-                or_rule.progress = visitor.or_progress[indx]
+                if visitor and visitor.or_progress and len(visitor.or_progress) > indx:
+                    or_rule.progress = visitor.or_progress[indx]
 
             for indx, and_rule in enumerate(and_rules):
-                and_rule.progress = visitor.and_progress[indx]
+                if visitor and visitor.and_progress and len(visitor.and_progress) > indx:
+                    and_rule.progress = visitor.and_progress[indx]
 
         params['or_rules'] = or_rules
         params['and_rules'] = and_rules
