@@ -18,16 +18,52 @@ from reports import *
 from sample import *
 from pages import *
 from services.deployment_service import *
+from models.raffle_entry import *
+from models.raffle_rule import *
 
 class StudentHandler(BaseHandler):
-    def get_deployment_params(self,deployment):
+    def get_deployment_params(self,deployment,visitor=None):
         params = {}
         params['logo_url'] = deployment.logo_url
         params['header_color'] = deployment.header_background_color
         params['footer_text'] =  deployment.footer_text
         params['student_link'] =  deployment.student_link
         params['student_link_text'] =  deployment.student_link_text
+        params['max_raffle_entries'] =  deployment.max_raffle_entries
+
+        or_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
+                                         RaffleRule.operator == 'OR').order(RaffleRule.key).fetch()
+
+        and_rules = RaffleRule.query(RaffleRule.deployment_key == deployment.key,
+                                 RaffleRule.operator == 'AND').order(RaffleRule.key).fetch()
+
+        if visitor != None:
+            for indx, or_rule in enumerate(or_rules):
+                or_rule.progress = visitor.or_progress[indx]
+
+            for indx, and_rule in enumerate(and_rules):
+                and_rule.progress = visitor.and_progress[indx]
+
+        params['or_rules'] = or_rules
+        params['and_rules'] = and_rules
         return params
+
+    def get_table_of_contents(self, deployment, visitor):
+        toc = ""
+        categories = UserService.get_groups(deployment=deployment)
+        for category in categories:
+            toc += "<h5><B>" + category.category + "...</B></h5>"
+
+            maps = MapUserToVisitor.query(
+                MapUserToVisitor.visitor_key == visitor.key,
+                MapUserToVisitor.deployment_key == deployment.key,
+                MapUserToVisitor.category == category.category).fetch()
+
+            for map in maps:
+                ukey = map.user_key
+                u = ukey.get()
+                toc += "<a href='#" + u.vendorname + "'><h6>" + u.vendorname + "</h6></a>"
+        return toc
 
     def handlerequest(self, deployment_slug=None):
         visitor_id = self.request.get('visitor_id', '').strip()
@@ -40,18 +76,18 @@ class StudentHandler(BaseHandler):
             if not deployment:
                 self.render_template('error_page.html')
 
-            params = self.get_deployment_params(deployment)
-
             qry = Visitor.query(Visitor.visitor_id == visitor_id,
                                 Visitor.deployment_key == deployment.key)
             visitor = qry.get()
-
-            if (visitor):
+            params = []
+            if visitor:
+                params = self.get_deployment_params(deployment,visitor)
                 vkey = visitor.key
                 maps = MapUserToVisitor.query(
                     MapUserToVisitor.visitor_key == vkey,
                     MapUserToVisitor.deployment_key == deployment.key).fetch()
                 profiles = []
+
                 for map_item in maps:
                     ukey = map_item.user_key
                     u = ukey.get()
@@ -60,13 +96,17 @@ class StudentHandler(BaseHandler):
                          or ("<h1>Edit your profile" in u.profile
                          and ">here</a></h1>" in u.profile
                          and len(u.profile) < 60)):
-                        profiles.append("<h2>" + u.vendorname + "</h2>" +
+                        profiles.append("<h2 id='" + u.vendorname + "'>" + u.vendorname + "</h2>" +
                                         "<h3>This organization hasn't included any information)</h3>")
                     else:
                         profiles.append(
-                            "<h2>" + u.vendorname + "</h2>" + u.profile)
-
+                            "<h2 id='" + u.vendorname + "'>" + u.vendorname + "</h2>" + u.profile)
                 params['profiles'] = profiles
+
+                entries = RaffleEntry.query(RaffleEntry.visitor_key == visitor.key).count()
+                params['raffle_entries'] = entries
+                params['table_of_contents'] = self.get_table_of_contents(deployment=deployment, visitor=visitor)
+
                 self.render_template('student.html', params)
             else:
                 params['error'] = "true"

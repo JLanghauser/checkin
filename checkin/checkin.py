@@ -17,7 +17,7 @@ from handlers.super_admins import *
 config = {
     'webapp2_extras.auth': {
         'user_model': 'base.auth_helpers.User',
-        'user_attributes': ['username', 'email', 'is_super_admin', 'is_deployment_admin']
+        'user_attributes': ['username', 'is_super_admin', 'is_deployment_admin']
     },
     'webapp2_extras.sessions': {
         'secret_key': 'YOUR_SECRET_KEY'
@@ -71,6 +71,9 @@ app = webapp2.WSGIApplication([
 
     webapp2.Route('/api/tasks/update_map_user_indices/',
                   TaskHandler, name='cron_tasks'),
+
+    webapp2.Route('/api/tasks/save_all_maps/<deployment_slug>/',
+                  SaveAllMaps, name='map_sve'),
 
     webapp2.Route('/map_user_to_visitors/debug',
                   DebugHandler, name='debugMapUserTovisitors'),

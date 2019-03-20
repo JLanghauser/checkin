@@ -1,19 +1,22 @@
 from models.map_user_to_visitor import *
+from models.raffle_entry import *
 
 class MapUserToVisitorService:
     @staticmethod
     def get_random_visitor(deployment):
-        entity_count = MapUserToVisitor.query(MapUserToVisitor.deployment_key == deployment.key).count()
-        if (entity_count > 0):
-            random_index = randint(0, entity_count - 1)
-            maps = MapUserToVisitor.query(MapUserToVisitor.deployment_key == deployment.key).order(MapUserToVisitor.key).fetch()
+        entry_count = RaffleEntry.query(RaffleEntry.deployment_key == deployment.key).count()
+        if entry_count > 0:
+            random_index = randint(0, entry_count - 1)
+            entries = RaffleEntry.query(RaffleEntry.deployment_key == deployment.key).order(RaffleEntry.visitor_key).fetch()
 
             counter = 0
-            for map_item in maps:
-                if (random_index == counter):
-                    key = map_item.visitor_key
-                    rand_visitor = Visitor.get_by_id(
-                        key.id(), parent=key.parent(), app=key.app(), namespace=key.namespace())
+            for entry in entries:
+                if random_index == counter:
+                    key = entry.visitor_key
+                    rand_visitor = Visitor.get_by_id(key.id(),
+                                                    parent=key.parent(),
+                                                    app=key.app(),
+                                                    namespace=key.namespace())
                     return rand_visitor.visitor_id
-                counter = counter + 1
+                counter += 1
         return None

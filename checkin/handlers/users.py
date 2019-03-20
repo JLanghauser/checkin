@@ -29,7 +29,7 @@ class UsersHandler(BaseHandler):
         params['footer_text'] =  deployment.footer_text
         return params
 
-    def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, email,deployment_slug):
+    def edit_user(self, old_username, new_username, vendorname, password, is_deployment_admin, deployment_slug):
         calling_user = self.user
         users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
 
@@ -53,7 +53,6 @@ class UsersHandler(BaseHandler):
 
             edit_user.is_deployment_admin = is_deployment_admin in [
                 'true', 'True', '1', 'on']
-            edit_user.email = email
             edit_user.put()
 
             dep = Deployment.get_by_slug(deployment_slug)
@@ -81,7 +80,7 @@ class UsersHandler(BaseHandler):
         self.render_template('users_index.html', params)
         return
 
-    def add_user(self, username, vendorname, password, is_deployment_admin, email,deployment_slug):
+    def add_user(self, username, vendorname, password, is_deployment_admin, deployment_slug):
         tmp_user = UserService.get_by_username(username)
 
         if tmp_user:
@@ -100,7 +99,6 @@ class UsersHandler(BaseHandler):
             newuser.set_password(password)
             newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
             newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
-            newuser.email = email
             newuser.put()
             sleep(0.5)
 
@@ -137,7 +135,6 @@ class UsersHandler(BaseHandler):
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
         is_deployment_admin = self.request.get('is_deployment_admin')
-        email = self.request.get('email')
 
         bulkfile = self.request.get('bulkfile')
         command = self.request.get('command')
@@ -166,8 +163,8 @@ class UsersHandler(BaseHandler):
                     if not skipped_header_row:
                         skipped_header_row = True
                     else:
-                        retval = self.add_user(username=row[0], vendorname=row[2], password=row[
-                                               3], is_deployment_admin=row[4], email=row[1],deployment_slug=row[5])
+                        retval = self.add_user(username=row[0], vendorname=row[1], password=row[2],
+                                            is_deployment_admin=row[3], deployment_slug=row[4])
                         count = count + 1
                         if retval is not "":
                             users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
@@ -197,10 +194,10 @@ class UsersHandler(BaseHandler):
                 self.render_template('users_index.html', params)
                 return
         elif command.lower() == "edit":
-            return self.edit_user(old_username, username, vendorname, password, is_deployment_admin, email,deployment_slug)
+            return self.edit_user(old_username, username, vendorname, password, is_deployment_admin, deployment_slug)
         else:
             retval = self.add_user(username=username, vendorname=vendorname,
-                                   password=password, is_deployment_admin=is_deployment_admin, email=email,
+                                   password=password, is_deployment_admin=is_deployment_admin,
                                    deployment_slug=deployment_slug)
             users = MapUserToDeploymentService.get_users_by_user_deployment(calling_user)
 

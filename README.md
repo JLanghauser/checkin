@@ -8,7 +8,10 @@ tough-variety-126419
 appcfg.py --no_cookies -A tough-variety-126419 -V v1 update checkin/
 appcfg.py -A tough-variety-126419 -V v9 update checkin/
 appcfg.py -A tough-variety-126419 -V v10 update checkin/
+appcfg.py -A tough-variety-126419 -V v11 update checkin/
 
+gcloud app deploy --project tough-variety-126419 --version v11 checkin/app.yaml
+gcloud app deploy --project tough-variety-126419 checkin/index.yaml
 
 admin?method=GENERATE_QR_CODES&start_at_one=true&qr_codes_to_generate=2000
 pip install -t lib -r requirements.txt
@@ -36,6 +39,6 @@ pip install pyqrnative
 
 # Bootstrapping users
 from models.user import User
-user = User(is_super_admin=True, username='John', email='john.langhauser@gmail.com')
+user = User(is_super_admin=True, username='John')
 user.set_password('tester')
 user.put()

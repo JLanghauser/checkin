@@ -100,32 +100,13 @@
                 {% endif %}
               {% endif %}
               {% if user and user.is_super_admin and not deployment%}
-              <li><a href="super_admin">SuperAdmin</a></li>
-                <!--<li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Super Admin<span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                      <li><a href="deployments">Manage Deployments</a></li>
-                      <li><a href="users">Manage Users</a></li>
-                      <li><a href="reports">View Reports</a></li>
-                    </ul>
-                </li>-->
+                <li><a href="/super_admin">SuperAdmin</a></li>
               {% endif %}
-              {% if user and user.is_deployment_admin and deployment %}
-              <li><a href="admin">Admin</a></li>
-              <!--<li class="dropdown">
-                  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin<span class="caret"></span></a>
-                  <ul class="dropdown-menu">
-                    {% if logo_url %}
-                    <li><a href="deployments">Manage Deployments</a></li>
-                    {% else %}
-                    <li><a href="/deployments">Manage Deployments</a></li>
-                    {% endif %}
-                    <li><a href="/users">Manage Users</a></li>
-                    <li><a href="/visitors">Manage Visitors</a></li>
-                    <li><a href="/custom-domains">Custom Domain Names</a></li>
-                    <li><a href="get_random_visitor">Run Raffle</a></li>
-                  </ul>
-              </li>-->
+              {% if user and user.is_deployment_admin and not user.is_super_admin and deployment %}
+                <li><a href="admin">Admin</a></li>
+              {% endif %}
+              {% if user and not user.is_deployment_admin and user.is_super_admin and deployment %}
+                <li><a href="admin">Admin</a></li>
               {% endif %}
             </ul>
           </div><!-- /.navbar-collapse -->
@@ -171,7 +152,10 @@
     <footer>
       <hr/>
       <!--Checkin App created by John Langhauser and Nathaniel Granor for the 2016 <a href="http://www.csfair.nyc/">NYC CS Fair</a>.-->
-      <p>{% autoescape off %}{{footer_text}}{% endautoescape %}</p>
+      <a href="https://go.microsoft.com/fwlink/?linkid=206977" target="_blank">Terms of Use</a> | <a href="https://go.microsoft.com/fwlink/?linkid=521839" target="_blank">Privacy Statement</a>
+      {% if footer_text %}
+        {% autoescape off %}{{footer_text}}{% endautoescape %}
+      {% endif %}
     </footer>
   </div>
 

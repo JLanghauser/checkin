@@ -40,13 +40,10 @@ class SampleHandler(BaseHandler):
             dep = Deployment.get_by_slug(deployment_slug)
             params = self.get_deployment_params(dep)
 
-        #   if not dep.sample_qr_code:
-            #self.set_sample_qr_code(dep)
-            #params['sample_url'] = dep.get_sample_qr_code_url()
-            #params['sample_url'] = '/img/ri_sample.png'
             params['sample_url'] = dep.get_sample_qr_code_url()
             visitor = Visitor.query( Visitor.visitor_id == "9999999",
                                      Visitor.deployment_key == dep.key).fetch(1)
+                                     
             if not visitor or len(visitor) == 0 or not visitor[0]:
                 visitor = Visitor()
                 visitor.visitor_id = "9999999"
@@ -56,14 +53,6 @@ class SampleHandler(BaseHandler):
             else:
                 visitor = visitor[0]
 
-            # vis_map = MapUserToVisitor.query(
-            #                        MapUserToVisitor.user_key == self.user.key,
-            #                        MapUserToVisitor.visitor_key == visitor.key,
-            #                        MapUserToVisitor.deployment_key == dep.key).fetch()
-            #
-            # if vis_map and len(vis_map) > 0 and vis_map[0]:
-            #     params['complete'] = 'true'
-            # else:
             params['complete'] = 'false'
 
         self.render_template('sample.html',params)

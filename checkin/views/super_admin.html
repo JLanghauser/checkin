@@ -1,22 +1,22 @@
 {% extends "main.html" %} {% block maincontent %}
 <div id="backgroundjobs"></div>
 <ul class="nav nav-tabs">
-    <li id="deploymenttab"><a href="#deployment" data-toggle="tab">Deployments/Fairs</a></li>
+    <li id="deploymenttab"><a href="#deployment" data-toggle="tab">Fairs</a></li>
 </ul>
 
     <div class="tab-content">
     <div class="tab-pane container" id="deployment">
 
-      <h3>Each event must have its own deployment.</h3>
-       <h4>The deployment details can be configured on the deployment's admin page.</h4>
+      <h3>Each event must have its own Fair object.</h3>
+       <h4>The fair details can be configured on the fair's admin page.</h4>
 
-      <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addDeploymentModal">Create New Deployment/Fair</button>
+      <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addDeploymentModal">Create New Fair</button>
 
       <div class="modal fade" id="addDeploymentModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Add Deployment</h5>
+            <h5 class="modal-title" id="exampleModalLabel">Add Fair</h5>
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
@@ -25,16 +25,16 @@
             <form class="form-horizontal" action="super_admin" method="POST">
               <input type="hidden" name="referring_page" value="SUPERADMIN" />
               <input type="hidden" name="method" value="CREATE" />
-              <h5>1) Event Name is a simple text field to identify the deployment.</h5>
+              <h5>1) Event Name is a simple text field to identify the fair.</h5>
               <div class="form-group">
                 <label for="inputEmail3" class="col-sm-2 control-label">Event Name</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="name" name="name" placeholder="Event Name">
                 </div>
               </div>
-              <h5>Note: deployment admins be able to modify this field.</h5>
+              <h5>Note: Fair admins be able to modify this field.</h5>
               <BR>
-              <h5>2) Each deployment must have a globally unique url-safe slug.</h5>
+              <h5>2) Each fair must have a globally unique url-safe slug.</h5>
               <div class="form-group">
                 <label for="inputEmail3" class="col-sm-2 control-label">Slug</label>
                 <div class="col-sm-10">
@@ -45,7 +45,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Add Deployment</button>
+            <button type="submit" class="btn btn-primary">Add Fair</button>
           </div>
           </form>
         </div>
@@ -57,7 +57,7 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">Edit Deployment</h5>
+          <h5 class="modal-title" id="exampleModalLabel">Edit Fair</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -67,16 +67,16 @@
             <input type="hidden" name="referring_page" value="SUPERADMIN" />
             <input type="hidden" name="method" value="UPDATE" />
             <input type="hidden" name="old_slug" id="edit-oldslug" />
-            <h5>1) Event Name is a simple text field to identify the deployment.</h5>
+            <h5>1) Event Name is a simple text field to identify the fair.</h5>
             <div class="form-group">
               <label for="inputEmail3" class="col-sm-2 control-label">Event Name</label>
               <div class="col-sm-10">
                 <input type="text" class="form-control" id="edit-name" name="name">
               </div>
             </div>
-            <h5>Note: deployment admins be able to modify this field.</h5>
+            <h5>Note: fair admins be able to modify this field.</h5>
             <BR>
-            <h5>2) Each deployment must have a globally unique url-safe slug.</h5>
+            <h5>2) Each fair must have a globally unique url-safe slug.</h5>
             <div class="form-group">
               <label for="inputEmail3" class="col-sm-2 control-label">Slug</label>
               <div class="col-sm-10">
@@ -87,7 +87,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Edit Deployment</button>
+          <button type="submit" class="btn btn-primary">Edit Fair</button>
         </div>
         </form>
       </div>
@@ -95,7 +95,7 @@
     </div>
 
 
-      <h3>Deployments</h3>
+      <h3>Fairs</h3>
       <table class="table table-striped">
           <thead>
               <tr>
@@ -108,7 +108,7 @@
           <tbody>
               {% for d in deployments %}
               <tr>
-                <td><a href="deployments/view/{{ d.slug }}/" target="_blank"> deployment-page-link </a></td>
+                <td><a href="deployments/view/{{ d.slug }}/" target="_blank"> fair-page-link </a></td>
                 <td>{{ d.name }}</td>
                 <td>{{ d.slug }}</td>
                   <td>

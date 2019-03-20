@@ -73,6 +73,65 @@ class AdminHandler(BaseHandler):
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
+    def delete_rule(self,deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        key = self.request.get('edit-key')
+        retval = RaffleRule.delete_rule(key)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Deleted Rule"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def edit_rule(self, deployment_slug):
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+        edit_key = self.request.get('edit-key')
+        operator = self.request.get('edit-operator')
+        num_checkins = self.request.get('edit-num_checkins')
+        category = self.request.get('edit-category')
+
+        retval = RaffleRule.edit_rule(key=edit_key, operator=operator, num_checkins=num_checkins, category=category)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully Edited Rule"
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def update_max_raffle_entries(self, deployment_slug):
+            existing_deployment = Deployment.get_by_slug(deployment_slug)
+            params = {}
+            params['activetab'] = 'raffle'
+            max_raffle_entries = int(self.request.get('max_raffle_entries'))
+
+            retval = ""
+            try:
+                existing_deployment.max_raffle_entries = max_raffle_entries
+                existing_deployment.put()
+            except Exception as e:
+                print str(e)
+                retval = "Error updating settings."
+
+            if retval is not "":
+                params['error'] = "true"
+                params['flash_message'] = retval
+            else:
+                params['success'] = "true"
+                params['flash_message'] = "Successfully Edited settings."
+
+            self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def edit_booth(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
         params = {}
@@ -81,9 +140,9 @@ class AdminHandler(BaseHandler):
         username = self.request.get('edit-username')
         vendorname = self.request.get('edit-vendorname')
         password = self.request.get('edit-password')
-        email = self.request.get('edit-email')
+        category = self.request.get('edit-category')
         admin = self.request.get('edit-admin')
-        retval = MapUserToDeploymentService.edit_user(existing_deployment, old_username, username, vendorname, password, admin, email)
+        retval = MapUserToDeploymentService.edit_user(existing_deployment, old_username, username, vendorname, password, admin, category)
 
         if retval is not "":
             params['error'] = "true"
@@ -101,9 +160,9 @@ class AdminHandler(BaseHandler):
         username = self.request.get('username')
         vendorname = self.request.get('vendorname')
         password = self.request.get('password')
-        email = self.request.get('email')
+        category = self.request.get('category')
         admin = self.request.get('admin')
-        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin,email)
+        retval = MapUserToDeploymentService.add_user(existing_deployment,username,vendorname,password,admin,category)
 
         if retval is not "":
             params['error'] = "true"
@@ -113,6 +172,27 @@ class AdminHandler(BaseHandler):
             params['flash_message'] = "Successfully created User:  " + username
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def create_new_rule(self,deployment_slug):
+        deployment = Deployment.get_by_slug(deployment_slug)
+        params = {}
+        params['activetab'] = 'raffle'
+
+        operator = self.request.get('operator')
+        num_checkins = int(self.request.get('num_checkins'))
+        category = self.request.get('category')
+        
+        retval = RaffleRule.add_raffle_rule(deployment_key=deployment.key, operator=operator,
+                                num_checkins=num_checkins, category=category)
+
+        if retval is not "":
+            params['error'] = "true"
+            params['flash_message'] = retval
+        else:
+            params['success'] = "true"
+            params['flash_message'] = "Successfully created Rule! "
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',deployment,params)
 
     def generate_qr_codes(self,deployment_slug):
         existing_deployment = Deployment.get_by_slug(deployment_slug)
@@ -262,11 +342,19 @@ class AdminHandler(BaseHandler):
             self.export_qr_codes(self.request,deployment_slug)
         elif method == 'CREATE_NEW_BOOTH':
             self.create_new_booth(deployment_slug)
+        elif method == 'CREATE_NEW_RULE':
+            self.create_new_rule(deployment_slug)
         elif method == 'UPLOAD_BOOTHS':
             self.upload_booths(deployment_slug)
         elif method == 'EDIT_BOOTH':
             self.edit_booth(deployment_slug)
+        elif method == 'EDIT_RULE':
+            self.edit_rule(deployment_slug)
+        elif method == 'UPDATE_MAX_RAFFLE_ENTRIES':
+            self.update_max_raffle_entries(deployment_slug)
         elif method == 'DELETE_BOOTH':
             self.delete_booth(deployment_slug)
+        elif method == 'DELETE_RULE':
+            self.delete_rule(deployment_slug)
         elif method == 'RANDOM_VISITOR':
             self.random_visitor(deployment_slug)

@@ -2,6 +2,12 @@ from models.user import *
 
 class UserService:
 
+    @staticmethod
+    def get_groups(deployment):
+        query = User.query(User.deployment_key == deployment.key, projection=[User.category, User.category_lower],distinct=True)
+        groups = query.fetch()
+        return groups
+
     @classmethod
     def get_by_username(cls, username, deployment_key=None, subject='auth'):
         """Returns a user object based on a username.

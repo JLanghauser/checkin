@@ -21,6 +21,8 @@ class Visitor(ndb.Model):
     qr_code = ndb.BlobKeyProperty()
     qr_code_url = ndb.ComputedProperty(lambda self: self.get_qr_code_url())
     checkin_url = ndb.TextProperty(indexed=True)
+    or_progress = ndb.IntegerProperty(repeated=True, default=None)
+    and_progress = ndb.IntegerProperty(repeated=True, default=None)
 
     def get_qr_code_url(self):
         try:
