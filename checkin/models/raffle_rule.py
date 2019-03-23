@@ -10,6 +10,7 @@ class RaffleRule(ndb.Model):
     num_checkins = ndb.IntegerProperty()
     category = ndb.StringProperty()
     url_safe_key = ndb.ComputedProperty(lambda self: self.get_url_safe_key())
+    display_color = ndb.StringProperty(default="#00FFFF")
 
     def get_url_safe_key(self):
         if self.key:
@@ -39,10 +40,10 @@ class RaffleRule(ndb.Model):
         return rules
 
     @classmethod
-    def add_raffle_rule(cls, deployment_key, operator, num_checkins, category):
+    def add_raffle_rule(cls, deployment_key, operator, num_checkins, category, display_color):
         try:
             new_rule = RaffleRule(deployment_key=deployment_key, operator=operator,
-                        num_checkins=num_checkins, category=category)
+                        num_checkins=num_checkins, category=category, display_color=display_color)
             new_rule.put()
             new_rule.set_url_safe_key()
 
@@ -109,12 +110,13 @@ class RaffleRule(ndb.Model):
             return total - current_count
 
     @classmethod
-    def edit_rule(cls, key, operator, num_checkins, category):
+    def edit_rule(cls, key, operator, num_checkins, category, display_color):
         rule_to_edit = ndb.Key(urlsafe=key).get()
         if rule_to_edit:
             rule_to_edit.operator = operator
             rule_to_edit.num_checkins = int(num_checkins)
             rule_to_edit.category = category
+            rule_to_edit.display_color = display_color
             rule_to_edit.put()
             return ""
         else:

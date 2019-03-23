@@ -97,16 +97,14 @@
                       <a href="{{ user_link }}" target="_blank" >{{ user_link_text }}</a>
                     {% endif %}
                   </li>
+                  {% if user.is_deployment_admin or user.is_super_admin %}
+                    <li><a href="admin">Admin</a></li>
+                  {% endif %}
+                {% else %}
+                  {% if user.is_super_admin %}
+                    <li><a href="/super_admin">SuperAdmin</a></li>
+                  {% endif %}
                 {% endif %}
-              {% endif %}
-              {% if user and user.is_super_admin and not deployment%}
-                <li><a href="/super_admin">SuperAdmin</a></li>
-              {% endif %}
-              {% if user and user.is_deployment_admin and not user.is_super_admin and deployment %}
-                <li><a href="admin">Admin</a></li>
-              {% endif %}
-              {% if user and not user.is_deployment_admin and user.is_super_admin and deployment %}
-                <li><a href="admin">Admin</a></li>
               {% endif %}
             </ul>
           </div><!-- /.navbar-collapse -->

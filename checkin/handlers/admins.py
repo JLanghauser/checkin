@@ -97,8 +97,9 @@ class AdminHandler(BaseHandler):
         operator = self.request.get('edit-operator')
         num_checkins = self.request.get('edit-num_checkins')
         category = self.request.get('edit-category')
+        display_color = self.request.get('edit-rule_display_color')
 
-        retval = RaffleRule.edit_rule(key=edit_key, operator=operator, num_checkins=num_checkins, category=category)
+        retval = RaffleRule.edit_rule(key=edit_key, operator=operator, num_checkins=num_checkins, category=category,display_color=display_color)
 
         if retval is not "":
             params['error'] = "true"
@@ -181,9 +182,10 @@ class AdminHandler(BaseHandler):
         operator = self.request.get('operator')
         num_checkins = int(self.request.get('num_checkins'))
         category = self.request.get('category')
-        
+        display_color = self.request.get('rule_display_color')
+
         retval = RaffleRule.add_raffle_rule(deployment_key=deployment.key, operator=operator,
-                                num_checkins=num_checkins, category=category)
+                                num_checkins=num_checkins, category=category, display_color=display_color)
 
         if retval is not "":
             params['error'] = "true"
@@ -325,9 +327,6 @@ class AdminHandler(BaseHandler):
 
         params = self.add_deployment_params({},dep)
         self.render_smart_template('DEPLOYMENT','ADMIN','admin.html',dep,params)
-
-
-
 
     @deployment_admin_required
     def post(self, deployment_slug):

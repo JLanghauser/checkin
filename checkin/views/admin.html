@@ -6,7 +6,7 @@
     <li id="surveystab"><a href="#surveys" data-toggle="tab">Surveys</a></li>
     <li id="qrcodestab"><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
     <li id="boothstab"><a href="#booths" data-toggle="tab">Manage Booths</a></li>
-    <li id="raffletab"><a href="#raffle" data-toggle="tab">Manage Raffle</a></li>
+    <li id="raffletab"><a href="#raffle" data-toggle="tab">Manage Contest</a></li>
     <li id="analyticstab"><a href="#analytics" data-toggle="tab">Analytics</a></li>
 </ul>
 
@@ -374,6 +374,13 @@ badge.</h3>
               <input type="hidden" name="referring_page" value="ADMIN" />
               <input type="hidden" name="method" value="CREATE_NEW_RULE" />
               <div class="form-group">
+                <label for="cp3" class="col-sm-4 control-label">Display Color:</label>
+                <div id="cp3" class="input-group colorpicker-component col-sm-4">
+                  <input type="text" name = "rule_display_color" id = "rule_display_color" value="" class="form-control" />
+                  <span class="input-group-addon"><i></i></span>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="inputEmail3" class="col-sm-4 control-label">Operator</label>
                 <div class="col-sm-3">
                   <select id="operator" name="operator">
@@ -428,6 +435,14 @@ badge.</h3>
             <input type="hidden" name="method" value="EDIT_RULE" />
 
             <div class="form-group">
+              <label for="cp4" class="col-sm-4 control-label">Display Color:</label>
+              <div id="cp4" class="input-group colorpicker-component col-sm-4">
+                <input type="text" name = "edit-rule_display_color" id = "edit-rule_display_color" value="" class="form-control" />
+                <span class="input-group-addon"><i></i></span>
+              </div>
+            </div>
+
+            <div class="form-group">
               <label for="inputEmail3" class="col-sm-4 control-label">Operator</label>
               <div class="col-sm-3">
                 <select id="edit-operator" name="edit-operator">
@@ -464,10 +479,10 @@ badge.</h3>
     </div>
     </div>
 
-    <h1>Raffle Settings</h1>
+    <h1>Contest Entry Settings</h1>
     <div class="form-group margin-top">
       <form action="admin" method="POST">
-      <label for="inputPassword3" class="col-sm-5 control-label">Max number of raffle entries per badge (0 for unlimited)</label>
+      <label for="inputPassword3" class="col-sm-5 control-label">Max number of contest entries per badge (0 for unlimited)</label>
       <div class="col-sm-4">
         <div class="col-sm-3">
           <input type="text" class="form-control" name="max_raffle_entries" id="max_raffle_entries" placeholder="" maxlength="2" value="{{max_raffle_entries}}">
@@ -485,9 +500,10 @@ badge.</h3>
     <h2>Rules</h2>
     <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addRuleModal">Create New Rule</button>
       <table class="table table-striped">
-          <caption>Set custom rules or thresholds for raffle entries (the default behavior without custom rules is 1 entry per checkin)</caption>
+          <caption>Set custom rules or thresholds for contest entries (the default behavior without custom rules is 1 entry per checkin)</caption>
           <thead>
               <tr>
+                  <th>Display Color</th>
                   <th>Operator</th>
                   <th>Number of Checkins</th>
                   <th>Category</th>
@@ -496,11 +512,12 @@ badge.</h3>
           <tbody>
               {% for r in rules %}
               <tr>
+                  <td><div style="background-color:{{r.display_color}};height:50px;width:200px;"><div/></td>
                   <td>{{r.operator}}</td>
                   <td>{{r.num_checkins}}</td>
                   <td>{{r.category}}</td>
                   <td>
-                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editRuleModal' data-key="{{r.url_safe_key}}" data-operator="{{r.operator}}" data-num_checkins="{{r.num_checkins}}" data-category="{{r.category}}" >Edit</button>
+                      <button type="button" class="btn btn-primary" data-toggle = 'modal' data-target='#editRuleModal' data-key="{{r.url_safe_key}}" data-operator="{{r.operator}}" data-num_checkins="{{r.num_checkins}}" data-category="{{r.category}}" data-display_color="{{r.display_color}}" >Edit</button>
 
                       <form action="admin" method="POST" onsubmit="return confirm('Do you really wish to delete this rule?');">
                         <input type="hidden" name="referring_page" value="ADMIN" />
@@ -513,9 +530,6 @@ badge.</h3>
               {% endfor %}
           </tbody>
       </table>
-
-
-
     <BR>
       <!-- <h2>Reset Raffle Entries</h2>
       <h6>This will recalculate the raffle entries for the updated rules. Use this if you change the checkin rules midway through</h6>
@@ -605,10 +619,20 @@ badge.</h3>
 
     $(function() {
         $('#cp2').colorpicker();
+        $('#cp3').colorpicker();
+        $('#cp4').colorpicker();
     });
 
     $('#cp2').colorpicker().on('changeColor', function(e) {
         $('#header-background-color')[0].value = e.color.toString('hex');
+    });
+
+    $('#cp3').colorpicker().on('changeColor', function(e) {
+        $('#rule_display_color')[0].value = e.color.toString('hex');
+    });
+
+    $('#cp4').colorpicker().on('changeColor', function(e) {
+        $('#rule_display_color')[0].value = e.color.toString('hex');
     });
 
     $("#{{ activetab }}").addClass('active');
@@ -656,6 +680,7 @@ badge.</h3>
       var operator = button.data('operator')
       var num_checkins = button.data('num_checkins')
       var category = button.data('category')
+      var display_color = button.data('display_color')
 
       var modal = $(this)
 
@@ -664,6 +689,8 @@ badge.</h3>
       modal.find('.modal-body #edit-operator').val(operator)
       modal.find('.modal-body #edit-num_checkins').val(num_checkins)
       modal.find('.modal-body #edit-category').val(category)
+      modal.find('.modal-body #edit-rule_display_color').val(display_color)
+
     });
 
     $(document).ready(function() {
