@@ -8,30 +8,38 @@
 <h4><a href="{{ student_link }}" target="_blank">{{ student_link_text }}</a></h4>
 {% endif %}
 
-{% if raffle_entries == 0 %}
-  <h3>You haven't unlocked any entries in the prize drawing yet.</h3>
-{% else %}
-  {% if raffle_entries == 1 %}
-    <h3>You have 1 raffle entry so far.</h3>
-  {% else %}
-    <h3>You have {{ raffle_entries }} raffle entries so far.</h3>
-  {% endif %}
-{% endif %}
-
 {% if raffle_entries >= max_raffle_entries and max_raffle_entries != 0 %}
-  <h3>Congratulations! You've scored all available raffle tickets! Good luck!</h3>
+  <h3>Congratulations! You've unlocked all {{ raffle_entries }} available entries into the prize drawing! Good luck!</h3>
 {% else %}
+  {% if raffle_entries == 0 %}
+    <h3>You haven't unlocked any entries in the prize drawing yet.</h3>
+  {% else %}
+    {% if raffle_entries == 1 %}
+      <h3>You've unlocked 1 entry into the prize drawing so far.</h3>
+    {% else %}
+      <h3>You've unlocked {{ raffle_entries }} entries into the prize drawing so far.</h3>
+    {% endif %}
+  {% endif %}
+
 {% if or_rules|length > 0 or and_rules|length > 0 %}
-  <h3>Here's the progress towards your next raffle entry!</h3>
+  <h3>Do this to unlock your next prize drawing!</h3>
 {% endif %}
   {% for or_rule in or_rules %}
     {% if forloop.counter == 1 %}
-      <h2> {{ or_rule.num_checkins }} from {{ or_rule.category}} category </h2>
+      {% if or_rule.category == 'ANY' %}
+        <h2>Scan your badge at {{ or_rule.num_checkins }} booths from any category.</h2>
+      {% else %}
+        <h2>Scan your badge at {{ or_rule.num_checkins }} booths from the {{ or_rule.category}} category.</h2>
+      {% endif %}
     {% else %}
-      <h2> OR {{ or_rule.num_checkins }} from {{ or_rule.category}} category </h2>
+      {% if or_rule.category == 'ANY' %}
+        <h2>Or scan your badge at {{ or_rule.num_checkins }} booths from any category.</h2>
+      {% else %}
+        <h2>Or scan your badge at {{ or_rule.num_checkins }} booths from the {{ or_rule.category}} category.</h2>
+      {% endif %}
     {% endif %}
     <div class="progress width-page">
-      <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+      <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%;height:100px;" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
     </div>
   {% endfor %}
 
@@ -39,12 +47,22 @@
 
   {% if forloop.counter0 == 0 %}
     <h2> {{ and_rule.num_checkins }} from {{ and_rule.category}} category </h2>
+    {% if and_rule.category == 'ANY' %}
+      <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+    {% else %}
+      <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from the {{ and_rule.category}} category.</h2>
+    {% endif %}
   {% else %}
     <h2> AND {{ and_rule.num_checkins }} from {{ and_rule.category}} category </h2>
+    {% if and_rule.category == 'ANY' %}
+      <h2>And scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+    {% else %}
+      <h2>And scan your badge at {{ and_rule.num_checkins }} booths from the {{ and_rule.category}} category.</h2>
+    {% endif %}
   {% endif %}
 
   <div class="progress width-page">
-    <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%;height:100px;" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100">1</div>
   </div>
 
 {% endfor %}
