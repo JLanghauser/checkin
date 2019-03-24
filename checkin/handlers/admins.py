@@ -110,6 +110,37 @@ class AdminHandler(BaseHandler):
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
+    def reset_raffle_entries(self, deployment_slug):
+        params = {}
+        params['activetab'] = 'raffle'
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        visitors = Visitor.query(Visitor.deployment_key == existing_deployment.key).fetch()
+
+        for visitor in visitors:
+            count = MapUserToVisitor.query(MapUserToVisitor.visitor_key == visitor.key).count()
+            visitor_count = RaffleEntry.query(RaffleEntry.visitor_key == visitor.key).count()
+            if count > 0 or visitor_count > 0:
+                RaffleEntry.update_raffle_entries(visitor)
+
+        params['success'] = "true"
+        params['flash_message'] = "Successfully recalculated contest entries."
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def resave_checkins(self, deployment_slug):
+        params = {}
+        params['activetab'] = 'raffle'
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+        maps = MapUserToVisitor.query(MapUserToVisitor.deployment_key == existing_deployment.key).fetch()
+
+        for map in maps:
+            map.put()
+
+        params['success'] = "true"
+        params['flash_message'] = "Successfully recalculated contest entries."
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
     def update_max_raffle_entries(self, deployment_slug):
             existing_deployment = Deployment.get_by_slug(deployment_slug)
             params = {}
@@ -357,3 +388,7 @@ class AdminHandler(BaseHandler):
             self.delete_rule(deployment_slug)
         elif method == 'RANDOM_VISITOR':
             self.random_visitor(deployment_slug)
+        elif method == 'RESET_RAFFLE_ENTRIES':
+            self.reset_raffle_entries(deployment_slug)
+        elif method == 'RESAVE_CHECKINS':
+            self.resave_checkins(deployment_slug)

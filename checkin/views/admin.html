@@ -531,12 +531,20 @@ badge.</h3>
           </tbody>
       </table>
     <BR>
-      <!-- <h2>Reset Raffle Entries</h2>
-      <h6>This will recalculate the raffle entries for the updated rules. Use this if you change the checkin rules midway through</h6>
+      <h2>Reset Contest Entries</h2>
+      <h6>This will recalculate the contest drawing entries for the updated rules. Use this if you change the checkin rules after checkins have begun.</h6>
       <form action="admin" method="POST">
           <input type='hidden' name='method' value='RESET_RAFFLE_ENTRIES'>
           <button type="submit" class="btn btn-primary btn-lg">Reset Entries</button>
-      </form> -->
+      </form>
+    <BR>
+    <BR>
+      <h2>Re-save Checkins</h2>
+      <h6>This will re-save the existing checkins. Use this if booth categories or booth names change after checkins have begun.</h6>
+      <form action="admin" method="POST">
+          <input type='hidden' name='method' value='RESAVE_CHECKINS'>
+          <button type="submit" class="btn btn-primary btn-lg">Re-save Checkins</button>
+      </form>
     <BR>
     <h2>Pick a winner</h2>
     <form action="admin" method="POST">

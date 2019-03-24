@@ -101,13 +101,15 @@ class RaffleRule(ndb.Model):
             retval = and_result
         total = max(and_result, retval)
 
-        # if deployment.max_raffle_entries != 0 and current_count > deployment.max_raffle_entries:
-        #     return (deployment.max_raffle_entries - current_count)
-
-        if retval == None:
-            return 1 # this means there are no rules, like 'Nam
+        if retval == None:  # this means there are no rules, like 'Nam
+            retTotal = 1 - current_count
         else:
-            return total - current_count
+            retTotal = total - current_count
+
+        if deployment.max_raffle_entries != 0:
+            retTotal = min(deployment.max_raffle_entries, retTotal)
+
+        return retTotal
 
     @classmethod
     def edit_rule(cls, key, operator, num_checkins, category, display_color):

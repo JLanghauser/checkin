@@ -69,8 +69,9 @@
 {% endif %}
 
 
-
-{% autoescape off %}{{ table_of_contents }}{% endautoescape %}
+<div id="tableOfContents">
+  {% autoescape off %}{{ table_of_contents }}{% endautoescape %}
+</div>
 
 {% for profile in profiles %}
 <div class="row">
@@ -80,6 +81,7 @@
     </div>
   </div>
 </div>
+<a href="#tableOfContents">Back to the top</a>
 {% endfor %}
 
 {% endblock %}
