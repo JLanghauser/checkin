@@ -57,6 +57,7 @@ class RaffleRule(ndb.Model):
         retval = None
         visitor.and_progress = []
         visitor.put()
+
         for and_rule in and_rules:
             res,progress = and_rule.get_rule_results(visitor)
             if retval == None:
@@ -65,10 +66,7 @@ class RaffleRule(ndb.Model):
             visitor.and_progress.append(progress)
             visitor.put()
 
-            if res == 0:
-                return 0
-            else:
-                retval = min(res, retval)
+            retval = min(res, retval)
 
         return retval
 
@@ -102,11 +100,16 @@ class RaffleRule(ndb.Model):
         total = max(and_result, retval)
 
         if retval == None:  # this means there are no rules, like 'Nam
-            retTotal = 1 - current_count
+            checkins_count = MapUserToVisitor.query(MapUserToVisitor.visitor_key == visitor.key).count()
+            retTotal = checkins_count - current_count
         else:
             retTotal = total - current_count
 
-        if deployment.max_raffle_entries != 0:
+        if deployment.max_raffle_entries != 0 \
+            and retTotal + current_count > deployment.max_raffle_entries:
+            retTotal =  deployment.max_raffle_entries - current_count
+
+        elif deployment.max_raffle_entries != 0:
             retTotal = min(deployment.max_raffle_entries, retTotal)
 
         return retTotal

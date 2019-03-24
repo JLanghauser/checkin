@@ -9,7 +9,11 @@
 {% endif %}
 
 {% if raffle_entries >= max_raffle_entries and max_raffle_entries != 0 %}
-  <h3>Congratulations! You've unlocked all {{ raffle_entries }} available entries into the prize drawing! Good luck!</h3>
+  {% if max_raffle_entries == 1 %}
+      <h3>Congratulations! You've unlocked the {{ raffle_entries }} available entry into the prize drawing! Good luck!</h3>
+  {% else %}
+      <h3>Congratulations! You've unlocked the {{ raffle_entries }} available entries into the prize drawing! Good luck!</h3>
+  {% endif %}
 {% else %}
   {% if raffle_entries == 0 %}
     <h3>You haven't unlocked any entries in the prize drawing yet.</h3>
@@ -46,13 +50,21 @@
 {% for and_rule in and_rules %}
 
   {% if forloop.counter0 == 0 %}
+
     {% if and_rule.category == 'ANY' %}
-      <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+      {% if or_rules|length > 0  %}
+        <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+      {% else %}
+        <h2>Scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+      {% endif %}
     {% else %}
-      <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from the {{ and_rule.category}} category.</h2>
+      {% if or_rules|length > 0  %}
+        <h2>Or scan your badge at {{ and_rule.num_checkins }} booths from the {{ and_rule.category}} category.</h2>
+      {% else %}
+        <h2>Scan your badge at {{ and_rule.num_checkins }} booths from the {{ and_rule.category}} category.</h2>
+      {% endif %}
     {% endif %}
   {% else %}
-    <h2> AND {{ and_rule.num_checkins }} from {{ and_rule.category}} category </h2>
     {% if and_rule.category == 'ANY' %}
       <h2>And scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
     {% else %}

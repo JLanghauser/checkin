@@ -41,7 +41,7 @@ class StudentHandler(BaseHandler):
             for indx, or_rule in enumerate(or_rules):
                 if visitor and visitor.or_progress and len(visitor.or_progress) > indx:
                     or_rule.progress = visitor.or_progress[indx]
-                    or_rule.num_progress = int(visitor.or_progress[indx] * or_rule.num_checkins / 100)
+                    or_rule.num_progress = int(round(visitor.or_progress[indx] * or_rule.num_checkins / 100.0))
                 else:
                     or_rule.progress = 0
                     or_rule.num_progress = 0
@@ -49,10 +49,10 @@ class StudentHandler(BaseHandler):
             for indx, and_rule in enumerate(and_rules):
                 if visitor and visitor.and_progress and len(visitor.and_progress) > indx:
                     and_rule.progress = visitor.and_progress[indx]
-                    and_rule.num_progress = int(visitor.and_progress[indx] * and_rule.num_checkins / 100)
+                    and_rule.num_progress = int(round(visitor.and_progress[indx] * and_rule.num_checkins / 100.0))
                 else:
                     and_rule.progress = 0
-                    or_rule.num_progress = 0
+                    and_rule.num_progress = 0
 
         params['or_rules'] = or_rules
         params['and_rules'] = and_rules
