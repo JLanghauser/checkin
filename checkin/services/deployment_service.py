@@ -130,6 +130,51 @@ class DeploymentService:
         return sorted_report_items
 
     @staticmethod
+    def recalculate_checkin_frequency_report(deployment):
+        students = Visitor.query(Visitor.deployment_key == deployment.key).fetch()
+        working_dict = {}
+        for student in students:
+            total_checkins = MapUserToVisitor.query(MapUserToVisitor.visitor_key == student.key).count()
+            str_total_checkins = str(total_checkins)
+            if str_total_checkins in working_dict:
+                working_dict[str_total_checkins] = str(int(working_dict[str_total_checkins]) + 1)
+            else:
+                working_dict[str_total_checkins] = '1'
+
+        headers = ['checkins']
+        data = [' ']
+        for x in working_dict:
+            headers.append(x)
+            data.append(working_dict[x])
+
+        deployment.report_headers = headers
+        deployment.report_data = data
+        deployment.put()
+
+    @staticmethod
+    def get_checkin_frequency_report(deployment):
+        DeploymentService.recalculate_checkin_frequency_report(deployment)
+        # want a frequency analysis of how many students have how many checkins
+        report = []
+
+        cols = len(deployment.report_headers)
+        i = 0
+        row = []
+        for d in deployment.report_data:
+            if i != 0 and i % cols == 0:
+                report.append(row)
+                row = []
+            else:
+                row.append(d)
+            i += 1
+        if row != []:
+            report.append(row)
+        # sorted_report_items = sorted(report, key=itemgetter(1))
+        # sorted_report_items.reverse()
+        # return sorted_report_items
+        return report
+
+    @staticmethod
     def get_booth_report(deployment):
         report = []
         edited_count = 0

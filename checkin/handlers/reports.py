@@ -38,7 +38,8 @@ class AsyncReportsHandler(BaseHandler):
             report  = DeploymentService.get_booth_checkin_report(deployment)
         elif report_type == 'BOOTH_REPORT':
             report_stats,report  = DeploymentService.get_booth_report(deployment)
-
+        elif report_type == 'CHECKIN_FREQUENCY':
+            report  = DeploymentService.get_checkin_frequency_report(deployment)
         #            'data-stats': report_stats,
         obj = {
             'success': 'true',
@@ -60,6 +61,8 @@ class ReportsHandler(BaseHandler):
             report  = self.get_booth_checkin_report(deployment)
         elif report_type == 'BOOTH_REPORT':
             report  = self.get_booth_report(deployment)
+        elif report_type == 'CHECKIN_FREQUENCY':
+            report = self.get_checkin_frequency_report(deployment)
 
         new_stored_data.user_key = user.key
         new_stored_data.deployment_key = deployment.key

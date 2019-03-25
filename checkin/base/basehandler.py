@@ -78,6 +78,8 @@ class BaseHandler(webapp2.RequestHandler):
         params['users'] =  MapUserToDeploymentService.get_users(deployment)
         params['groups'] =  UserService.get_groups(deployment)
         params['rules'] =  RaffleRule.get_rules_for_deployment(deployment)
+        params['report_headers'] = deployment.report_headers
+        params['report_data'] = deployment.report_data
 
     for key, value in kwargs.items():
         params[key] = value

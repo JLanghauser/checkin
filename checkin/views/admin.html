@@ -612,6 +612,35 @@ badge.</h3>
         </div>
       </div>
     </div>
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingThree">
+        <h4 class="panel-title">
+          <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+            Checkin Frequency Report
+          </a>
+        </h4>
+      </div>
+      <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+        <div class="panel-body">
+          <table id="checkinFrequencyTable" class="display" cellspacing="0" width="100%">
+                  <thead>
+                      <tr>
+                          {% for h in report_headers %}
+                            <th>{{ h }}</th>
+                          {% endfor %}
+                      </tr>
+                  </thead>
+                  <tfoot>
+                      <tr>
+                        {% for h in report_headers %}
+                          <th>{{ h }}</th>
+                        {% endfor %}
+                      </tr>
+                  </tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </div>
@@ -748,6 +777,21 @@ badge.</h3>
                 "url": "reportsasync",
                 "data": function ( d ) {
                     d.report_type = "BOOTH_CHECKIN_REPORT";
+                }
+            },
+        } );
+    } );
+
+    $(document).ready(function() {
+        var table = $('#checkinFrequencyTable').DataTable( {
+            "processing": true,
+            "serverSide": false,
+            "ordering": false,
+            "searching":false,
+            "ajax": {
+                "url": "reportsasync",
+                "data": function ( d ) {
+                    d.report_type = "CHECKIN_FREQUENCY";
                 }
             },
         } );

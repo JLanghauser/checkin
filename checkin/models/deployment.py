@@ -56,6 +56,8 @@ class Deployment(ndb.Model):
     max_visitor_serial_id = ndb.IntegerProperty(indexed=True)
     blocking_task_status = ndb.IntegerProperty()
     max_raffle_entries = ndb.IntegerProperty(indexed=True, default=0)
+    report_headers = ndb.StringProperty(repeated=True)
+    report_data = ndb.StringProperty(repeated=True)
 
     def get_logo_url(self):
         if self.logo:
