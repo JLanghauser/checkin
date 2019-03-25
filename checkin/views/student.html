@@ -2,7 +2,7 @@
 
 {% block maincontent %}
 
-<h1>Student Page</h1>
+<h1>Progress</h1>
 
 {% if student_link_text != "None" and student_link_text != None %}
 <h4><a href="{{ student_link }}" target="_blank">{{ student_link_text }}</a></h4>
@@ -10,9 +10,9 @@
 
 {% if raffle_entries >= max_raffle_entries and max_raffle_entries != 0 %}
   {% if max_raffle_entries == 1 %}
-      <h3>Congratulations! You've unlocked your entry into the prize drawing! Good luck!</h3>
+      <h3>Congratulations 🌟! You've unlocked your entry into the prize drawing! Good luck!</h3>
   {% else %}
-      <h3>Congratulations! You've unlocked all {{ raffle_entries }} available entries for the prize drawing! Good luck!</h3>
+      <h3>Congratulations 🌟! You've unlocked all {{ raffle_entries }} available entries for the prize drawing! Good luck!</h3>
   {% endif %}
 {% else %}
   {% if raffle_entries == 0 %}
@@ -80,7 +80,7 @@
 
 {% endif %}
 
-
+<h1>Check-ins</h1>
 <div id="tableOfContents">
   {% autoescape off %}{{ table_of_contents }}{% endautoescape %}
 </div>
