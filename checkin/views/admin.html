@@ -6,7 +6,7 @@
     <li id="surveystab"><a href="#surveys" data-toggle="tab">Surveys</a></li>
     <li id="qrcodestab"><a href="#qrcodes" data-toggle="tab">Manage QR Codes</a></li>
     <li id="boothstab"><a href="#booths" data-toggle="tab">Manage Booths</a></li>
-    <li id="raffletab"><a href="#raffle" data-toggle="tab">Manage Contest</a></li>
+    <li id="raffletab"><a href="#raffle" data-toggle="tab">Manage Drawing</a></li>
     <li id="analyticstab"><a href="#analytics" data-toggle="tab">Analytics</a></li>
 </ul>
 
@@ -479,10 +479,10 @@ badge.</h3>
     </div>
     </div>
 
-    <h1>Contest Entry Settings</h1>
+    <h1>Drawing Entry Settings</h1>
     <div class="form-group margin-top">
       <form action="admin" method="POST">
-      <label for="inputPassword3" class="col-sm-5 control-label">Max number of contest entries per badge (0 for unlimited)</label>
+      <label for="inputPassword3" class="col-sm-5 control-label">Max number of entries per badge (0 for unlimited)</label>
       <div class="col-sm-4">
         <div class="col-sm-3">
           <input type="text" class="form-control" name="max_raffle_entries" id="max_raffle_entries" placeholder="" maxlength="2" value="{{max_raffle_entries}}">
@@ -500,7 +500,7 @@ badge.</h3>
     <h2>Rules</h2>
     <button type="button" class="btn btn-primary navbar-btn btn-lg" data-toggle="modal" data-target="#addRuleModal">Create New Rule</button>
       <table class="table table-striped">
-          <caption>Set custom rules or thresholds for contest entries (the default behavior without custom rules is 1 entry per checkin)</caption>
+          <caption>Set custom rules or thresholds for prize drawing entries (the default behavior without custom rules is 1 entry per checkin)</caption>
           <thead>
               <tr>
                   <th>Display Color</th>
@@ -531,8 +531,8 @@ badge.</h3>
           </tbody>
       </table>
     <BR>
-      <h2>Reset Contest Entries</h2>
-      <h6>This will recalculate the contest drawing entries for the updated rules. Use this if you change the checkin rules after checkins have begun.</h6>
+      <h2>Reset Entries</h2>
+      <h6>This will recalculate the prize drawing entries for the updated rules. Use this if you change the checkin rules after checkins have begun.</h6>
       <form action="admin" method="POST">
           <input type='hidden' name='method' value='RESET_RAFFLE_ENTRIES'>
           <button type="submit" class="btn btn-primary btn-lg">Reset Entries</button>
