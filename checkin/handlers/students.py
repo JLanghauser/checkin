@@ -67,7 +67,7 @@ class StudentHandler(BaseHandler):
             maps = MapUserToVisitor.query(
                 MapUserToVisitor.visitor_key == visitor.key,
                 MapUserToVisitor.deployment_key == deployment.key,
-                MapUserToVisitor.category == category.category).fetch()
+                MapUserToVisitor.category == category.category).order(MapUserToVisitor.vendorname).fetch()
 
             for map in maps:
                 ukey = map.user_key

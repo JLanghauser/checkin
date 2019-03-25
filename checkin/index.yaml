@@ -24,6 +24,12 @@ indexes:
   properties:
   - name: "deployment_key"
   - name: "serialized_id"
+- kind: "MapUserToVisitor"
+  properties:
+  - name: "category"
+  - name: "deployment_key"
+  - name: "visitor_key"
+  - name: "vendorname"
 - kind: "RaffleEntry"
   properties:
   - name: "deployment_key"
