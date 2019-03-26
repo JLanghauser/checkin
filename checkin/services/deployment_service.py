@@ -133,11 +133,11 @@ class DeploymentService:
 
     @classmethod
     def recalculate_entry_frequency_report(cls, deployment):
-        students = Visitor.query(Visitor.deployment_key == deployment.key).fetch()
+        students = Visitor.query(Visitor.deployment_key == deployment.key).fetch(keys_only=True)
         working_dict = {}
-        for student in students:
+        for student_key in students:
             # total_checkins = MapUserToVisitor.query(MapUserToVisitor.visitor_key == student.key).count()
-            total_checkins = RaffleEntry.query(RaffleEntry.visitor_key == student.key).count()
+            total_checkins = RaffleEntry.query(RaffleEntry.visitor_key == student_key).count()
             str_total_checkins = str(total_checkins)
             if str_total_checkins in working_dict:
                 working_dict[str_total_checkins] = str(int(working_dict[str_total_checkins]) + 1)
