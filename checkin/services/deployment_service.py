@@ -6,6 +6,8 @@ from models.map_user_to_visitor import *
 from services.background_job_service import *
 from services.child_process_service import *
 from services.visitor_service import *
+from models.raffle_entry import *
+from google.appengine.ext import deferred
 
 class DeploymentService:
 
@@ -129,19 +131,20 @@ class DeploymentService:
         sorted_report_items.reverse()
         return sorted_report_items
 
-    @staticmethod
-    def recalculate_checkin_frequency_report(deployment):
+    @classmethod
+    def recalculate_entry_frequency_report(cls, deployment):
         students = Visitor.query(Visitor.deployment_key == deployment.key).fetch()
         working_dict = {}
         for student in students:
-            total_checkins = MapUserToVisitor.query(MapUserToVisitor.visitor_key == student.key).count()
+            # total_checkins = MapUserToVisitor.query(MapUserToVisitor.visitor_key == student.key).count()
+            total_checkins = RaffleEntry.query(RaffleEntry.visitor_key == student.key).count()
             str_total_checkins = str(total_checkins)
             if str_total_checkins in working_dict:
                 working_dict[str_total_checkins] = str(int(working_dict[str_total_checkins]) + 1)
             else:
                 working_dict[str_total_checkins] = '1'
 
-        headers = ['checkins']
+        headers = ['entries']
         data = [' ']
         for x in working_dict:
             headers.append(x)
@@ -150,17 +153,22 @@ class DeploymentService:
         deployment.report_headers = headers
         deployment.report_data = data
         deployment.put()
+        return deployment.report_headers,deployment.report_data
 
     @staticmethod
-    def get_checkin_frequency_report(deployment):
-        DeploymentService.recalculate_checkin_frequency_report(deployment)
+    def get_entry_frequency_report(deployment):
+        # deferred.defer(DeploymentService.recalculate_entry_frequency_report,deployment)
+        # DeploymentService.recalculate_entry_frequency_report(deployment)
+        headers = deployment.report_headers
+        data = deployment.report_data
+        # headers,data = DeploymentService.recalculate_entry_frequency_report(deployment)
         # want a frequency analysis of how many students have how many checkins
         report = []
 
-        cols = len(deployment.report_headers)
+        cols = len(headers)
         i = 0
         row = []
-        for d in deployment.report_data:
+        for d in data:
             if i != 0 and i % cols == 0:
                 report.append(row)
                 row = []

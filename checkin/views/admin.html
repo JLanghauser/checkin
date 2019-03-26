@@ -546,6 +546,14 @@ badge.</h3>
           <button type="submit" class="btn btn-primary btn-lg">Re-save Checkins</button>
       </form>
     <BR>
+      <BR>
+        <h2>Bootstrap the Entry Frequency Report</h2>
+        <h6>This will create the entry frequency report. Only needs to be run once per deployment, but running again won't hurt anything.</h6>
+        <form action="admin" method="POST">
+            <input type='hidden' name='method' value='BOOTSTRAP_REPORT'>
+            <button type="submit" class="btn btn-primary btn-lg">Bootstrap Report</button>
+        </form>
+      <BR>
     <h2>Pick a winner</h2>
     <form action="admin" method="POST">
         <input type='hidden' name='method' value='RANDOM_VISITOR'>
@@ -616,13 +624,13 @@ badge.</h3>
       <div class="panel-heading" role="tab" id="headingThree">
         <h4 class="panel-title">
           <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-            Checkin Frequency Report
+            Contest Entry Frequency Report
           </a>
         </h4>
       </div>
       <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
         <div class="panel-body">
-          <table id="checkinFrequencyTable" class="display" cellspacing="0" width="100%">
+          <table id="entryfrequencytable" class="display" cellspacing="0" width="100%">
                   <thead>
                       <tr>
                           {% for h in report_headers %}
@@ -783,7 +791,7 @@ badge.</h3>
     } );
 
     $(document).ready(function() {
-        var table = $('#checkinFrequencyTable').DataTable( {
+        var table = $('#entryfrequencytable').DataTable( {
             "processing": true,
             "serverSide": false,
             "ordering": false,
@@ -791,7 +799,7 @@ badge.</h3>
             "ajax": {
                 "url": "reportsasync",
                 "data": function ( d ) {
-                    d.report_type = "CHECKIN_FREQUENCY";
+                    d.report_type = "ENTRY_FREQUENCY";
                 }
             },
         } );

@@ -42,17 +42,21 @@ class StudentHandler(BaseHandler):
                 if visitor and visitor.or_progress and len(visitor.or_progress) > indx:
                     or_rule.progress = visitor.or_progress[indx]
                     or_rule.num_progress = int(round(visitor.or_progress[indx] * or_rule.num_checkins / 100.0))
+                    or_rule.remaining = or_rule.num_checkins - or_rule.num_progress
                 else:
                     or_rule.progress = 0
                     or_rule.num_progress = 0
+                    or_rule.remaining = or_rule.num_checkins
 
             for indx, and_rule in enumerate(and_rules):
                 if visitor and visitor.and_progress and len(visitor.and_progress) > indx:
                     and_rule.progress = visitor.and_progress[indx]
                     and_rule.num_progress = int(round(visitor.and_progress[indx] * and_rule.num_checkins / 100.0))
+                    and_rule.remaining = and_rule.num_checkins - and_rule.num_progress
                 else:
                     and_rule.progress = 0
                     and_rule.num_progress = 0
+                    and_rule.remaining = and_rule.num_checkins
 
         params['or_rules'] = or_rules
         params['and_rules'] = and_rules
@@ -62,7 +66,10 @@ class StudentHandler(BaseHandler):
         toc = ""
         categories = UserService.get_groups(deployment=deployment)
         for category in categories:
-            toc += "<h5><B>" + category.category + "...</B></h5>"
+            if category.category == None:
+                toc += "<h5><B>Booths...</B></h5>"
+            else:
+                toc += "<h5><B>" + category.category + "...</B></h5>"
 
             maps = MapUserToVisitor.query(
                 MapUserToVisitor.visitor_key == visitor.key,

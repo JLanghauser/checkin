@@ -137,7 +137,19 @@ class AdminHandler(BaseHandler):
             map.put()
 
         params['success'] = "true"
-        params['flash_message'] = "Successfully recalculated contest entries."
+        params['flash_message'] = "Successfully resaved checkins."
+
+        self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
+
+    def recalculate_entry_frequency_report(self, deployment_slug):
+        params = {}
+        params['activetab'] = 'raffle'
+        existing_deployment = Deployment.get_by_slug(deployment_slug)
+
+        DeploymentService.recalculate_entry_frequency_report(existing_deployment)
+
+        params['success'] = "true"
+        params['flash_message'] = "Successfully bootstrapped entry frequency report."
 
         self.render_smart_template('DEPLOYMENT','ADMIN','deployments_index.html',existing_deployment,params)
 
@@ -392,3 +404,5 @@ class AdminHandler(BaseHandler):
             self.reset_raffle_entries(deployment_slug)
         elif method == 'RESAVE_CHECKINS':
             self.resave_checkins(deployment_slug)
+        elif method == 'BOOTSTRAP_REPORT':
+            self.recalculate_entry_frequency_report(deployment_slug)

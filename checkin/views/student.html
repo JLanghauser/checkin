@@ -31,20 +31,26 @@
   {% for or_rule in or_rules %}
     {% if forloop.counter == 1 %}
       {% if or_rule.category == 'ANY' %}
-        <h2>Scan your badge at {{ or_rule.num_checkins }} booths from any category.</h2>
+        <h2>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
       {% else %}
-        <h2>Scan your badge at {{ or_rule.num_checkins }} booths from the <strong>{{ or_rule.category}}</strong> category.</h2>
+        <h2>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}</strong> category.</h2>
       {% endif %}
     {% else %}
       {% if or_rule.category == 'ANY' %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.num_checkins }} booths from any category.</h2>
+        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
       {% else %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.num_checkins }} booths from the <strong>{{ or_rule.category}}<strong> category.</h2>
+        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}<strong> category.</h2>
       {% endif %}
     {% endif %}
-    <div class="progress width-page" style="height: 50px;">
-      <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%;background-color:{{ or_rule.display_color}};font-size:20px;line-height:2.5;" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{or_rule.num_progress}}</div>
-    </div>
+    {% if or_rule.num_progress == 0 %}
+      <div class="progress width-page" style="height: 50px;">
+        <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%;background-color:{{ or_rule.display_color}};color:black;font-size:20px;line-height:2.5;" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{or_rule.num_progress}}</div>
+      </div>
+    {% else %}
+      <div class="progress width-page" style="height: 50px;">
+        <div class="progress-bar" role="progressbar" style="width: {{ or_rule.progress }}%;background-color:{{ or_rule.display_color}};font-size:20px;line-height:2.5;" aria-valuenow="{{ or_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{or_rule.num_progress}}</div>
+      </div>
+    {% endif %}
   {% endfor %}
 
 {% for and_rule in and_rules %}
@@ -53,28 +59,34 @@
 
     {% if and_rule.category == 'ANY' %}
       {% if or_rules|length > 0  %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
       {% else %}
-        <h2>Scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+        <h2>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
       {% endif %}
     {% else %}
       {% if or_rules|length > 0  %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.num_checkins }} booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
       {% else %}
-        <h2>Scan your badge at {{ and_rule.num_checkins }} booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        <h2>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
       {% endif %}
     {% endif %}
   {% else %}
     {% if and_rule.category == 'ANY' %}
-      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.num_checkins }} booths from any category.</h2>
+      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
     {% else %}
-      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.num_checkins }} booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
     {% endif %}
   {% endif %}
 
-  <div class="progress width-page" style="height: 50px;">
-    <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%;height:100px;background-color:{{ and_rule.display_color}};font-size:20px;line-height:2.5;" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{and_rule.num_progress}}</div>
-  </div>
+  {% if and_rule.num_progress == 0 %}
+    <div class="progress width-page" style="height: 50px;">
+      <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%;height:100px;color:black;background-color:{{ and_rule.display_color}};font-size:20px;line-height:2.5;" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{and_rule.num_progress}}</div>
+    </div>
+  {% else %}
+    <div class="progress width-page" style="height: 50px;">
+      <div class="progress-bar" role="progressbar" style="width: {{ and_rule.progress }}%;height:100px;background-color:{{ and_rule.display_color}};font-size:20px;line-height:2.5;" aria-valuenow="{{ and_rule.progress }}" aria-valuemin="0" aria-valuemax="100">{{and_rule.num_progress}}</div>
+    </div>
+  {% endif %}
 
 {% endfor %}
 

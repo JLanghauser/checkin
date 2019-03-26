@@ -93,7 +93,7 @@ class MapUserToDeploymentService:
             newuser.set_password(password)
             newuser.is_deployment_admin = is_deployment_admin in ['true', 'True', '1', 'on']
             newuser.deployment_key = deployment.key
-            newuser.category = category.strip() if category else None
+            newuser.category = category.strip().title() if category else None
             newuser.profile = '<h1>Edit your profile <a href = "edit">here</a></h1>'
             newuser.put()
             sleep(0.5)
@@ -124,7 +124,7 @@ class MapUserToDeploymentService:
                 edit_user.set_password(password)
 
             if category != edit_user.category:
-                edit_user.category = category.strip() if category else None
+                edit_user.category = category.strip().title() if category else None
 
             edit_user.is_deployment_admin = is_deployment_admin in [
                 'true', 'True', '1', 'on']
