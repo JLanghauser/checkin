@@ -76,10 +76,16 @@ class StudentHandler(BaseHandler):
                 MapUserToVisitor.deployment_key == deployment.key,
                 MapUserToVisitor.category == category.category).order(MapUserToVisitor.vendorname).fetch()
 
-            for map in maps:
-                ukey = map.user_key
-                u = ukey.get()
-                toc += "<a href='#" + u.vendorname + "'><h6>" + u.vendorname + "</h6></a>"
+            if len(maps) == 0:
+                if category.category == None:
+                    toc += "<h6>You haven’t checked into any booths yet</h6>"
+                else:
+                    toc += "<h6>You haven’t checked into any " + category.category + " booths yet</h6>"
+            else:
+                for map in maps:
+                    ukey = map.user_key
+                    u = ukey.get()
+                    toc += "<a href='#" + u.vendorname + "'><h6>" + u.vendorname + "</h6></a>"
         return toc
 
     def handlerequest(self, deployment_slug=None):

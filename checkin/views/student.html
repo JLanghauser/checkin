@@ -31,15 +31,31 @@
   {% for or_rule in or_rules %}
     {% if forloop.counter == 1 %}
       {% if or_rule.category == 'ANY' %}
-        <h2>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
+        {% if or_rule.remaining == 1 %}
+          <h2>Scan your badge at {{ or_rule.remaining }} more booth from any category.</h2>
+        {% else %}
+          <h2>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
+        {% endif %}
       {% else %}
-        <h2>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}</strong> category.</h2>
+        {% if or_rule.remaining == 1 %}
+          <h2>Scan your badge at {{ or_rule.remaining }} more booth from the <strong>{{ or_rule.category}}</strong> category.</h2>
+        {% else %}
+          <h2>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}</strong> category.</h2>
+        {% endif %}
       {% endif %}
     {% else %}
       {% if or_rule.category == 'ANY' %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
+        {% if or_rule.remaining == 1 %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booth from any category.</h2>
+        {% else %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from any category.</h2>
+        {% endif %}
       {% else %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}<strong> category.</h2>
+        {% if or_rule.remaining == 1 %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booth from the <strong>{{ or_rule.category}}<strong> category.</h2>
+        {% else %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ or_rule.remaining }} more booths from the <strong>{{ or_rule.category}}<strong> category.</h2>
+        {% endif %}
       {% endif %}
     {% endif %}
     {% if or_rule.num_progress == 0 %}
@@ -59,22 +75,46 @@
 
     {% if and_rule.category == 'ANY' %}
       {% if or_rules|length > 0  %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+        {% if and_rule.remaining == 1 %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booth from any category.</h2>
+        {% else %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+        {% endif %}
       {% else %}
-        <h2>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+        {% if and_rule.remaining == 1 %}
+          <h2>Scan your badge at {{ and_rule.remaining }} more booth from any category.</h2>
+        {% else %}
+          <h2>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+        {% endif %}
       {% endif %}
     {% else %}
       {% if or_rules|length > 0  %}
-        <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% if and_rule.remaining == 1 %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booth from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% else %}
+          <h2><strong>Or</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% endif %}
       {% else %}
-        <h2>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% if and_rule.remaining == 1 %}
+          <h2>Scan your badge at {{ and_rule.remaining }} more booth from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% else %}
+          <h2>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+        {% endif %}
       {% endif %}
     {% endif %}
   {% else %}
     {% if and_rule.category == 'ANY' %}
-      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+      {% if and_rule.remaining == 1 %}
+        <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booth from any category.</h2>
+      {% else %}
+        <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from any category.</h2>
+      {% endif %}
     {% else %}
-      <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+      {% if and_rule.remaining == 1 %}
+        <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booth from the <strong>{{ and_rule.category}}</strong> category.</h2>
+      {% else %}
+        <h2><strong>And</strong><br>Scan your badge at {{ and_rule.remaining }} more booths from the <strong>{{ and_rule.category}}</strong> category.</h2>
+      {% endif %}
     {% endif %}
   {% endif %}
 
