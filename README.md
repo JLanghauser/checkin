@@ -10,7 +10,7 @@ appcfg.py -A tough-variety-126419 -V v9 update checkin/
 appcfg.py -A tough-variety-126419 -V v10 update checkin/
 appcfg.py -A tough-variety-126419 -V v12 update checkin/
 
-gcloud app deploy --project tough-variety-126419 --version v16 checkin/app.yaml
+gcloud app deploy --project tough-variety-126419 --version v17 checkin/app.yaml
 gcloud app deploy --project tough-variety-126419 checkin/index.yaml
 
 
