@@ -78,9 +78,9 @@ class StudentHandler(BaseHandler):
 
             if len(maps) == 0:
                 if category.category == None:
-                    toc += "<h6>You haven’t checked into any booths yet</h6>"
+                    toc += "<h6>You haven't checked into any booths yet</h6>"
                 else:
-                    toc += "<h6>You haven’t checked into any " + category.category + " booths yet</h6>"
+                    toc += "<h6>You haven't checked into any " + category.category + " booths yet</h6>"
             else:
                 for map in maps:
                     ukey = map.user_key
