@@ -29,7 +29,8 @@ class RaffleRule(ndb.Model):
         if count >= self.num_checkins:
             remainder = count % self.num_checkins
             progress = int(float(remainder) / float(self.num_checkins) * 100.0)
-            return int(count / self.num_checkins),progress
+            # return int(count / self.num_checkins),progress
+            return int(count / self.num_checkins),100
         else:
             progress = int(float(count) / float(self.num_checkins) * 100.0)
             return 0,progress

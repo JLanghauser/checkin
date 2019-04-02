@@ -58,6 +58,7 @@ class StudentHandler(BaseHandler):
                     and_rule.num_progress = 0
                     and_rule.remaining = and_rule.num_checkins
 
+
         params['or_rules'] = or_rules
         params['and_rules'] = and_rules
         return params
